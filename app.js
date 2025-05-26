@@ -30,3 +30,7 @@ app.use('/comments', commentsRouter);
 app.get('/', (req, res) => {
   res.send('책모아 서버에 오신 것을 환영합니다!');
 });
+
+//회원가입/로그인 라우터
+const authRouter = require('./routes/auth');
+app.use('/auth', authRouter);
