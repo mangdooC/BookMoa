@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>게시글 상세보기</title>
+</head>
+<body>
+  <h1>📄 게시글 상세보기</h1>
+  <div id="post-container">
+    로딩 중...
+  </div>
+
+    <h3>댓글</h3>
+        <ul id="comment-list"></ul>
+            <form id="comment-form">
+                <input type="text" name="author" placeholder="작성자" required>
+                <br>
+                <textarea name="content" rows="3" cols="40" placeholder="댓글 입력" required></textarea>
+                <br>
+                <button type="submit">댓글 작성</button>
+            </form>
+
+  <script>
+    const urlParams = new URLSearchParams(window.location.search);
+    const postId = urlParams.get('id');
+
+    if (!postId) {
+      document.getElementById('post-container').innerHTML = '잘못된 게시글 접근입니다.';
+    } else {
+      async function fetchPost() {
+        const res = await fetch(`/posts/${postId}`);
+        if (!res.ok) {
+          document.getElementById('post-container').innerHTML = '게시글을 불러올 수 없습니다.';
+          return;
+        }
+
+        const post = await res.json();
+        document.getElementById('post-container').innerHTML = `
+          <h2>${post.title}</h2>
+          <p><small>작성자: ${post.author ?? '알 수 없음'}</small></p>
+          <p><small>작성일: ${new Date(post.createdAt).toLocaleString()}</small></p>
+          <p>${post.content}</p>
+          <a href="/community/communityList.html">← 목록으로 돌아가기</a>
+        `;
+      }
+
+      async function fetchComments() {
+        const res = await fetch(`/comments/${postId}`);
+        const comments = await res.json();
+        const list = document.getElementById('comment-list');
+        list.innerHTML = '';
+        comments.forEach(c => {
+          const li = document.createElement('li');
+          li.innerHTML = `<strong>${c.author}</strong> (${new Date(c.createdAt).toLocaleString()}): ${c.content}`;
+          list.appendChild(li);
+        });
+      }
+
+      document.getElementById('comment-form').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const form = e.target;
+        const comment = {
+          author: '알 수 없음', //데베 연결 후 이부분 수정해야댐
+          content: form.content.value
+        };
+        const res = await fetch(`/comments/${postId}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(comment)
+        });
+        if (res.ok) {
+          form.reset();
+          fetchComments();
+        } else {
+          alert('댓글 작성 실패');
+        }
+      });
+
+      fetchPost();
+      fetchComments();
+    }
+  </script>
+</body>
+</html>
