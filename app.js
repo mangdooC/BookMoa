@@ -4,6 +4,10 @@ require('dotenv').config();
 
 const app = express();
 app.use(express.json());
+const path = require('path');
+
+// 정적 파일 서빙 설정
+app.use(express.static(path.join(__dirname, 'public')));
 
 // 테스트 라우터
 app.get('/', async (req, res) => {
