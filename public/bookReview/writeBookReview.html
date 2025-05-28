@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <title>책 리뷰 게시판</title>
+</head>
+<body>
+  <h1>책 리뷰 작성</h1>
+  <form id="review-form">
+    <label for="title">제목:</label><br />
+    <input type="text" id="title" name="title" required /><br />
+
+    <label for="author">작성자:</label><br />
+    <input type="text" id="author" name="author" required /><br />
+
+    <label for="isbn">ISBN 코드:</label><br />
+    <input type="text" id="isbn" name="isbn" required /><br />
+
+    <label for="rating">평점 (1~5):</label><br />
+    <select id="rating" name="rating" required>
+      <option value="">선택하세요</option>
+      <option value="1">1점</option>
+      <option value="2">2점</option>
+      <option value="3">3점</option>
+      <option value="4">4점</option>
+      <option value="5">5점</option>
+    </select><br />
+
+    <label for="content">내용:</label><br />
+    <textarea id="content" name="content" rows="10" required></textarea><br />
+
+    <button type="submit">리뷰 작성</button>
+  </form>
+
+  <script>
+    document.getElementById("review-form").addEventListener("submit", async function (e) {
+      e.preventDefault();
+      const title = document.getElementById("title").value;
+      const author = document.getElementById("author").value;
+      const isbn = document.getElementById("isbn").value;
+      const rating = document.getElementById("rating").value;
+      const content = document.getElementById("content").value;
+
+      try {
+        const res = await fetch("/book-reviews", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ title, author, isbn, rating, content }),
+        });
+
+        if (res.ok) {
+          alert("리뷰가 등록되었습니다.");
+          window.location.href = "/bookReview/bookReviewList.html";
+        } else {
+          alert("리뷰 등록에 실패했습니다.");
+        }
+      } catch (err) {
+        console.error("에러 발생:", err);
+        alert("서버 오류로 인해 리뷰를 등록할 수 없습니다.");
+      }
+    });
+  </script>
+</body>
+</html>
