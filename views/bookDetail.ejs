@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <title><%= book.bookname %> 상세정보</title>
+  <style>
+    #map { width: 100%; height: 300px; margin-bottom: 20px; }
+  </style>
+  <script type="text/javascript" src="//dapi.kakao.com/v2/maps/sdk.js?appkey=카카오맵API키&libraries=services"></script>
+</head>
+<body>
+  <div style="margin-bottom: 20px; display: flex; align-items: center;">
+    <img src="<%= book.bookImageURL %>" alt="책 표지" style="width: 80px; height: auto; margin-right: 16px;" />
+    <div>
+      <strong>
+        <%= book.bookname %>
+      </strong><br>
+      저자: <%= book.authors %><br>
+      출판사: <%= book.publisher %><br>
+      ISBN: <%= book.isbn13 %>
+    </div>
+  </div>
+
+  <h3>소장 도서관</h3>
+  <ul>
+    <% if (libraries.length === 0) { %>
+      <li>대출 가능한 도서관이 없습니다.</li>
+    <% } else { %>
+      <% libraries.forEach(lib => { %>
+        <li>
+          <%= lib.name || lib.lib?.libName %> - <%= lib.address || lib.lib?.address %>
+          <% if (lib.distance) { %>
+            (<%= lib.distance.toFixed(2) %>km)
+          <% } %>
+        </li>
+      <% }) %>
+    <% } %>
+  </ul>
+
+  <div id="map"></div>
+  <script>
+    const libraries = <%- JSON.stringify(libraries) %>;
+    if (libraries.length > 0 && libraries[0].lat && libraries[0].lng) {
+      const mapContainer = document.getElementById('map');
+      const mapOption = {
+        center: new kakao.maps.LatLng(libraries[0].lat, libraries[0].lng),
+        level: 6
+      };
+      const map = new kakao.maps.Map(mapContainer, mapOption);
+
+      libraries.forEach(lib => {
+        if (!lib.lat || !lib.lng) return;
+        const marker = new kakao.maps.Marker({
+          position: new kakao.maps.LatLng(lib.lat, lib.lng),
+          map: map
+        });
+        const infowindow = new kakao.maps.InfoWindow({
+          content: `<div style="padding:5px;font-size:12px;">${lib.name || lib.lib?.libName}</div>`
+        });
+        kakao.maps.event.addListener(marker, 'mouseover', () => infowindow.open(map, marker));
+        kakao.maps.event.addListener(marker, 'mouseout', () => infowindow.close());
+      });
+    }
+  </script>
+
+  <h3>후기</h3>
+  <a href="/book/<%= book.isbn13 %>/review/new">
+    <button type="button">후기 작성</button>
+  </a>
+
+  <h4>
+    총 <%= reviewsTotal %>개의 후기
+  </h4>
+  <form method="get" action="/book/<%= book.isbn13 %>">
+    <select name="sort" onchange="this.form.submit()">
+      <option value="recent" <%= sort === 'recent' ? 'selected' : '' %>>최신순</option>
+      <option value="popular" <%= sort === 'popular' ? 'selected' : '' %>>인기순</option>
+    </select>
+    <input type="hidden" name="page" value="<%= page %>">
+  </form>
+
+  <ul>
+    <% reviews.forEach(r => { %>
+      <li>
+        <strong><%= r.nickname || r.user %></strong>: <%= r.comment || r.content %> (<%= r.date %>)
+        <span>추천: <%= r.likes || 0 %></span>
+      </li>
+    <% }) %>
+  </ul>
+
+  <!-- 페이지네이션 -->
+  <div class="pagination">
+    <% for(let i = 1; i <= totalPages; i++) { %>
+      <% if(i === page) { %>
+        <strong><%= i %></strong>
+      <% } else { %>
+        <a href="/book/<%= book.isbn13 %>?sort=<%= sort %>&page=<%= i %>"><%= i %></a>
+      <% } %>
+    <% } %>
+  </div>
+</body>
+</html>

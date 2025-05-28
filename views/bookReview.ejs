@@ -1,0 +1,7 @@
+<h2>후기 작성</h2>
+<form action="/book/<%= isbn13 %>/review" method="POST">
+  <input type="text" name="nickname" placeholder="닉네임" required /><br>
+  <textarea name="comment" placeholder="후기를 입력하세요" required></textarea><br>
+  <button type="submit">등록</button>
+</form>
+<a href="/book/<%= isbn13 %>">돌아가기</a>

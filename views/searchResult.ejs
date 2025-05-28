@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <title>검색 결과 - <%= keyword %></title>
+  <style>
+    /* 간단한 스타일 */
+    ul { list-style-type: none; padding: 0; }
+    li { margin-bottom: 8px; }
+    div.pagination a {
+      margin: 0 5px;
+      text-decoration: none;
+      color: blue;
+    }
+    div.pagination strong {
+      margin: 0 5px;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+  <h2>검색어: <%= keyword %></h2>
+
+  <% if (books.length === 0) { %>
+    <p>검색 결과가 없습니다.</p>
+    <a href="/book/search">다시 검색하기</a>
+  <% } else { %>
+    <ul>
+  <% books.forEach(book => { %>
+    <li style="margin-bottom: 20px; display: flex; align-items: center; cursor: pointer;"
+        onclick="location.href='/book/<%= book.isbn13 %>'">
+      <img src="<%= book.bookImageURL %>" alt="책 표지" style="width: 80px; height: auto; margin-right: 16px;" />
+      <div>
+        <strong>
+          <%= book.bookname %>
+        </strong><br>
+        저자: <%= book.authors %><br>
+        출판사: <%= book.publisher %><br>
+        ISBN: <%= book.isbn13 %>
+      </div>
+    </li>
+  <% }) %>
+</ul>
+
+  <% } %>
+
+  <!-- 검색 폼: 항상 표시 -->
+  <h3>검색</h3>
+  <form action="/book/search/results" method="GET">
+    <input type="text" name="keyword" placeholder="검색어 입력" value="<%= keyword %>" required />
+    <label>검색 대상:</label>
+    <select name="searchTarget">
+      <option value="title" <%= searchTarget === 'title' ? 'selected' : '' %>>제목</option>
+      <option value="publisher" <%= searchTarget === 'publisher' ? 'selected' : '' %>>출판사</option>
+      <option value="author" <%= searchTarget === 'author' ? 'selected' : '' %>>저자</option>
+      <option value="isbn13" <%= searchTarget === 'isbn13' ? 'selected' : '' %>>ISBN</option>
+    </select>
+    <label>정렬 기준:</label>
+    <select name="sort">
+      <option value="loan" <%= sort === 'loan' ? 'selected' : '' %>>대출건수순</option>
+      <option value="title" <%= sort === 'title' ? 'selected' : '' %>>제목순</option>
+      <option value="author" <%= sort === 'author' ? 'selected' : '' %>>저자순</option>
+      <option value="publisher" <%= sort === 'publisher' ? 'selected' : '' %>>출판사순</option>
+    </select>
+    <input type="hidden" name="pageNo" value="1" />
+    <button type="submit">검색</button>
+  </form>
+
+  <div class="pagination">
+  <% 
+    const startPage = Math.max(1, pageNo - 2);
+    const endPage = Math.min(totalPages, startPage + 4);
+    for(let i = startPage; i <= endPage; i++) { 
+  %>
+    <% if(i === pageNo) { %>
+      <strong><%= i %></strong>
+    <% } else { %>
+      <a href="/book/search/results?keyword=<%= encodeURIComponent(keyword) %>&searchTarget=<%= searchTarget %>&sort=<%= sort %>&order=<%= order || 'asc' %>&pageNo=<%= i %>"><%= i %></a>
+    <% } %>
+  <% } %>
+  </div>
+
+  <a href="/book/search">처음으로 돌아가기</a>
+</body>
+</html>

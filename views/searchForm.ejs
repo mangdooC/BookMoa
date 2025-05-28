@@ -1,0 +1,37 @@
+<form method="GET" action="/search">
+  <div>
+    <label>제목 (title):</label>
+    <input type="text" name="title" placeholder="제목 검색어 입력" value="<%= title || '' %>" />
+  </div>
+
+  <div>
+    <label>저자 (author):</label>
+    <input type="text" name="author" placeholder="저자 검색어 입력" value="<%= author || '' %>" />
+  </div>
+
+  <div>
+    <label>출판사 (publisher):</label>
+    <input type="text" name="publisher" placeholder="출판사 검색어 입력" value="<%= publisher || '' %>" />
+  </div>
+
+  <div>
+    <label>정렬 기준 (sortField):</label>
+    <select name="sort">
+      <option value="loan" <%= sortField === 'loan' ? 'selected' : '' %>>대출건수순</option>
+      <option value="pubYear" <%= sortField === 'pubYear' ? 'selected' : '' %>>최신순</option>
+      <option value="title" <%= sortField === 'title' ? 'selected' : '' %>>제목명순</option>
+    </select>
+  </div>
+
+  <!-- 정렬 방식은 무조건 오름차순으로 고정 -->
+  <input type="hidden" name="order" value="asc" />
+
+  <div>
+    <label>
+      <input type="checkbox" name="exactMatch" value="true" <%= exactMatch === 'true' ? 'checked' : '' %> />
+      정확히 일치
+    </label>
+  </div>
+
+  <button type="submit">검색</button>
+</form>
