@@ -1,4 +1,4 @@
-const pool = require('./db'); // MySQL 연결 풀을 가져옵니다.
+const pool = require('../db'); // MySQL 연결 풀을 가져옵니다.
 const bcrypt = require('bcrypt'); // 비밀번호 암호화를 위한 bcrypt 모듈을 가져옵니다.
 const jwt = require('jsonwebtoken'); // JWT 토큰 생성을 위한 jsonwebtoken 모듈을 가져옵니다.
 require('dotenv').config(); // .env 파일에 저장된 환경변수를 불러옵니다.
