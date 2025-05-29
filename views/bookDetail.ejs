@@ -6,7 +6,7 @@
   <style>
     #map { width: 100%; height: 300px; margin-bottom: 20px; }
   </style>
-  <script type="text/javascript" src="//dapi.kakao.com/v2/maps/sdk.js?appkey=카카오맵API키&libraries=services"></script>
+<script type="text/javascript" src="https://oapi.map.naver.com/openapi/v3/maps.js?ncpKeyId=<%= NAVER_MAP_API_KEY %>"></script>
 </head>
 <body>
   <div style="margin-bottom: 20px; display: flex; align-items: center;">
@@ -21,47 +21,50 @@
     </div>
   </div>
 
-  <h3>소장 도서관</h3>
-  <ul>
-    <% if (libraries.length === 0) { %>
-      <li>대출 가능한 도서관이 없습니다.</li>
-    <% } else { %>
-      <% libraries.forEach(lib => { %>
-        <li>
-          <%= lib.name || lib.lib?.libName %> - <%= lib.address || lib.lib?.address %>
-          <% if (lib.distance) { %>
-            (<%= lib.distance.toFixed(2) %>km)
-          <% } %>
-        </li>
-      <% }) %>
-    <% } %>
-  </ul>
+<h3>소장 도서관 목록 (가까운 순 20개)</h3>
+<ul>
+  <% libraries.forEach((lib, idx) => { %>
+    <li>
+      <strong><%= idx + 1 %>.</strong>
+      <%= lib.name %> | ☎ <%= lib.tel || '-' %> | <%= lib.address %>
+      | <a href="<%= lib.url || '#' %>" target="_blank"><button>웹사이트</button></a>
+      | <button onclick="alert('즐겨찾기 기능은 추후 구현!')">★ 즐겨찾기</button>
+      <% if (lib.distance !== Infinity) { %>
+        (<%= lib.distance.toFixed(2) %>km)
+      <% } %>
+    </li>
+  <% }) %>
+</ul>
 
-  <div id="map"></div>
-  <script>
-    const libraries = <%- JSON.stringify(libraries) %>;
-    if (libraries.length > 0 && libraries[0].lat && libraries[0].lng) {
-      const mapContainer = document.getElementById('map');
-      const mapOption = {
-        center: new kakao.maps.LatLng(libraries[0].lat, libraries[0].lng),
-        level: 6
-      };
-      const map = new kakao.maps.Map(mapContainer, mapOption);
+<div id="map" style="width:100%;height:400px;margin-bottom:20px;"></div>
+<script type="text/javascript" src="https://oapi.map.naver.com/openapi/v3/maps.js?ncpClientId=YOUR_CLIENT_ID"></script>
+<script>
+  const libraries = <%- JSON.stringify(libraries) %>;
+  const centerLat = libraries.length > 0 ? Number(libraries[0].lat) : 37.5665;
+  const centerLng = libraries.length > 0 ? Number(libraries[0].lng) : 126.9780;
 
-      libraries.forEach(lib => {
-        if (!lib.lat || !lib.lng) return;
-        const marker = new kakao.maps.Marker({
-          position: new kakao.maps.LatLng(lib.lat, lib.lng),
-          map: map
-        });
-        const infowindow = new kakao.maps.InfoWindow({
-          content: `<div style="padding:5px;font-size:12px;">${lib.name || lib.lib?.libName}</div>`
-        });
-        kakao.maps.event.addListener(marker, 'mouseover', () => infowindow.open(map, marker));
-        kakao.maps.event.addListener(marker, 'mouseout', () => infowindow.close());
-      });
-    }
-  </script>
+  var map = new naver.maps.Map('map', {
+    center: new naver.maps.LatLng(centerLat, centerLng),
+    zoom: 11
+  });
+
+  libraries.forEach(lib => {
+    if (!lib.lat || !lib.lng) return;
+    var marker = new naver.maps.Marker({
+      position: new naver.maps.LatLng(Number(lib.lat), Number(lib.lng)),
+      map: map
+    });
+    var infowindow = new naver.maps.InfoWindow({
+      content: `<div style="padding:5px;font-size:12px;">${lib.name}</div>`
+    });
+    naver.maps.Event.addListener(marker, 'mouseover', function() {
+      infowindow.open(map, marker);
+    });
+    naver.maps.Event.addListener(marker, 'mouseout', function() {
+      infowindow.close();
+    });
+  });
+</script>
 
   <h3>후기</h3>
   <a href="/book/<%= book.isbn13 %>/review/new">
