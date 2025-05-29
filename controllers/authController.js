@@ -9,7 +9,7 @@ const JWT_SECRET = process.env.JWT_SECRET; // 환경변수에서 JWT 비밀 키�
 
 const register = async (req, res) => {
   // 요청으로부터 사용자 정보를 구조 분해 할당으로 받습니다.
-  const { name, email, password, nickname, phoneNumber, city, district, town, detail, imageUrl } = req.body;
+  const { name, email, password, nickname, address } = req.body;
 
   try {
     // 이메일 중복 여부를 확인합니다.
@@ -23,9 +23,8 @@ const register = async (req, res) => {
 
     // 사용자 정보를 데이터베이스에 저장합니다.
     await pool.query(
-      `INSERT INTO users (name, email, password, nickname, phoneNumber, city, district, town, detail, imageUrl) 
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-      [name, email, hashedPassword, nickname, phoneNumber, city, district, town, detail, imageUrl]
+      'INSERT INTO users (name, email, password, nickname, address) VALUES (?, ?, ?, ?, ?)',
+      [name, email, hashedPassword, nickname, address]
     );
 
     // 성공 응답을 보냅니다.
@@ -36,9 +35,9 @@ const register = async (req, res) => {
   }
 };
 
-/**
- * 로그인 기능을 처리하는 함수입니다.
- */
+
+ // 로그인 기능을 처리하는 함수입니다.
+
 const login = async (req, res) => {
   const { email, password } = req.body;
 
