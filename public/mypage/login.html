@@ -97,6 +97,12 @@
       alert('서버 에러');
     }
   });
+
+  //로그인 시에만 마이페이지 보이도록 토큰
+  localStorage.setItem('token', data.token); // 토큰 저장
+
+  localStorage.removeItem('token');
+  location.reload(); // 페이지 새로고침해서 링크 상태 바뀌게
 </script>
 
 </body>
