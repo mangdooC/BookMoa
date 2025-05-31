@@ -9,14 +9,9 @@ const JWT_SECRET = process.env.JWT_SECRET; // 환경변수에서 JWT 비밀 키�
 
 const register = async (req, res) => {
   // 요청으로부터 사용자 정보를 구조 분해 할당으로 받습니다.
-  const { user_id, email, password, nickname, address } = req.body;
+  const { user_id, password, nickname, address } = req.body;
 
   try {
-    // 이메일 중복 체크
-    const [emailRows] = await pool.query('SELECT email FROM user WHERE email = ?', [email]);
-    if (emailRows.length > 0) {
-      return res.status(400).json({ error: '이미 가입된 이메일입니다.' });
-    }
 
     // user_id 중복 체크
     const [userIdRows] = await pool.query('SELECT user_id FROM user WHERE user_id = ? AND is_deleted = 0', [user_id]);
@@ -35,8 +30,8 @@ const register = async (req, res) => {
 
     // 사용자 정보를 데이터베이스에 저장합니다.
     await pool.query(
-      'INSERT INTO user (user_id, email, password, nickname, address) VALUES (?, ?, ?, ?, ?)',
-      [user_id, email, hashedPassword, nickname, address]
+      'INSERT INTO user (user_id, password, nickname, address) VALUES (?, ?, ?, ?)',
+      [user_id, hashedPassword, nickname, address]
     );
 
     // 성공 응답을 보냅니다.
@@ -50,28 +45,20 @@ const register = async (req, res) => {
  // 로그인 기능을 처리하는 함수입니다.
 
   const login = async (req, res) => {
-  const { user_id, email, password } = req.body;
+  const { user_id, password } = req.body;
 
-  // user_id 혹은 email 중 하나는 반드시 있어야 하니까 검증
-  if (!user_id && !email) {
-    return res.status(400).json({ error: '아이디 또는 이메일을 입력하세요.' });
+ // user_id는 반드시 있어야 하니까 검증
+  if (!user_id) {
+    return res.status(400).json({ error: '아이디를 입력하세요.' });
   }
 
-  let query = '';
-  let params = [];
-
-  if (user_id) {
-    query = 'SELECT * FROM user WHERE user_id = ?';
-    params = [user_id];
-  } else {
-    query = 'SELECT * FROM user WHERE email = ?';
-    params = [email];
-  }
+  const query = 'SELECT * FROM user WHERE user_id = ?';
+  const params = [user_id];
 
   const [rows] = await pool.query(query, params);
 
   if (rows.length === 0) {
-    return res.status(400).json({ error: '등록된 아이디 또는 이메일이 없습니다.' });
+    return res.status(400).json({ error: '등록된 아이디가 없습니다.' });
   }
 
   const user = rows[0];
@@ -83,7 +70,7 @@ const register = async (req, res) => {
   }
 
   // JWT 토큰을 생성합니다. (유효기간: 1일)
-  const token = jwt.sign({ user_id: user.user_id, email: user.email }, JWT_SECRET, { expiresIn: '1d' });
+  const token = jwt.sign({ user_id: user.user_id }, JWT_SECRET, { expiresIn: '1d' });
 
   // 로그인 성공 응답을 보냅니다.
   try {
