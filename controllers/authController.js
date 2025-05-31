@@ -12,10 +12,22 @@ const register = async (req, res) => {
   const { user_id, email, password, nickname, address } = req.body;
 
   try {
-    // 이메일 중복 여부를 확인합니다.
-    const [rows] = await pool.query('SELECT id FROM users WHERE email = ?', [email]);
-    if (rows.length > 0) {
+    // 이메일 중복 체크
+    const [emailRows] = await pool.query('SELECT email FROM user WHERE email = ?', [email]);
+    if (emailRows.length > 0) {
       return res.status(400).json({ error: '이미 가입된 이메일입니다.' });
+    }
+
+    // user_id 중복 체크
+    const [userIdRows] = await pool.query('SELECT user_id FROM user WHERE user_id = ? AND is_deleted = 0', [user_id]);
+    if (userIdRows.length > 0) {
+      return res.status(400).json({ error: '이미 존재하는 아이디입니다.' });
+    }
+
+    // nickname 중복 체크
+    const [nicknameRows] = await pool.query('SELECT nickname FROM user WHERE nickname = ?', [nickname]);
+    if (nicknameRows.length > 0) {
+      return res.status(400).json({ error: '이미 존재하는 닉네임입니다.' });
     }
 
     // 비밀번호를 bcrypt를 이용해 해싱합니다.
@@ -23,7 +35,7 @@ const register = async (req, res) => {
 
     // 사용자 정보를 데이터베이스에 저장합니다.
     await pool.query(
-      'INSERT INTO users (user_id, email, password, nickname, address) VALUES (?, ?, ?, ?, ?)',
+      'INSERT INTO user (user_id, email, password, nickname, address) VALUES (?, ?, ?, ?, ?)',
       [user_id, email, hashedPassword, nickname, address]
     );
 
@@ -37,7 +49,7 @@ const register = async (req, res) => {
 
  // 로그인 기능을 처리하는 함수입니다.
 
-async function login(req, res) {
+  const login = async (req, res) => {
   const { user_id, email, password } = req.body;
 
   // user_id 혹은 email 중 하나는 반드시 있어야 하니까 검증
@@ -49,10 +61,10 @@ async function login(req, res) {
   let params = [];
 
   if (user_id) {
-    query = 'SELECT * FROM users WHERE user_id = ?';
+    query = 'SELECT * FROM user WHERE user_id = ?';
     params = [user_id];
   } else {
-    query = 'SELECT * FROM users WHERE email = ?';
+    query = 'SELECT * FROM user WHERE email = ?';
     params = [email];
   }
 
