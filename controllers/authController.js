@@ -7,7 +7,7 @@ const JWT_SECRET = process.env.JWT_SECRET; // 환경변수에서 JWT 비밀 키�
 
 // 회원가입 기능을 처리하는 함수입니다.
 
-const register = async (req, res) => {
+exports.register = async (req, res) => {
   // 요청으로부터 사용자 정보를 구조 분해 할당으로 받습니다.
   const { user_id, password, nickname, address } = req.body;
 
@@ -24,6 +24,21 @@ const register = async (req, res) => {
     if (nicknameRows.length > 0) {
       return res.status(400).json({ error: '이미 존재하는 닉네임입니다.' });
     }
+    
+    //아이디 영어, 숫자만 가능하도록
+    const idRegex = /^[a-zA-Z0-9]+$/;
+
+    exports.register = async (req, res) => {
+      const { user_id, password, nickname, address } = req.body;
+
+      if (!idRegex.test(user_id)) {
+        return res.status(400).json({ error: '아이디는 영어와 숫자만 가능합니다.' });
+      }
+
+      if (!idRegex.test(password)) {
+        return res.status(400).json({ error: '비밀번호는 영어와 숫자만 가능합니다.' });
+      }
+    };
 
     // 비밀번호를 bcrypt를 이용해 해싱합니다.
     const hashedPassword = await bcrypt.hash(password, 10);
@@ -37,8 +52,8 @@ const register = async (req, res) => {
     // 성공 응답을 보냅니다.
     res.json({ message: '회원가입에 성공하셨습니다.' });
   } catch (error) {
-    console.error(error); // 에러를 콘솔에 출력합니다.
-    res.status(500).json({ error: '서버 에러가 발생했습니다.' }); // 서버 에러 응답을 보냅니다.
+  console.error('회원가입 에러:', error);
+  res.status(500).json({ error: error.message || '서버 에러가 발생했습니다.' });
   }
 };
 

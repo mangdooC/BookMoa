@@ -55,12 +55,49 @@
 
   <div class="login-container">
     <h1>로그인</h1>
-    <form method="POST" action="/auth/login">
-      <input type="text" name="username" placeholder="아이디" required />
+    <form method="POST" form id="loginForm" action="/api/login">
+      <input type="text" name="user_id" placeholder="아이디" required id />
       <input type="password" name="password" placeholder="비밀번호" required />
       <button type="submit">로그인</button>
     </form>
   </div>
+
+<script>
+  // 로그인 후 메인 페이지로 돌아가기
+  const loginForm = document.getElementById('loginForm');
+
+  loginForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+
+    const user_id = loginForm.user_id.value;
+    const password = loginForm.password.value;
+
+    try { 
+      const res = await fetch('/api/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ user_id, password }),
+      });
+
+      const data = await res.json();
+
+      if (res.ok) {
+        alert(data.message); // "로그인에 성공하셨습니다." 
+        // 토큰 저장 (필요 시)
+        localStorage.setItem('token', data.token);
+        // 메인 페이지 이동
+        window.location.href = '/';
+      } else {
+        alert('로그인 실패: ' + (data.error || '에러'));
+      }
+    } catch (err) {
+      console.error('로그인 중 에러:', err);
+      alert('서버 에러');
+    }
+  });
+</script>
 
 </body>
 </html>

@@ -51,12 +51,15 @@
   </style>
 </head>
 <body>
-
   <div class="signup-container">
     <h1>회원가입</h1>
-    <form method="POST" action="/auth/register">
-      <input type="text" name="user_id" placeholder="아이디" required />
-      <input type="password" name="password" placeholder="비밀번호" required />
+    <form method="POST" form id="registerForm" action="/auth/register">
+
+      <input type="text" id="user_id" name="user_id" placeholder="아이디 (영어, 숫자만)" required />
+      <small id="user_id_error" style="color: red; display: none;">영어와 숫자만 입력 가능</small>
+
+      <input type="password" name="password" placeholder="비밀번호" required= />
+
       <input type="text" name="nickname" placeholder="닉네임" required />
       <script src="https://t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
       <script>
@@ -72,8 +75,61 @@
       <button type="button" onclick="openAddressSearch()">주소 검색</button>
       <br><br>
       <button type="submit">가입하기</button>
-    </form>
+      </form>
   </div>
+
+    <script>
+      // 회원가입시 id, pw 영어, 숫자만 가능하도록 
+        const userIdInput = document.getElementById('user_id');
+        const userIdError = document.getElementById('user_id_error');
+
+        userIdInput.addEventListener('input', () => {
+          const value = userIdInput.value;
+
+          // 영어 대소문자 + 숫자만 가능
+          const valid = /^[a-zA-Z0-9]*$/.test(value);
+
+          if (!valid) {
+            userIdError.style.display = 'block';
+            // 한글/특수문자 실시간으로 제거
+            userIdInput.value = value.replace(/[^a-zA-Z0-9]/g, '');
+          } else {
+            userIdError.style.display = 'none';
+          }
+        });
+
+      // 회원가입 후 메인 페이지로 돌아가기
+        const form = document.getElementById('registerForm');
+
+        form.addEventListener('submit', async (e) => {
+          e.preventDefault();
+
+          const user_id = form.user_id.value;
+          const password = form.password.value;
+          const nickname = form.nickname.value;
+          const address = form.address.value;
+
+          try {
+            const res = await fetch('/api/register', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ user_id, password, nickname, address }),
+            });
+
+            const data = await res.json();
+
+            if (res.ok) {
+              alert(data.message || '회원가입 성공!');
+              window.location.href = '/';
+            } else {
+              alert('에러: ' + (data.error || '알 수 없는 에러'));
+            }
+          } catch (err) {
+            alert('서버 에러 발생');
+            console.error(err);
+          }
+        });
+    </script>
 
 </body>
 </html>

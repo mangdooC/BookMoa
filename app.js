@@ -1,12 +1,13 @@
 const express = require('express');
 const pool = require('./db');
 require('dotenv').config();
-
-const app = express();
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
 const path = require('path');
 
+const app = express();
+
+//미들웨어
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 // 정적 파일 서빙 설정
 app.use(express.static(path.join(__dirname, 'public')));
 
@@ -38,4 +39,4 @@ app.get('/', (req, res) => {
 
 //회원가입/로그인 라우터
 const authRouter = require('./routes/auth');
-app.use('/auth', authRouter);
+app.use('/api', authRouter);
