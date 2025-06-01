@@ -3,84 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <title>마이페이지</title>
-  <style>
-    * {
-      box-sizing: border-box;
-    }
-    body {
-      display: flex;
-      margin: 0;
-      font-family: 'Arial', sans-serif;
-    }
-    .sidebar {
-      width: 250px;
-      background-color: #f5f5f5;
-      padding: 20px;
-      height: 100vh;
-      border-right: 1px solid #ccc;
-    }
-    .profile {
-      text-align: center;
-      margin-bottom: 30px;
-    }
-    .profile img {
-      width: 150px;
-      height: 150px;
-      border-radius: 50%;
-    }
-    .menu {
-      display: flex;
-      flex-direction: column;
-      gap: 15px;
-    }
-    .menu button {
-      padding: 10px;
-      border: none;
-      background-color: #ddd;
-      cursor: pointer;
-    }
-    .menu button:hover {
-      background-color: #ccc;
-    }
-    .main {
-      flex-grow: 1;
-      padding: 30px;
-    }
-    .form-group {
-      margin-bottom: 15px;
-    }
-    label {
-      display: block;
-      margin-bottom: 5px;
-    }
-    input, select {
-      width: 100%;
-      padding: 8px;
-      border: 1px solid #ccc;
-    }
-    .save-btn {
-      margin-top: 20px;
-      padding: 10px 20px;
-      background-color: #4CAF50;
-      color: white;
-      border: none;
-      cursor: pointer;
-    }
-    .save-btn:hover {
-      background-color: #45a049;
-    }
-    .section {
-      display: none;
-    }
-    .section.active {
-      display: block;
-    }
-    .library-card {
-      border: 1px solid #ccc;
-      padding: 15px;
-      margin-bottom: 10px;
-    }
-  </style>
+  <link rel="stylesheet" href="css/editInfo.css">
 </head>
 <body>
   <div class="sidebar">
@@ -178,24 +101,22 @@
   </div>
 
   <script>
-    //각 메뉴 누를 시 화면 바뀜
+    //화면 전환
     function showSection(id) {
       document.querySelectorAll('.section').forEach(sec => sec.classList.remove('active'));
       document.getElementById(id).classList.add('active');
     }
 
-    //로그아웃 버튼
+    //로그아웃
     const logoutBtn = document.getElementById('logoutBtn');
 
     if (logoutBtn) {
       logoutBtn.addEventListener('click', () => {
         localStorage.removeItem('token'); // 토큰 삭제
         alert('로그아웃 되었습니다.');
-        location.href = '/'; // 메인 페이지로 이동하거나 원래 페이지로 리다이렉트
+        location.href = '/'; 
       });
     }
-
-let checkIdTimeout;
 
     const userIdInput = document.getElementById('user_id');
     const userIdError = document.getElementById('user_id_error');
@@ -203,6 +124,7 @@ let checkIdTimeout;
     const passwordInput = document.getElementById('password');
     const nicknameInput = document.getElementById('nickname');
     const addressInput = document.getElementById('address');
+    let checkIdTimeout;
 
     userIdInput.addEventListener('input', () => {
       clearTimeout(checkIdTimeout);
@@ -224,12 +146,12 @@ let checkIdTimeout;
 
       checkIdTimeout = setTimeout(async () => {
         try {
-            const res = await fetch(`/routes/checkId?user_id=${encodeURIComponent(value)}`);
+            const res = await fetch(`/checkId?user_id=${encodeURIComponent(value)}`);
             if (!res.ok) throw new Error('서버 오류');
 
             const data = await res.json();
 
-          if (!data.available) { // 이미 있음
+          if (!data.available) { 
             userIdError.style.display = 'block';
             userIdError.textContent = '이미 존재하는 아이디입니다.';
             userIdSuccess.style.display = 'none';
@@ -246,53 +168,69 @@ let checkIdTimeout;
         }, 500);
       });
 
-      document.querySelector('.save-btn').addEventListener('click', async () => {
-        const user_id = userIdInput.value.trim();
-        const password = passwordInput.value.trim();
-        const nickname = nicknameInput.value.trim();
-        const address = addressInput.value.trim();
+    // 저장 버튼 이벤트
+    document.querySelectorAll('.save-btn').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        // 현재 활성화된 섹션이 뭔지 확인
+        const activeSection = document.querySelector('.section.active').id;
 
-        const regex = /^[a-zA-Z0-9]*$/;
-        if (!regex.test(user_id)) {
-          alert('아이디는 영어와 숫자만 가능합니다.');
-          return;
-        }
+        if (activeSection === 'info') {
+          const user_id = userIdInput.value.trim();
+          const password = passwordInput.value.trim();
+          const nickname = nicknameInput.value.trim();
+          const address = addressInput.value.trim();
 
-        // 중복 아이디면 아예 저장 못하게 막으려면 여기서도 체크
-        if (userIdError.style.display === 'block') {
-          alert('아이디 오류가 있습니다. 수정해주세요.');
-          return;
-        }
-
-        const token = localStorage.getItem('token');
-        const bodyData = { user_id, nickname, address };
-
-        if (password.length > 0) {
-          bodyData.password = password;
-        }
-
-        try {
-          const res = await fetch('/routes/editInfo', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer ${token}`
-            },
-            body: JSON.stringify(bodyData)
-          });
-
-          const data = await res.json();
-          if (res.ok) {
-            alert('정보가 수정되었습니다.');
-            location.reload();
-          } else {
-            alert(data.message || '수정 실패');
+          const regex = /^[a-zA-Z0-9]*$/;
+          if (!regex.test(user_id)) {
+            alert('아이디는 영어와 숫자만 가능합니다.');
+            return;
           }
-        } catch (err) {
-          alert('오류 발생');
-          console.error(err);
+
+          if (userIdError.style.display === 'block') {
+            alert('아이디 오류가 있습니다. 수정해주세요.');
+            return;
+          }
+
+          const token = localStorage.getItem('token');
+          const bodyData = { user_id, nickname, address };
+
+          if (password.length > 0) {
+            bodyData.password = password;
+          }
+
+          try {
+            const res = await fetch('/editInfo', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+              },
+              body: JSON.stringify(bodyData)
+            });
+
+            const data = await res.json();
+            if (res.ok) {
+              alert('정보가 수정되었습니다.');
+              location.reload();
+            } else {
+              alert(data.message || '수정 실패');
+            }
+          } catch (err) {
+            alert('오류 발생');
+            console.error(err);
+          }
+        } else if (activeSection === 'area') {
+          // 선호지역 저장 로직 (예시)
+          const region1 = document.getElementById('region1').value;
+          const region2 = document.getElementById('region2').value;
+
+          // 여기서 서버로 저장 요청 가능
+          alert(`선호지역이 저장되었습니다: ${region1}, ${region2}`);
+        } else {
+          alert('저장 기능이 준비 중입니다.');
         }
       });
+    });
   </script>
 </body>
 </html>

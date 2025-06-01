@@ -13,49 +13,38 @@
     <a href="./bookReview/bookReviewList.html">책 리뷰 게시판</a>
     <a href="./mypage/login.html" id="loginLink">로그인</a>
     <a href="./mypage/signUp.html" id="signupBtn">회원가입</a>
-    <a href="./mypage/editInfo.html" id="mypageLink" style="display:none;">마이페이지</a>
+    <a href="./mypage/editInfo.html" id="mypageLink" style="display: none;">마이페이지</a>
     <button id="logoutBtn" style="display: none; width: 100px; height: auto;" >로그아웃</button>
     </ul>
   </nav>
 
   <script>
-    // 로컬스토리지에 저장된 토큰 확인해서
-    // 토큰 있으면 로그인 링크 숨기고 마이페이지 링크 보임
-    const token = localStorage.getItem('token');
-    const logoutBtn = document.getElementById('logoutBtn');
-    const signupBtn = document.getElementById('signupBtn');
+      const token = localStorage.getItem('token');
+      const loginLink = document.getElementById('loginLink');
+      const signupBtn = document.getElementById('signupBtn');
+      const mypageLink = document.getElementById('mypageLink');
+      const logoutBtn = document.getElementById('logoutBtn');
 
-    if (token) {
-      document.getElementById('loginLink').style.display = 'none';
-      document.getElementById('mypageLink').style.display = 'inline-block';
-    } else {
-      document.getElementById('loginLink').style.display = 'inline-block';
-      document.getElementById('mypageLink').style.display = 'none';
-    }
-
-    //로그인 상태가 아닐 때는 안보이게 함
-    if (token && logoutBtn) {
-        logoutBtn.style.display = 'inline-block'; // 보여주기
+      if (token) {
+        // 로그인 된 상태
+        loginLink.style.display = 'none';
+        signupBtn.style.display = 'none';
+        mypageLink.style.display = 'inline-block';
+        logoutBtn.style.display = 'inline-block';
+      } else {
+        // 로그인 안 된 상태
+        loginLink.style.display = 'inline-block';
+        signupBtn.style.display = 'inline-block';
+        mypageLink.style.display = 'none';
+        logoutBtn.style.display = 'none';
       }
 
-    // 로그인 상태면 로그아웃 버튼 보이고, 회원가입 버튼 숨김
-    if (token) {
-      if (logoutBtn) logoutBtn.style.display = 'inline-block';
-      if (signupBtn) signupBtn.style.display = 'none';
-    } else {
-      // 로그인 안 한 상태면 로그아웃 숨기고 회원가입 보여줌
-      if (logoutBtn) logoutBtn.style.display = 'none';
-      if (signupBtn) signupBtn.style.display = 'inline-block';
-    }
-
-    // 로그아웃 동작
-    if (logoutBtn) {
-        logoutBtn.addEventListener('click', () => {
-          localStorage.removeItem('token'); // 토큰 삭제
-          alert('로그아웃 되었습니다');
-          location.reload(); // 새로고침
-        });
-      }
+      // 로그아웃 버튼 클릭 시
+      logoutBtn.addEventListener('click', () => {
+        localStorage.removeItem('token');
+        alert('로그아웃 되었습니다');
+        location.reload(); // 새로고침해서 상태 반영
+      });
 </script>
 
 </body>

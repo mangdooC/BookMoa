@@ -22,6 +22,10 @@ app.listen(PORT, () => {
   console.log(` 서버가 포트 ${PORT}에서 실행 중`);
 });
 
+app.get('/', (req, res) => {
+  res.send('책모아 서버에 오신 것을 환영합니다!');
+});
+
 //post 라우터
 const postsRouter = require('./routes/posts');
 
@@ -32,10 +36,6 @@ app.use('/posts', postsRouter);
 //comment 라우터
 const commentsRouter = require('./routes/comments');
 app.use('/comments', commentsRouter);
-
-app.get('/', (req, res) => {
-  res.send('책모아 서버에 오신 것을 환영합니다!');
-});
 
 //회원가입/로그인 라우터
 const authRouter = require('./routes/auth');
