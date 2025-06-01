@@ -75,10 +75,6 @@ function fetchLibraryData(pageNo) {
     .then(response => response.json())
     .then(data => {
       const libs = data.response?.libs;
-      if (!libs) {
-        alert("API 응답이 없습니다. 키가 유효한지 확인하세요.");
-        return;
-      }
 
       const tbody = document.getElementById('libraryBody');
       tbody.innerHTML = '';
