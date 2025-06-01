@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <title>회원가입 페이지</title>
   <link rel="stylesheet" href="/mypage/css/signUp.css">
+  <script src="https://t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
 </head>
 <body>
   <div class="signup-container">
@@ -18,9 +19,18 @@
       <input type="text" name="nickname" placeholder="닉네임" required />
 
       <input type="text" id="address" name="address" placeholder="주소를 입력하세요" />
-      <button type="button" onclick="openAddressSearch()">주소 검색</button>
-      <br><br>
+      <button onclick="openAddressSearch()">주소 검색</button>
 
+      <script>
+        function openAddressSearch() {
+          new daum.Postcode({
+            oncomplete: function(data) {
+              console.log(data); // 도로명 주소 등 찍히는 거
+            }
+          }).open();
+        }
+      </script>
+      <br><br>
       <button type="submit">가입하기</button>
     </form>
   </div>
