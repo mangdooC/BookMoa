@@ -11,46 +11,50 @@ const register = async (req, res) => {
   // 요청으로부터 사용자 정보를 구조 분해 할당으로 받습니다.
   const { user_id, password, nickname, address } = req.body;
 
-if (!idRegex.test(user_id)) {
-    return res.status(400).json({ error: '아이디는 영어와 숫자만 가능합니다.' });
-  }
+    const idRegex = /^[a-zA-Z0-9]{4,12}$/;
 
-  if (!idRegex.test(password)) {
-    return res.status(400).json({ error: '비밀번호는 영어와 숫자만 가능합니다.' });
-  }
+    if (!idRegex.test(user_id)) {
+        return res.status(400).json({ error: '아이디는 영어와 숫자만 가능합니다.' });
+      }
 
-  try {
-    // user_id 중복 체크
-    const [userIdRows] = await pool.query('SELECT user_id FROM user WHERE user_id = ? AND is_deleted = 0', [user_id]);
-    if (userIdRows.length > 0) {
-      return res.status(400).json({ error: '이미 존재하는 아이디입니다.' });
-    }
+      if (!idRegex.test(password)) {
+        return res.status(400).json({ error: '비밀번호는 영어와 숫자만 가능합니다.' });
+      }
 
-    // nickname 중복 체크
-    const [nicknameRows] = await pool.query('SELECT nickname FROM user WHERE nickname = ?', [nickname]);
-    if (nicknameRows.length > 0) {
-      return res.status(400).json({ error: '이미 존재하는 닉네임입니다.' });
-    }
+      try {
+        // user_id 중복 체크
+        const [userIdRows] = await pool.query('SELECT user_id FROM user WHERE user_id = ? AND is_deleted = 0', [user_id]);
+        if (userIdRows.length > 0) {
+          return res.status(400).json({ error: '이미 존재하는 아이디입니다.' });
+        }
 
-    // 비밀번호 해싱
-    const hashedPassword = await bcrypt.hash(password, 10);
+        // nickname 중복 체크
+        const [nicknameRows] = await pool.query('SELECT nickname FROM user WHERE nickname = ?', [nickname]);
+        if (nicknameRows.length > 0) {
+          return res.status(400).json({ error: '이미 존재하는 닉네임입니다.' });
+        }
 
-    // DB에 저장
-    await pool.query(
-      'INSERT INTO user (user_id, password, nickname, address) VALUES (?, ?, ?, ?)',
-      [user_id, hashedPassword, nickname, address]
-    );
+        // 비밀번호 해싱
+        const hashedPassword = await bcrypt.hash(password, 10);
 
-    res.json({ message: '회원가입에 성공하셨습니다.' });
+        // DB에 저장
+        await pool.query(
+          'INSERT INTO user (user_id, password, nickname, address) VALUES (?, ?, ?, ?)',
+          [user_id, hashedPassword, nickname, address]
+        );
 
-  } catch (error) {
-    console.error('회원가입 에러:', error);
-    res.status(500).json({ error: error.message || '서버 에러가 발생했습니다.' });
-  }
-};
+        res.json({ message: '회원가입에 성공하셨습니다.' });
 
+      } catch (error) {
+        console.error('회원가입 에러:', error);
+        res.status(500).json({ error: error.message || '서버 에러가 발생했습니다.' });
+      }
+    };
+
+//로그인 기능을 처리하는 함수입니다
 const login = async (req, res) => {
   const { user_id, password } = req.body;
+  console.log('✅ 로그인 요청 body:', req.body);
 
   if (!user_id) {
     return res.status(400).json({ error: '아이디를 입력하세요.' });
@@ -58,27 +62,57 @@ const login = async (req, res) => {
 
   try {
     const [rows] = await pool.query('SELECT * FROM user WHERE user_id = ?', [user_id]);
+    console.log('✅ 쿼리 결과:', rows);
 
     if (rows.length === 0) {
       return res.status(400).json({ error: '등록된 아이디가 없습니다.' });
     }
 
     const user = rows[0];
+    console.log('✅ 유저 정보:', user);
 
     const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch) {
-      return res.status(400).json({ error: '비밀번호가 일치하지 않습니다.' });
-    }
+    console.log('✅ 비밀번호 일치 여부:', isMatch);
 
     const token = jwt.sign({ user_id: user.user_id }, JWT_SECRET, { expiresIn: '1d' });
 
     res.json({ message: '로그인에 성공하셨습니다.', token });
 
   } catch (error) {
-    console.error('로그인 에러:', error);
+    console.error('❌ 로그인 에러:', error);
     res.status(500).json({ error: '서버 에러가 발생했습니다.' });
   }
 };
+// const login = async (req, res) => {
+//   const { user_id, password } = req.body;
+
+//   if (!user_id) {
+//     return res.status(400).json({ error: '아이디를 입력하세요.' });
+//   }
+
+//   try {
+//     const [rows] = await pool.query('SELECT * FROM user WHERE user_id = ?', [user_id]);
+
+//     if (rows.length === 0) {
+//       return res.status(400).json({ error: '등록된 아이디가 없습니다.' });
+//     }
+
+//     const user = rows[0];
+
+//     const isMatch = await bcrypt.compare(password, user.password);
+//     if (!isMatch) {
+//       return res.status(400).json({ error: '비밀번호가 일치하지 않습니다.' });
+//     }
+
+//     const token = jwt.sign({ user_id: user.user_id }, JWT_SECRET, { expiresIn: '1d' });
+
+//     res.json({ message: '로그인에 성공하셨습니다.', token });
+
+//   } catch (error) {
+//     console.error('로그인 에러:', error);
+//     res.status(500).json({ error: '서버 에러가 발생했습니다.' });
+//   }
+// };
 
 // register 함수와 login 함수를 외부에서 사용할 수 있도록 내보냅니다.
 module.exports = { register, login };

@@ -106,7 +106,6 @@
       <input type="text" id="user_id">
         <span id="user_id_error" style="display:none; color:red;">아이디는 영어와 숫자만 가능합니다.</span>
         <span id="user_id_success" style="display:none; color:green;"></span>
-        <button id="checkIdBtn" type="button">중복검사</button>
       </div>
 
       <div class="form-group">
@@ -201,6 +200,9 @@ let checkIdTimeout;
     const userIdInput = document.getElementById('user_id');
     const userIdError = document.getElementById('user_id_error');
     const userIdSuccess = document.getElementById('user_id_success');
+    const passwordInput = document.getElementById('password');
+    const nicknameInput = document.getElementById('nickname');
+    const addressInput = document.getElementById('address');
 
     userIdInput.addEventListener('input', () => {
       clearTimeout(checkIdTimeout);
@@ -222,20 +224,20 @@ let checkIdTimeout;
 
       checkIdTimeout = setTimeout(async () => {
         try {
-            const res = await fetch(`/api/checkId?user_id=${encodeURIComponent(value)}`);
+            const res = await fetch(`/routes/checkId?user_id=${encodeURIComponent(value)}`);
             if (!res.ok) throw new Error('서버 오류');
 
             const data = await res.json();
 
-            if (data.exists) {
-              userIdError.style.display = 'block';
-              userIdError.textContent = '이미 존재하는 아이디입니다.';
-              userIdSuccess.style.display = 'none';
-            } else {
-              userIdError.style.display = 'none';
-              userIdSuccess.style.display = 'block';
-              userIdSuccess.textContent = '사용 가능한 아이디입니다.';
-            }
+          if (!data.available) { // 이미 있음
+            userIdError.style.display = 'block';
+            userIdError.textContent = '이미 존재하는 아이디입니다.';
+            userIdSuccess.style.display = 'none';
+          } else {
+            userIdError.style.display = 'none';
+            userIdSuccess.style.display = 'block';
+            userIdSuccess.textContent = '사용 가능한 아이디입니다.';
+          }
           } catch (err) {
             userIdError.style.display = 'block';
             userIdError.textContent = '서버 오류 발생';
@@ -270,7 +272,7 @@ let checkIdTimeout;
         }
 
         try {
-          const res = await fetch('api/editInfo', {
+          const res = await fetch('/routes/editInfo', {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',

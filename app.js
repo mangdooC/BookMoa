@@ -39,12 +39,12 @@ app.get('/', (req, res) => {
 
 //회원가입/로그인 라우터
 const authRouter = require('./routes/auth');
-app.use('/api', authRouter);
+app.use('/auth', authRouter);
 
 //마이페이지 라우터
 const editInfoRouter = require('./routes/editInfo');
-app.use('/api', editInfoRouter);
+app.use('/editInfo', editInfoRouter);
 
-//사용자 중복 체크 라우터
-const checkIdRouter = require('./api/checkId');
-app.use('/api/checkId', checkIdRouter);
+//중복아이디 체크
+const checkIdRouter = require('./routes/checkId');
+app.use('/checkId', checkIdRouter);

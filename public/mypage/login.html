@@ -55,8 +55,8 @@
 
   <div class="login-container">
     <h1>로그인</h1>
-    <form method="POST" form id="loginForm" action="/api/login">
-      <input type="text" name="user_id" placeholder="아이디" required id />
+    <form method="POST" id="loginForm"  action="/auth/login">
+      <input type="text" name="user_id" placeholder="아이디" required id="user_id" />
       <input type="password" name="password" placeholder="비밀번호" required />
       <button type="submit">로그인</button>
     </form>
@@ -73,7 +73,7 @@
     const password = loginForm.password.value;
 
     try { 
-      const res = await fetch('/api/login', {
+      const res = await fetch('/auth/login', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -85,9 +85,7 @@
 
       if (res.ok) {
         alert(data.message); // "로그인에 성공하셨습니다." 
-        // 토큰 저장 (필요 시)
         localStorage.setItem('token', data.token);
-        // 메인 페이지 이동
         window.location.href = '/';
       } else {
         alert('로그인 실패: ' + (data.error || '에러'));
@@ -99,10 +97,8 @@
   });
 
   //로그인 시에만 마이페이지 보이도록 토큰
-  localStorage.setItem('token', data.token); // 토큰 저장
-
-  localStorage.removeItem('token');
-  location.reload(); // 페이지 새로고침해서 링크 상태 바뀌게
+    localStorage.setItem('token', data.token);
+    window.location.href = '/'; // 메인페이지로 이동
 </script>
 
 </body>
