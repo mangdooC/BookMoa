@@ -3,6 +3,6 @@ const router = express.Router();
 const { editUserInfo } = require('../controllers/editInfoController');
 const authMiddleware = require('../middlewares/authMiddleware');
 
-router.put('/edit', authMiddleware, editUserInfo);
+router.put('/me', authMiddleware, editUserInfo);
 
 module.exports = router;

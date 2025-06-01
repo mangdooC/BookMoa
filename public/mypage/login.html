@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <title>로그인 페이지</title>
-  <link rel="stylesheet" href="/css/login.css">
+  <link rel="stylesheet" href="../mypage/css/login.css">
 </head>
 <body>
 
@@ -27,7 +27,7 @@
     const password = loginForm.password.value;
 
     try { 
-      const res = await fetch('/auth/login', {
+      const res = await fetch('/api/auth/login', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

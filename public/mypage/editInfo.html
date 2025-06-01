@@ -1,236 +1,128 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-  <meta charset="UTF-8">
-  <title>마이페이지</title>
-  <link rel="stylesheet" href="css/editInfo.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>마이 페이지</title>
+  <link rel="stylesheet" href="../mypage/css/editInfo.css" />
+  <script src="https://t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
+  <script src="myPageJS/address.js"></script>
+  <script src="myPageJS/menu.js"></script>
+  <script src="myPageJS/editinfo.js"></script>
+  <script src="myPageJS/favlib.js"></script>
+  <script src="myPageJS/usercontent.js"></script>
 </head>
 <body>
   <div class="sidebar">
     <div class="profile">
-      <img src="images/default.jpg" alt="프로필 이미지">
-      <p>닉네임</p>
+      <img src="images/default.jpg" alt="프로필 이미지" />
+      <p id="nicknameDisplay">닉네임</p>
     </div>
     <div class="menu">
       <button onclick="showSection('info')">내 정보 수정</button>
-      <button onclick="showSection('area')">선호지역 설정</button>
+      <button onclick="showSection('preferredAreaSection')">선호지역</button>
       <button onclick="showSection('favorites')">즐겨찾는 도서관</button>
-      <button onclick="showSection('posts')">작성한 글</button>
-      <button id="logoutBtn" style="width: 100px; height: auto;">로그아웃</button>
+      <button onclick="showSection('posts')">작성한 글/댓글</button>
+      <button id="logoutBtn">로그아웃</button>
     </div>
   </div>
 
   <div class="main">
-    <div id="info" class="section active">
+    <!-- 내 정보 수정 -->
+    <section id="info" class="section active">
       <h2>내 정보 수정</h2>
 
       <div class="form-group">
-      <label for="user_id">아이디</label>
-      <input type="text" id="user_id">
-        <span id="user_id_error" style="display:none; color:red;">아이디는 영어와 숫자만 가능합니다.</span>
-        <span id="user_id_success" style="display:none; color:green;"></span>
+        <label for="user_id">아이디</label>
+        <input type="text" id="user_id" />
+        <span id="user_id_error" class="error" style="display:none;"></span>
+        <span id="user_id_success" class="success" style="display:none;"></span>
       </div>
 
       <div class="form-group">
         <label for="password">비밀번호</label>
-        <input type="password" id="password">
+        <input type="password" id="password" />
       </div>
 
       <div class="form-group">
         <label for="nickname">닉네임</label>
-        <input type="text" id="nickname">
+        <input type="text" id="nickname" />
       </div>
 
       <div class="form-group">
         <label for="address">주소</label>
-        <input type="text" id="address">
+        <div class="address-search-wrapper">
+          <input type="text" id="address" name="address" placeholder="주소를 입력하세요" readonly />
+          <button type="button" onclick="searchMainAddress()">주소 검색</button>
+        </div>
       </div>
 
-      <button class="save-btn">저장</button>
-    </div>
+      <button class="save-btn" id="saveInfoBtn">저장</button>
+    </section>
 
-    <div id="area" class="section">
-      <h2>선호지역 설정</h2>
+    <!-- 선호지역  -->
+    <section id="preferredAreaSection" class="section" style="display:none;">
+      <h2>선호지역</h2>
       <div class="form-group">
-        <label for="region1">선호지역 1</label>
-        <select id="region1">
-          <option value="서울">서울</option>
-          <option value="부산">부산</option>
-          <!-- 더 추가 가능 -->
-        </select>
+        <label for="preferredAddress1">선호지역 1</label>
+        <div class="address-search-wrapper">
+          <input type="text" id="preferredAddress1" name="preferredAddress1" placeholder="주소를 입력하세요" readonly />
+          <button type="button" onclick="searchPreferredAddress('preferredAddress1')">주소 검색</button>
+        </div>
+        <p id="selectedAddress_preferredAddress1" style="min-height: 1.5em;"></p>
       </div>
-      <div class="form-group">
-        <label for="region2">선호지역 2</label>
-        <select id="region2">
-          <option value="서울">서울</option>
-          <option value="부산">부산</option>
-          <!-- 더 추가 가능 -->
-        </select>
-      </div>
-      <button class="save-btn">저장</button>
-    </div>
 
-    <div id="favorites" class="section">
+      <div class="form-group">
+        <label for="preferredAddress2">선호지역 2</label>
+        <div class="address-search-wrapper">
+          <input type="text" id="preferredAddress2" name="preferredAddress2" placeholder="주소를 입력하세요" readonly />
+          <button type="button" onclick="searchPreferredAddress('preferredAddress2')">주소 검색</button>
+        </div>
+        <p id="selectedAddress_preferredAddress2" style="min-height: 1.5em;"></p>
+      </div>
+
+      <div class="form-group">
+        <label for="preferredAddress3">선호지역 3</label>
+        <div class="address-search-wrapper">
+          <input type="text" id="preferredAddress3" name="preferredAddress3" placeholder="주소를 입력하세요" readonly />
+          <button type="button" onclick="searchPreferredAddress('preferredAddress3')">주소 검색</button>
+        </div>
+          <p id="selectedAddress_preferredAddress3" style="min-height: 1.5em;"></p>
+        </div>
+        <button class="save-btn" onclick="savePreferredAddresses()">저장</button>
+      </section>
+    </section>
+
+    <!-- 즐겨찾는 도서관 -->
+    <section id="favorites" class="section" style="display:none;">
       <h2>즐겨찾는 도서관</h2>
-      <div class="library-card">
-        <h3>서울시립중앙도서관</h3>
-        <p>서울특별시 종로구 종로1가 1번지</p>
-        <a href="library1.html">상세보기</a>
-      </div>
-      <div class="library-card">
-        <h3>마포구립도서관</h3>
-        <p>서울특별시 마포구 망원동 123-45</p>
-        <a href="library2.html">상세보기</a>
-      </div>
-      <div class="library-card">
-        <h3>노원정보도서관</h3>
-        <p>서울특별시 노원구 상계동 543-2</p>
-        <a href="library3.html">상세보기</a>
-      </div>
-      <div class="library-card">
-        <h3>서초구립반포도서관</h3>
-        <p>서울특별시 서초구 반포대로 222</p>
-        <a href="library4.html">상세보기</a>
-      </div>
-    </div>
+      <ul id="favoritesList"></ul>
+    </section>
 
-    <div id="posts" class="section">
+    <!-- 작성한 글 -->
+    <section id="posts" class="section" style="display: none;">
       <h2>작성한 글</h2>
-      <p>내가 작성한 게시글 목록이 여기에 표시됩니다.</p>
-    </div>
+
+      <div class="post-category">
+        <h3>📚 도서 리뷰</h3>
+        <ul id="bookReviewList"></ul>
+      </div>
+
+      <div class="post-category">
+        <h3>🏛️ 도서관 리뷰</h3>
+        <ul id="libraryReviewList"></ul>
+      </div>
+
+      <div class="post-category">
+        <h3>🗣️ 커뮤니티 게시글</h3>
+        <ul id="communityPostList"></ul>
+      </div>
+
+      <div class="post-category">
+        <h3>💬 커뮤니티 댓글</h3>
+        <ul id="communityCommentList"></ul>
+      </div>
+    </section>
   </div>
-
-  <script>
-    //화면 전환
-    function showSection(id) {
-      document.querySelectorAll('.section').forEach(sec => sec.classList.remove('active'));
-      document.getElementById(id).classList.add('active');
-    }
-
-    //로그아웃
-    const logoutBtn = document.getElementById('logoutBtn');
-
-    if (logoutBtn) {
-      logoutBtn.addEventListener('click', () => {
-        localStorage.removeItem('token'); // 토큰 삭제
-        alert('로그아웃 되었습니다.');
-        location.href = '/'; 
-      });
-    }
-
-    const userIdInput = document.getElementById('user_id');
-    const userIdError = document.getElementById('user_id_error');
-    const userIdSuccess = document.getElementById('user_id_success');
-    const passwordInput = document.getElementById('password');
-    const nicknameInput = document.getElementById('nickname');
-    const addressInput = document.getElementById('address');
-    let checkIdTimeout;
-
-    userIdInput.addEventListener('input', () => {
-      clearTimeout(checkIdTimeout);
-      const value = userIdInput.value.trim();
-      const regex = /^[a-zA-Z0-9]*$/;
-
-      if (value === '') {
-        userIdError.style.display = 'none';
-        userIdSuccess.style.display = 'none';
-        return;
-      }
-
-      if (!regex.test(value)) {
-        userIdError.style.display = 'block';
-        userIdError.textContent = '아이디는 영어와 숫자만 가능합니다.';
-        userIdSuccess.style.display = 'none';
-        return;
-      }
-
-      checkIdTimeout = setTimeout(async () => {
-        try {
-            const res = await fetch(`/checkId?user_id=${encodeURIComponent(value)}`);
-            if (!res.ok) throw new Error('서버 오류');
-
-            const data = await res.json();
-
-          if (!data.available) { 
-            userIdError.style.display = 'block';
-            userIdError.textContent = '이미 존재하는 아이디입니다.';
-            userIdSuccess.style.display = 'none';
-          } else {
-            userIdError.style.display = 'none';
-            userIdSuccess.style.display = 'block';
-            userIdSuccess.textContent = '사용 가능한 아이디입니다.';
-          }
-          } catch (err) {
-            userIdError.style.display = 'block';
-            userIdError.textContent = '서버 오류 발생';
-            userIdSuccess.style.display = 'none';
-          }
-        }, 500);
-      });
-
-    // 저장 버튼 이벤트
-    document.querySelectorAll('.save-btn').forEach(btn => {
-      btn.addEventListener('click', async () => {
-        // 현재 활성화된 섹션이 뭔지 확인
-        const activeSection = document.querySelector('.section.active').id;
-
-        if (activeSection === 'info') {
-          const user_id = userIdInput.value.trim();
-          const password = passwordInput.value.trim();
-          const nickname = nicknameInput.value.trim();
-          const address = addressInput.value.trim();
-
-          const regex = /^[a-zA-Z0-9]*$/;
-          if (!regex.test(user_id)) {
-            alert('아이디는 영어와 숫자만 가능합니다.');
-            return;
-          }
-
-          if (userIdError.style.display === 'block') {
-            alert('아이디 오류가 있습니다. 수정해주세요.');
-            return;
-          }
-
-          const token = localStorage.getItem('token');
-          const bodyData = { user_id, nickname, address };
-
-          if (password.length > 0) {
-            bodyData.password = password;
-          }
-
-          try {
-            const res = await fetch('/editInfo', {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${token}`
-              },
-              body: JSON.stringify(bodyData)
-            });
-
-            const data = await res.json();
-            if (res.ok) {
-              alert('정보가 수정되었습니다.');
-              location.reload();
-            } else {
-              alert(data.message || '수정 실패');
-            }
-          } catch (err) {
-            alert('오류 발생');
-            console.error(err);
-          }
-        } else if (activeSection === 'area') {
-          // 선호지역 저장 로직 (예시)
-          const region1 = document.getElementById('region1').value;
-          const region2 = document.getElementById('region2').value;
-
-          // 여기서 서버로 저장 요청 가능
-          alert(`선호지역이 저장되었습니다: ${region1}, ${region2}`);
-        } else {
-          alert('저장 기능이 준비 중입니다.');
-        }
-      });
-    });
-  </script>
 </body>
 </html>

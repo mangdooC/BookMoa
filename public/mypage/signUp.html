@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <title>회원가입 페이지</title>
-  <link rel="stylesheet" href="/css/signUp.css">
+  <link rel="stylesheet" href="../mypage/css/signUp.css">
 </head>
 <body>
   <div class="signup-container">
@@ -70,7 +70,7 @@
           }
 
           try {
-            const res = await fetch('/auth/register', {
+            const res = await fetch('/api/auth/register', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({ user_id, password, nickname, address }),

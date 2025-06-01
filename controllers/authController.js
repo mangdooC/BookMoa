@@ -6,11 +6,12 @@ require('dotenv').config(); // .env 파일에 저장된 환경변수를 불러�
 const JWT_SECRET = process.env.JWT_SECRET; // 환경변수에서 JWT 비밀 키를 가져옵니다.
 
 // 회원가입
-const register = async (req, res) => {
-  // 요청으로부터 사용자 정보를 구조 분해 할당으로 받습니다.
-  const { user_id, password, nickname, address } = req.body;
 
-    const idRegex = /^[a-zA-Z0-9]{4,12}$/;
+const idRegex = /^[a-zA-Z0-9]{4,12}$/;
+const passwordRegex = /^[a-zA-Z0-9]{4,12}$/;
+
+const register = async (req, res) => {
+  const { user_id, password, nickname, address } = req.body;
 
       if (!idRegex.test(user_id)) {
         return res.status(400).json({ error: '아이디는 영어와 숫자 4~12자만 가능합니다.' });
@@ -55,9 +56,9 @@ const register = async (req, res) => {
     };
 
 //로그인
-const login = async (req, res) => {
-  const { user_id, password } = req.body;
 
+const login = async (req, res) => {
+const { user_id, password } = req.body;
 
   if (!user_id) {
     return res.status(400).json({ error: '아이디를 입력하세요.' });
