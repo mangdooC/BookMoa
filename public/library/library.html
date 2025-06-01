@@ -111,8 +111,10 @@ function fetchLibraryData(pageNo) {
 }
 
 function nextPage() {
+  if (currentPage < pageSize) {
   currentPage++;
   fetchLibraryData(currentPage);
+  }
 }
 
 function prevPage() {
