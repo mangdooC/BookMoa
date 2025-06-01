@@ -12,9 +12,36 @@
     <a href="./community/communityList.html">커뮤니티 게시판</a>
     <a href="./bookReview/bookReviewList.html">책 리뷰 게시판</a>
     <a href="./library/library.html">도서관 정보 보기</a>
-    <a href="login.html">로그인</a>
-    <a href="signUp.html">회원가입</a>
+    <a href="./mypage/login.html" id="loginLink">로그인</a>
+    <a href="./mypage/signUp.html" id="signupBtn">회원가입</a>
+    <a href="./mypage/editInfo.html" id="mypageLink">마이페이지</a>
+    <button id="logoutBtn" style="display: none; width: 100px; height: auto;" >로그아웃</button>
     </ul>
   </nav>
+
+  <script>
+      const token = localStorage.getItem('token');
+      const loginLink = document.getElementById('loginLink');
+      const signupBtn = document.getElementById('signupBtn');
+      const mypageLink = document.getElementById('mypageLink');
+      const logoutBtn = document.getElementById('logoutBtn');
+
+    // 로그인 안하고 마이 페이지 접근 시 로그인 페이지로 이동  
+    mypageLink.addEventListener('click', (e) => {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        e.preventDefault(); // 링크 기본 동작 막기
+        alert('로그인이 필요합니다!');
+        window.location.href = './mypage/login.html'; // 로그인 페이지로 이동
+      }
+    });
+
+      // 로그아웃 버튼 클릭 시
+      logoutBtn.addEventListener('click', () => {
+        localStorage.removeItem('token');
+        alert('로그아웃 되었습니다');
+        location.reload(); // 새로고침해서 상태 반영
+      });
+</script>
 </body>
 </html>

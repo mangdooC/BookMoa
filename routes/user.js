@@ -1,11 +1,14 @@
 const express = require('express');
 const router = express.Router();
-const authController = require('../controllers/authController');
+const authMiddleware = require('../middlewares/authMiddleware'); // 토큰 검증 미들웨어
+const { getUserInfo, updatePreferredArea, getPreferredArea } = require('../controllers/userController');
 
-// 회원가입 처리
-router.post('/register', authController.register);
+router.get('/me', authMiddleware, getUserInfo);
+router.patch('/preferred-area', authMiddleware, updatePreferredArea);
+router.get('/preferred-area', authMiddleware, getPreferredArea);
 
-// 로그인 처리
-router.post('/login', authController.login);
+router.get('/mypage', authMiddleware, (req, res) => {
+  res.send(`환영합니다, 사용자 ${req.user_id}님!`);
+});
 
 module.exports = router;

@@ -1,179 +1,128 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-  <meta charset="UTF-8">
-  <title>마이페이지</title>
-  <style>
-    * {
-      box-sizing: border-box;
-    }
-    body {
-      display: flex;
-      margin: 0;
-      font-family: 'Arial', sans-serif;
-    }
-    .sidebar {
-      width: 250px;
-      background-color: #f5f5f5;
-      padding: 20px;
-      height: 100vh;
-      border-right: 1px solid #ccc;
-    }
-    .profile {
-      text-align: center;
-      margin-bottom: 30px;
-    }
-    .profile img {
-      width: 150px;
-      height: 150px;
-      border-radius: 50%;
-    }
-    .menu {
-      display: flex;
-      flex-direction: column;
-      gap: 15px;
-    }
-    .menu button {
-      padding: 10px;
-      border: none;
-      background-color: #ddd;
-      cursor: pointer;
-    }
-    .menu button:hover {
-      background-color: #ccc;
-    }
-    .main {
-      flex-grow: 1;
-      padding: 30px;
-    }
-    .form-group {
-      margin-bottom: 15px;
-    }
-    label {
-      display: block;
-      margin-bottom: 5px;
-    }
-    input, select {
-      width: 100%;
-      padding: 8px;
-      border: 1px solid #ccc;
-    }
-    .save-btn {
-      margin-top: 20px;
-      padding: 10px 20px;
-      background-color: #4CAF50;
-      color: white;
-      border: none;
-      cursor: pointer;
-    }
-    .save-btn:hover {
-      background-color: #45a049;
-    }
-    .section {
-      display: none;
-    }
-    .section.active {
-      display: block;
-    }
-    .library-card {
-      border: 1px solid #ccc;
-      padding: 15px;
-      margin-bottom: 10px;
-    }
-  </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>마이 페이지</title>
+  <link rel="stylesheet" href="/mypage/css/editInfo.css" />
+  <script src="https://t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
+  <script src="myPageJS/address.js"></script>
+  <script src="myPageJS/menu.js"></script>
+  <script src="myPageJS/editinfo.js"></script>
+  <script src="myPageJS/favlib.js"></script>
+  <script src="myPageJS/usercontent.js"></script>
 </head>
 <body>
   <div class="sidebar">
     <div class="profile">
-      <img src="images/default.jpg" alt="프로필 이미지">
-      <p>닉네임</p>
+      <img src="images/default.jpg" alt="프로필 이미지" />
+      <p id="nicknameDisplay">닉네임</p>
     </div>
     <div class="menu">
       <button onclick="showSection('info')">내 정보 수정</button>
-      <button onclick="showSection('area')">선호지역 설정</button>
+      <button onclick="showSection('preferredAreaSection')">선호지역</button>
       <button onclick="showSection('favorites')">즐겨찾는 도서관</button>
-      <button onclick="showSection('posts')">작성한 글</button>
+      <button onclick="showSection('posts')">작성한 글/댓글</button>
+      <button id="logoutBtn">로그아웃</button>
     </div>
   </div>
 
   <div class="main">
-    <div id="info" class="section active">
+    <!-- 내 정보 수정 -->
+    <section id="info" class="section active">
       <h2>내 정보 수정</h2>
+
       <div class="form-group">
-        <label for="email">이메일 (변경불가)</label>
-        <input type="email" id="email" value="user@example.com" disabled>
+        <label for="user_id">아이디</label>
+        <input type="text" id="user_id" />
+        <span id="user_id_error" class="error" style="display:none;"></span>
+        <span id="user_id_success" class="success" style="display:none;"></span>
       </div>
+
       <div class="form-group">
         <label for="password">비밀번호</label>
-        <input type="password" id="password">
+        <input type="password" id="password" />
       </div>
+
       <div class="form-group">
         <label for="nickname">닉네임</label>
-        <input type="text" id="nickname">
+        <input type="text" id="nickname" />
       </div>
+
       <div class="form-group">
         <label for="address">주소</label>
-        <input type="text" id="address">
+        <div class="address-search-wrapper">
+          <input type="text" id="address" name="address" placeholder="주소를 입력하세요" readonly />
+          <button type="button" onclick="searchMainAddress()">주소 검색</button>
+        </div>
       </div>
-      <button class="save-btn">저장</button>
-    </div>
 
-    <div id="area" class="section">
-      <h2>선호지역 설정</h2>
-      <div class="form-group">
-        <label for="region1">선호지역 1</label>
-        <select id="region1">
-          <option value="서울">서울</option>
-          <option value="부산">부산</option>
-          <!-- 더 추가 가능 -->
-        </select>
-      </div>
-      <div class="form-group">
-        <label for="region2">선호지역 2</label>
-        <select id="region2">
-          <option value="서울">서울</option>
-          <option value="부산">부산</option>
-          <!-- 더 추가 가능 -->
-        </select>
-      </div>
-      <button class="save-btn">저장</button>
-    </div>
+      <button class="save-btn" id="saveInfoBtn">저장</button>
+    </section>
 
-    <div id="favorites" class="section">
+    <!-- 선호지역  -->
+    <section id="preferredAreaSection" class="section" style="display:none;">
+      <h2>선호지역</h2>
+      <div class="form-group">
+        <label for="preferredAddress1">선호지역 1</label>
+        <div class="address-search-wrapper">
+          <input type="text" id="preferredAddress1" name="preferredAddress1" placeholder="주소를 입력하세요" readonly />
+          <button type="button" onclick="searchPreferredAddress('preferredAddress1')">주소 검색</button>
+        </div>
+        <p id="selectedAddress_preferredAddress1" style="min-height: 1.5em;"></p>
+      </div>
+
+      <div class="form-group">
+        <label for="preferredAddress2">선호지역 2</label>
+        <div class="address-search-wrapper">
+          <input type="text" id="preferredAddress2" name="preferredAddress2" placeholder="주소를 입력하세요" readonly />
+          <button type="button" onclick="searchPreferredAddress('preferredAddress2')">주소 검색</button>
+        </div>
+        <p id="selectedAddress_preferredAddress2" style="min-height: 1.5em;"></p>
+      </div>
+
+      <div class="form-group">
+        <label for="preferredAddress3">선호지역 3</label>
+        <div class="address-search-wrapper">
+          <input type="text" id="preferredAddress3" name="preferredAddress3" placeholder="주소를 입력하세요" readonly />
+          <button type="button" onclick="searchPreferredAddress('preferredAddress3')">주소 검색</button>
+        </div>
+          <p id="selectedAddress_preferredAddress3" style="min-height: 1.5em;"></p>
+        </div>
+        <button class="save-btn" onclick="savePreferredAddresses()">저장</button>
+      </section>
+    </section>
+
+    <!-- 즐겨찾는 도서관 -->
+    <section id="favorites" class="section" style="display:none;">
       <h2>즐겨찾는 도서관</h2>
-      <div class="library-card">
-        <h3>서울시립중앙도서관</h3>
-        <p>서울특별시 종로구 종로1가 1번지</p>
-        <a href="library1.html">상세보기</a>
-      </div>
-      <div class="library-card">
-        <h3>마포구립도서관</h3>
-        <p>서울특별시 마포구 망원동 123-45</p>
-        <a href="library2.html">상세보기</a>
-      </div>
-      <div class="library-card">
-        <h3>노원정보도서관</h3>
-        <p>서울특별시 노원구 상계동 543-2</p>
-        <a href="library3.html">상세보기</a>
-      </div>
-      <div class="library-card">
-        <h3>서초구립반포도서관</h3>
-        <p>서울특별시 서초구 반포대로 222</p>
-        <a href="library4.html">상세보기</a>
-      </div>
-    </div>
+      <ul id="favoritesList"></ul>
+    </section>
 
-    <div id="posts" class="section">
+    <!-- 작성한 글 -->
+    <section id="posts" class="section" style="display: none;">
       <h2>작성한 글</h2>
-      <p>내가 작성한 게시글 목록이 여기에 표시됩니다.</p>
-    </div>
-  </div>
 
-  <script>
-    function showSection(id) {
-      document.querySelectorAll('.section').forEach(sec => sec.classList.remove('active'));
-      document.getElementById(id).classList.add('active');
-    }
-  </script>
+      <div class="post-category">
+        <h3>📚 도서 리뷰</h3>
+        <ul id="bookReviewList"></ul>
+      </div>
+
+      <div class="post-category">
+        <h3>🏛️ 도서관 리뷰</h3>
+        <ul id="libraryReviewList"></ul>
+      </div>
+
+      <div class="post-category">
+        <h3>🗣️ 커뮤니티 게시글</h3>
+        <ul id="communityPostList"></ul>
+      </div>
+
+      <div class="post-category">
+        <h3>💬 커뮤니티 댓글</h3>
+        <ul id="communityCommentList"></ul>
+      </div>
+    </section>
+  </div>
 </body>
 </html>
