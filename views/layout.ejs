@@ -1,0 +1,52 @@
+
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <title><%= title || "책모아" %></title>
+  <link rel="stylesheet" href="/styles.css" />
+</head>
+<body>
+
+<!-- 🔹 상단 헤더 -->
+<header class="top-header">
+  <div class="logo">
+    <a href="/">📖 책모아</a>
+  </div>
+  <div class="auth-buttons">
+    <% if (!user) { %>
+      <a href="/mypage/login.html">로그인</a>
+      <a href="/mypage/signUp.html">회원가입</a>
+    <% } else { %>
+      <a href="/mypage/editInfo.html"><%= user.nickname %>님</a>
+      <form action="/logout" method="POST" style="display:inline;">
+        <button type="submit">로그아웃</button>
+      </form>
+    <% } %>
+  </div>
+</header>
+
+  <!-- 🔹 검색창 -->
+  <section class="search-section">
+    <select>
+      <option>도서명</option>
+      <option>저자명</option>
+    </select>
+    <input type="text" placeholder="원하는 도서를 검색하세요" />
+    <button class="search-btn">🔍</button>
+  </section>
+
+<!-- 🔹 메뉴바 -->
+<nav class="main-menu">
+  <a href="/community/communityList.html">커뮤니티</a>
+  <a href="/bookReview/bookReviewList.html">도서 리뷰</a>
+  <a href="/library/library.html">도서관 리뷰</a>
+</nav>
+
+  <!-- 🔹 본문 콘텐츠 -->
+  <main class="content">
+    <%- body %>
+  </main>
+
+</body>
+</html>
