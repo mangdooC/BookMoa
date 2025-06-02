@@ -1,7 +1,7 @@
 const pool = require('../db');
 
 const checkUserId = async (req, res) => {
-  const { user_id } = req.body;
+  const { user_id } = req.query;
 
   if (!user_id) {
     return res.status(400).json({ error: '아이디를 입력하세요.' });
