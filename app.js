@@ -33,15 +33,13 @@ app.use('/comments', commentsRouter);
 
 //회원 관련 라우터
 const authRouter = require('./routes/auth');
-const editInfoRouter = require('./routes/editInfo');
 const checkIdRouter = require('./routes/checkId');
 const userRouter = require('./routes/user');
 const userContentsRouter = require('./routes/userContents');
 
 app.use('/api/auth', authRouter); // 회원가입, 로그인
-app.use('/api/user', editInfoRouter); // 마이페이지 관련
-app.use('/api/check-id', checkIdRouter); // 아이디 중복체크
-app.use('/user', userRouter); // 유저 관련 라우터
+app.use('/api/checkId', checkIdRouter); // 아이디 중복체크
+app.use('/api/user', userRouter); // 유저 관련 라우터 (마이페이지 관련)
 app.use('/api/user-contents', userContentsRouter); // 유저가 작성한 글, 댓글 목록
 // 예시 요청 경로:
 // - 내가 쓴 도서 리뷰:        GET /api/user-contents/reviews/book/:user_id
@@ -49,12 +47,9 @@ app.use('/api/user-contents', userContentsRouter); // 유저가 작성한 글, �
 // - 내가 쓴 커뮤니티 글:      GET /api/user-contents/posts/community/:user_id
 // - 내가 쓴 커뮤니티 댓글:    GET /api/user-contents/comments/community/:user_id
 
-
-
 //도서관 관련 라우터
 const favoritelibRouter = require('./routes/favoritelib');
 app.use('/api/favorites', favoritelibRouter);
-
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {

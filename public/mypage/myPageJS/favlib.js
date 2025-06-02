@@ -46,7 +46,7 @@ async function addFavorite() {
   if (!token) return alert('로그인 필요');
 
   const name = document.getElementById('newFavoriteInput').value.trim();
-  if (!name) return alert('도서관 이름 입력해라');
+  if (!name) return alert('도서관 이름 입력');
 
   try {
     // 도서관 이름을 서버에 POST, 서버에서 library_id 변환한다고 가정
@@ -92,5 +92,4 @@ window.addEventListener('DOMContentLoaded', () => {
   if (addBtn) {
     addBtn.addEventListener('click', addFavorite);
   }
-  loadFavoritesList();
 });

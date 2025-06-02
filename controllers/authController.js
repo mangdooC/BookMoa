@@ -87,7 +87,7 @@ const { user_id, password } = req.body;
 
     const token = jwt.sign({ user_id: user.user_id }, JWT_SECRET, { expiresIn: '1d' });
 
-    res.json({ message: '로그인에 성공하셨습니다.', token });
+    res.json({ message: '로그인에 성공하셨습니다.', token, user_id: user.user_id});
     } catch (error) {
         console.error('로그인 에러:', error);
         res.status(500).json({ error: '서버 에러가 발생했습니다.' });

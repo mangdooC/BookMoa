@@ -1,6 +1,14 @@
-// 작성한 글 목록 불러오기
 async function loadPostsList(userId) {
   const base = '/api/user-contents';
+  const token = localStorage.getItem('token');
+  if (!token) {
+    console.error('로그인 필요');
+    return;
+  }
+  
+  const headers = {
+    'Authorization': `Bearer ${token}`
+  };
 
   const bookReviewList = document.getElementById('bookReviewList');
   const libraryReviewList = document.getElementById('libraryReviewList');
@@ -14,12 +22,13 @@ async function loadPostsList(userId) {
 
   try {
     // 1. 도서 리뷰
-    const bookRes = await fetch(`${base}/reviews/book/${userId}`);
+    const bookRes = await fetch(`${base}/user/${userId}/book-reviews`, { headers });
+    if (!bookRes.ok) throw new Error('도서 리뷰 불러오기 실패');
     const bookData = await bookRes.json();
     bookData.forEach(item => {
       const li = document.createElement('li');
       const a = document.createElement('a');
-      a.href = `/book/review/${item.review_id}`; 
+      a.href = `/book/review/${item.review_id}`;
       a.textContent = `[${item.book_id}] ${item.content} (${item.rating}점)`;
       a.style.textDecoration = 'none';
       a.style.color = 'inherit';
@@ -28,12 +37,13 @@ async function loadPostsList(userId) {
     });
 
     // 2. 도서관 리뷰
-    const libRes = await fetch(`${base}/reviews/library/${userId}`);
+    const libRes = await fetch(`${base}/user/${userId}/library-reviews`, { headers });
+    if (!libRes.ok) throw new Error('도서관 리뷰 불러오기 실패');
     const libData = await libRes.json();
     libData.forEach(item => {
       const li = document.createElement('li');
       const a = document.createElement('a');
-      a.href = `/library/review/${item.review_id}`; 
+      a.href = `/library/review/${item.review_id}`;
       a.textContent = `[${item.library_id}] ${item.content} (${item.rating}점)`;
       a.style.textDecoration = 'none';
       a.style.color = 'inherit';
@@ -42,12 +52,13 @@ async function loadPostsList(userId) {
     });
 
     // 3. 커뮤니티 게시글
-    const postRes = await fetch(`${base}/posts/community/${userId}`);
+    const postRes = await fetch(`${base}/user/${userId}/community-posts`, { headers });
+    if (!postRes.ok) throw new Error('커뮤니티 게시글 불러오기 실패');
     const postData = await postRes.json();
     postData.forEach(item => {
       const li = document.createElement('li');
       const a = document.createElement('a');
-      a.href = `/community/post/${item.post_id}`; 
+      a.href = `/community/post/${item.post_id}`;
       a.textContent = `${item.title} (${item.view_count}조회수)`;
       a.style.textDecoration = 'none';
       a.style.color = 'inherit';
@@ -55,8 +66,9 @@ async function loadPostsList(userId) {
       communityPostList.appendChild(li);
     });
 
-    // 4. 커뮤니티 댓글 (링크 X)
-    const commentRes = await fetch(`${base}/comments/community/${userId}`);
+    // 4. 커뮤니티 댓글
+    const commentRes = await fetch(`${base}/user/${userId}/community-comments`, { headers });
+    if (!commentRes.ok) throw new Error('커뮤니티 댓글 불러오기 실패');
     const commentData = await commentRes.json();
     commentData.forEach(item => {
       const li = document.createElement('li');
@@ -70,8 +82,10 @@ async function loadPostsList(userId) {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-  const userId = localStorage.getItem('userId'); // 예시: 유저 id 어딘가 저장되어 있다는 전제
+  const userId = localStorage.getItem('userId');
   if (userId) {
     loadPostsList(userId);
+  } else {
+    console.error('userId 없음');
   }
 });

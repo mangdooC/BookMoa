@@ -19,11 +19,57 @@ function searchPreferredAddress(inputId) {
   }).open();
 }
 
-// 임시 저장 함수 (임의로 alert 넣음, 서버 연동 시 변경 필요)
-function savePreferredAddresses() {
-  const addr1 = document.getElementById('preferredAddress1').value.trim();
-  const addr2 = document.getElementById('preferredAddress2').value.trim();
-  const addr3 = document.getElementById('preferredAddress3').value.trim();
-  alert(`선호지역 저장됨:\n1: ${addr1}\n2: ${addr2}\n3: ${addr3}`);
-  // 서버 저장 로직 추가 예정
-}
+async function savePreferredAddresses() {
+  const region_level1 = document.getElementById('preferredAddress1').value.trim();
+  const region_level2 = document.getElementById('preferredAddress2').value.trim();
+  const region_level3 = document.getElementById('preferredAddress3').value.trim();
+
+  if (!region_level1 || !region_level2 || !region_level3) {
+    alert('모든 선호지역 주소를 입력해주세요.');
+    return;
+  }
+
+  const token = localStorage.getItem('token'); 
+
+  try {
+    const res = await fetch('/api/user/preferred-area', {
+      method: 'PUT', 
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`, 
+      },
+      body: JSON.stringify({ region_level1, region_level2, region_level3 }),
+    });
+
+    if (!res.ok) {
+      const errorData = await res.json();
+      throw new Error(errorData.error || '저장 실패');
+    }
+
+      alert('선호지역이 저장되었습니다.');
+    } catch (e) {
+      alert('저장 실패: ' + e.message);
+      console.error(e);
+    }
+  }
+
+  async function loadPreferredAddresses() {
+  const token = localStorage.getItem('token');
+  if (!token) return;
+
+  try {
+    const res = await fetch('/api/user/preferred-area', {
+      headers: { 'Authorization': `Bearer ${token}` },
+    });
+    if (!res.ok) return;
+
+    const data = await res.json();
+    const { region_level1, region_level2, region_level3 } = data.preferredArea;
+    document.getElementById('preferredAddress1').value = region_level1 || '';
+    document.getElementById('preferredAddress2').value = region_level2 || '';
+    document.getElementById('preferredAddress3').value = region_level3 || '';
+    } catch (e) {
+      console.error('선호지역 불러오기 실패:', e);
+    }
+  }
+  window.addEventListener('DOMContentLoaded', loadPreferredAddresses);
