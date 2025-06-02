@@ -10,9 +10,9 @@ const checkUserId = async (req, res) => {
   try {
     const [rows] = await pool.query('SELECT user_id FROM user WHERE user_id = ? AND is_deleted = 0', [user_id]);
     if (rows.length > 0) {
-      return res.json({ exists: true, message: '이미 존재하는 아이디입니다.' });
+      return res.json({ available: false, message: '이미 존재하는 아이디입니다.' });
     }
-    res.json({ exists: false, message: '사용 가능한 아이디입니다.' });
+    res.json({ available: true, message: '사용 가능한 아이디입니다.' });
   } catch (error) {
     console.error('아이디 체크 에러:', error);
     res.status(500).json({ error: '서버 에러 발생' });

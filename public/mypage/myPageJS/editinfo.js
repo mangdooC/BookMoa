@@ -38,6 +38,21 @@ function handleUserIdInput(value) {
     return;
   }
 
+  const userIdInput = document.getElementById('user_id');
+
+  document.getElementById('saveInfoBtn').addEventListener('click', () => {
+    const userId = userIdInput.value.trim();
+    const regex = /^[a-zA-Z0-9]*$/;
+
+    if (!regex.test(userId)) {
+      alert('아이디는 영어와 숫자만 가능합니다.');
+      userIdInput.focus();
+      return;
+    }
+
+    // 저장 요청 함수 호출 or 기존 코드 계속 진행
+  });
+
   checkIdTimeout = setTimeout(async () => {
     try {
       const res = await fetch(`/checkId?user_id=${encodeURIComponent(value)}`);
