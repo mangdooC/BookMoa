@@ -1,8 +1,8 @@
 const express = require('express');
 const router = express.Router();
-const { editUserInfo } = require('../controllers/editInfoController');
-const authMiddleware = require('../middlewares/authMiddleware');
+const { updateUserInfo } = require('./editInfoController');
+const authMiddleware = require('./authMiddleware'); // 로그인 검사 미들웨어
 
-router.put('/me', authMiddleware, editUserInfo);
+router.put('/updateUserInfo', authMiddleware, updateUserInfo);
 
 module.exports = router;
