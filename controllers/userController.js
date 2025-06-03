@@ -94,44 +94,71 @@ const updateUserInfo = async (req, res) => {
 
 const uploadProfileImage = async (req, res) => {
   try {
-    if (!req.file) {
-      return res.status(400).json({ error: '파일이 업로드되지 않았습니다.' });
-    }
-
     const userId = req.user.user_id;
-    const filename = req.file.filename;
-    const imageUrl = `/uploads/profile/${filename}`;
 
-    // 기존 이미지 경로 조회
-    const [existingImages] = await pool.query(
-      `SELECT image_url FROM image WHERE user_id = ? AND image_type = 'profile'`,
-      [userId]
-    );
+    if (!req.file) {
+      // 프로필 사진 안 바꿨으면 기본 이미지 경로로 설정
+      // 기존 이미지 삭제
+      const [existingImages] = await pool.query(
+        `SELECT image_url FROM image WHERE user_id = ? AND image_type = 'profile'`,
+        [userId]
+      );
 
-    // 기존 파일 삭제
-    for (const img of existingImages) {
-      const filePath = path.join(__dirname, '..', img.image_url);
-      try {
-        await fs.unlink(filePath);
-      } catch (err) {
-        console.warn('기존 이미지 삭제 실패 (존재하지 않거나 기타 이유):', filePath);
+      for (const img of existingImages) {
+        const filePath = path.join(__dirname, '..', img.image_url.replace(/^\//, ''));
+        try {
+          await fs.unlink(filePath);
+        } catch {
+          // 삭제 실패해도 무시
+        }
       }
+
+      await pool.query(
+        `DELETE FROM image WHERE user_id = ? AND image_type = 'profile'`,
+        [userId]
+      );
+
+      // 기본 이미지 경로 삽입
+      const defaultImageUrl = '/mypage/images/default.jpg';
+      await pool.query(
+        `INSERT INTO image (user_id, image_url, image_type) VALUES (?, ?, 'profile')`,
+        [userId, defaultImageUrl]
+      );
+
+      return res.json({ message: '기본 프로필 이미지로 설정되었습니다.', imageUrl: defaultImageUrl });
+    } else {
+      // 업로드한 파일 경로 저장
+      const filename = req.file.filename;
+      const imageUrl = `/uploads/profile/${filename}`;
+
+      // 기존 이미지 삭제
+      const [existingImages] = await pool.query(
+        `SELECT image_url FROM image WHERE user_id = ? AND image_type = 'profile'`,
+        [userId]
+      );
+
+      for (const img of existingImages) {
+        const filePath = path.join(__dirname, '..', img.image_url.replace(/^\//, ''));
+        try {
+          await fs.unlink(filePath);
+        } catch {
+          // 삭제 실패해도 무시
+        }
+      }
+
+      await pool.query(
+        `DELETE FROM image WHERE user_id = ? AND image_type = 'profile'`,
+        [userId]
+      );
+
+      await pool.query(
+        `INSERT INTO image (user_id, image_url, image_type) VALUES (?, ?, 'profile')`,
+        [userId, imageUrl]
+      );
+
+      const fullImageUrl = `${req.protocol}://${req.get('host')}${imageUrl}`;
+      return res.json({ message: '프로필 이미지 업로드 성공', imageUrl: fullImageUrl });
     }
-
-    // DB 이미지 삭제
-    await pool.query(
-      `DELETE FROM image WHERE user_id = ? AND image_type = 'profile'`,
-      [userId]
-    );
-
-    // 새 이미지 저장
-    await pool.query(
-      `INSERT INTO image (user_id, image_url, image_type) VALUES (?, ?, 'profile')`,
-      [userId, imageUrl]
-    );
-
-    const fullImageUrl = `${req.protocol}://${req.get('host')}${imageUrl}`;
-    return res.json({ message: '프로필 이미지 업로드 성공', imageUrl: fullImageUrl });
   } catch (err) {
     console.error('uploadProfileImage 에러:', err);
     return res.status(500).json({ error: '서버 오류 발생' });

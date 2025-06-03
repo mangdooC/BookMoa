@@ -1,9 +1,10 @@
 const express = require('express');
 const path = require('path');
+const fs = require('fs');
 const dotenv = require('dotenv');
 const pool = require('./db');
 
-dotenv.config(); // .env 설정 적용
+dotenv.config();
 
 const app = express();
 
@@ -12,8 +13,21 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // ---------- 정적 파일 제공 ----------
-app.use('/uploads/profile', express.static(path.join(__dirname, 'uploads/profile')));
 app.use(express.static(path.join(__dirname, 'public')));
+app.use('/mypage/images', express.static(path.join(__dirname, 'public/mypage/images')));
+
+// 🧨 profile 이미지 직접 핸들링
+app.get('/uploads/profile/:filename', (req, res) => {
+  const filename = req.params.filename;
+  const filePath = path.join(__dirname, 'uploads/profile', filename);
+  const defaultPath = path.join(__dirname, 'public/mypage/images/default.jpg');
+
+  if (fs.existsSync(filePath)) {
+    res.sendFile(filePath);
+  } else {
+    res.sendFile(defaultPath);
+  }
+});
 
 // ---------- 라우터 등록 ----------
 app.get('/', (req, res) => {

@@ -18,17 +18,17 @@ document.addEventListener('DOMContentLoaded', async () => {
 
       const data = await res.json();
 
-    if (data.nickname) {
-      nicknameDisplay.textContent = data.nickname;
-      const nicknameInput = document.getElementById('nickname');
-      if (nicknameInput) {
-        nicknameInput.value = data.nickname;
+      if (data.nickname) {
+        nicknameDisplay.textContent = data.nickname;
+        const nicknameInput = document.getElementById('nickname');
+        if (nicknameInput) {
+          nicknameInput.value = data.nickname;
+        }
       }
-    }
 
-    if (data.profile_image) {
-      profilePreview.src = data.profile_image;
-    }
+      // 프로필 이미지가 없으면 기본 이미지 경로로 대체
+      const profileImageUrl = data.profile_image || '/mypage/images/default.jpg';
+      profilePreview.src = profileImageUrl;
 
     } catch (e) {
       console.error('초기 유저 정보 로딩 실패:', e);
