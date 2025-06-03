@@ -65,7 +65,17 @@ exports.createPost = async (req, res) => {
  */
 exports.getPostById = async (req, res) => {
   try {
-    const [rows] = await db.query('SELECT * FROM community_post WHERE id = ?', [req.params.id]);
+    const [rows] = await db.query(`
+      SELECT 
+        p.post_id, 
+        p.title, 
+        p.content, 
+        p.created_at, 
+        u.nickname AS author_nickname 
+      FROM community_post p
+      JOIN user u ON p.user_id = u.user_id
+      WHERE p.post_id = ?
+    `, [req.params.id]);
     if (rows.length === 0) return res.status(404).json({ error: '게시글 없음' });
     res.json(rows[0]);
   } catch (err) {
@@ -82,7 +92,7 @@ exports.updatePost = async (req, res) => {
   const { title, content } = req.body;
   try {
     const [result] = await db.query(
-      'UPDATE community_post SET title = ?, content = ?, updated_at = NOW() WHERE id = ?',
+      'UPDATE community_post SET title = ?, content = ?, updated_at = NOW() WHERE post_id = ?',
       [title, content, req.params.id]
     );
     if (result.affectedRows === 0) return res.status(404).json({ error: '게시글 없음' });
@@ -99,7 +109,7 @@ exports.updatePost = async (req, res) => {
  */
 exports.deletePost = async (req, res) => {
   try {
-    const [result] = await db.query('DELETE FROM community_post WHERE id = ?', [req.params.id]);
+    const [result] = await db.query('DELETE FROM community_post WHERE post_id = ?', [req.params.id]);
     if (result.affectedRows === 0) return res.status(404).json({ error: '게시글 없음' });
     res.status(204).send(); // No Content
   } catch (err) {
