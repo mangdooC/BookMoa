@@ -30,11 +30,11 @@
       posts.forEach(post => {
         const li = document.createElement('li');
         li.innerHTML = `
-          <a href="post.html?id=${post.id}">
+          <a href="post.html?id=${post.post_id}">
             <strong>${post.title}</strong>
           </a><br>
-          <small>작성자: ${post.author ?? '알 수 없음'}</small><br>
-          <small>작성일: ${new Date(post.createdAt).toLocaleString()}</small><br>
+          <small>작성자: ${post.author_nickname ?? '알 수 없음'}</small><br>
+          <small>작성일: ${new Date(post.created_at).toLocaleString()}</small><br>
           <p>${post.content}</p>
           <hr>
         `;

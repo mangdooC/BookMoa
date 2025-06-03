@@ -10,7 +10,17 @@ const postsFile = path.join(__dirname, '../data/posts.json');
  */
 exports.getAllPosts = async (req, res) => {
   try {
-    const [rows] = await db.query('SELECT * FROM community_post ORDER BY created_at DESC');
+    const [rows] = await db.query(`
+      SELECT 
+        p.post_id, 
+        p.title, 
+        p.content,
+        p.created_at, 
+        u.nickname AS author_nickname
+      FROM community_post p
+      JOIN user u ON p.user_id = u.user_id
+      ORDER BY p.created_at DESC
+    `);
     res.json(rows);
   } catch (err) {
     console.error('게시글 전체 조회 실패:', err);
