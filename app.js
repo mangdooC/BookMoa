@@ -98,6 +98,7 @@ app.get('/', async (req, res) => {
   }
 });
 
+
 //post 라우터
 const postsRouter = require('./routes/posts');
 app.use('/posts', postsRouter);
