@@ -22,6 +22,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
+
 //  세션 설정
 app.use(session({
   secret: 'bookmoa-secret',
@@ -46,6 +47,25 @@ app.use((req, res, next) => {
   }
   next();
 });
+
+// layout용 기본 변수 설정
+app.use((req, res, next) => {
+  res.locals.title = '책모아'; // 기본 타이틀
+  res.locals.user = req.session.user || null; // 로그인 사용자 정보
+  next();
+});
+
+// 로그아웃 라우터 추가
+app.post('/logout', (req, res) => {
+  req.session.destroy((err) => {
+    if (err) {
+      console.error('세션 삭제 실패:', err);
+    }
+    res.clearCookie('token'); // 쿠키에 jwt 삭제
+    res.redirect('/'); // 메인 페이지로 리디렉션
+  });
+});
+
 
 // 정적 파일 서빙
 app.use(express.static(path.join(__dirname, 'public')));
@@ -88,6 +108,11 @@ app.use('/api/user-contents', userContentsRouter); // 유저가 작성한 글, �
 //도서관 관련 라우터
 const favoritelibRouter = require('./routes/favoritelib');
 app.use('/api/favorites', favoritelibRouter);
+
+//책검색 라우터
+const bookSearchRouter = require('./routes/book');
+app.use('/book', bookSearchRouter);
+
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
