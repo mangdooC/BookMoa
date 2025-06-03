@@ -37,8 +37,8 @@ app.use((req, res, next) => {
     try {
       const decoded = jwt.verify(token, JWT_SECRET);
       req.session.user = {
-        user_id: decoded.user_id
-        // 닉네임 등은 필요 시 DB에서 추가 조회
+        user_id: decoded.user_id,
+        nickname: decoded.nickname
       };
     } catch (err) {
       console.error('JWT 인증 실패:', err.message);
