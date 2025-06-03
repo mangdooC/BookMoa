@@ -40,6 +40,7 @@
       if (res.ok) {
         alert(data.message); // "로그인에 성공하셨습니다." 
         localStorage.setItem('token', data.token);
+        localStorage.setItem('userId', data.user_id);
         window.location.href = '/';
       } else {
         alert('로그인 실패: ' + (data.error || '에러'));

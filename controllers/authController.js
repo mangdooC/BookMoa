@@ -1,7 +1,8 @@
+require('dotenv').config();
 const pool = require('../db'); // MySQL 연결 풀을 가져옵니다.
 const bcrypt = require('bcrypt'); // 비밀번호 암호화를 위한 bcrypt 모듈을 가져옵니다.
 const jwt = require('jsonwebtoken'); // JWT 토큰 생성을 위한 jsonwebtoken 모듈을 가져옵니다.
-require('dotenv').config(); // .env 파일에 저장된 환경변수를 불러옵니다.
+ // .env 파일에 저장된 환경변수를 불러옵니다.
 
 const JWT_SECRET = process.env.JWT_SECRET; // 환경변수에서 JWT 비밀 키를 가져옵니다.
 
@@ -84,9 +85,18 @@ const { user_id, password } = req.body;
       return res.status(400).json({ error: '비밀번호가 일치하지 않습니다.' });
     }
 
-    const token = jwt.sign({ user_id: user.user_id }, JWT_SECRET, { expiresIn: '1d' });
+    const token = jwt.sign({ user_id: user.user_id, nickname: user.nickname  }, JWT_SECRET, { expiresIn: '1d' });
+	
+	//JWT를 쿠키로 클라이언트에 저장
+	res.cookie('token', token, {
+	  httpOnly: true,
+ 	 secure: process.env.NODE_ENV === 'production', // HTTPS 환경에서만
+ 	 maxAge: 86400000 // 1일
+	});
 
-    res.json({ message: '로그인에 성공하셨습니다.', token });
+
+
+    res.json({ message: '로그인에 성공하셨습니다.', token, user_id: user.user_id});
     } catch (error) {
         console.error('로그인 에러:', error);
         res.status(500).json({ error: '서버 에러가 발생했습니다.' });
