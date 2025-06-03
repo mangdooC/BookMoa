@@ -34,7 +34,11 @@ body {
   color: #333;
   font-weight: bold;
   font-size: 16px;
+  line-height: 1.5;
   cursor: pointer;
+  font-family: inherit;
+  display: inline-block;
+  appearance: none; /* 브라우저 기본 버튼 스타일 제거 */
 }
 
 .auth-buttons form {
