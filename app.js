@@ -82,9 +82,29 @@ app.use(express.static(path.join(__dirname, 'public')));
 //});
 
 //  루트 라우터 (EJS 렌더링)
-app.get('/', (req, res) => {
-  res.render('index', {title: '책모아 메인 페이지', user: req.session.user });
+//app.get('/', (req, res) => {
+//  res.render('index', {title: '책모아 메인 페이지', user: req.session.user });
+//});
+const { getTop4Books } = require('./controllers/popularController');
+
+app.get('/', async (req, res) => {
+  try {
+    const popularBooks = await getTop4Books();
+    res.render('index', {
+      title: '책모아 메인 페이지',
+      user: req.session.user,
+      popularBooks 
+    });
+  } catch (err) {
+    console.error('[메인 인기 도서 로딩 실패]', err);
+    res.render('index', {
+      title: '책모아 메인 페이지',
+      user: req.session.user,
+      popularBooks: [] // 실패 시 빈 배열 전달
+    });
+  }
 });
+
 
 //post 라우터
 const postsRouter = require('./routes/posts');
