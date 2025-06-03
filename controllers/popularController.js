@@ -1,56 +1,47 @@
 // controllers/popularController.js
 const axios = require('axios');
-const xml2js = require('xml2js');
 require('dotenv').config();
 
-// XML → JSON 파싱
-const parseXml = async (xml) => {
-  const parser = new xml2js.Parser({ explicitArray: false });
-  const result = await parser.parseStringPromise(xml);
-  return result;
+const parseJson = async (data) => {
+  return JSON.parse(data); // 혹은 axios가 .data로 반환한 객체라면 생략 가능
 };
 
 // 도서관 정보나루 API 호출
 const getPopularBooks = async () => {
   console.log('[함수 호출됨] getPopularBooks');
 
-  const today = new Date();
-  const start = new Date(today.getFullYear(), today.getMonth(), 1);
+ // const today = new Date();
+ // const lastMonth = new Date(today.getFullYear(), today.getMonth() - 1, 1);
+ // const lastMonthEnd = new Date(today.getFullYear(), today.getMonth(), 0);
 
-  const startDt = start.toISOString().slice(0, 10).replace(/-/g, '');
-  const endDt = today.toISOString().slice(0, 10).replace(/-/g, '');
+	const url = `http://data4library.kr/api/loanItemSrch` +
+            `?authKey=${process.env.DATA4LIBRARY_API_KEY}` +
+            `&startDt=2024-03-01` +  // 하이픈 포함
+            `&endDt=2024-03-31` +
+            `&format=json` +
+            `&pageNo=1&pageSize=10`;
 
-  const url = `http://data4library.kr/api/loanItemSrch` +
-              `?authKey=${process.env.DATA4LIBRARY_API_KEY}` +
-              `&startDt=${startDt}` +
-              `&endDt=${endDt}` +
-              `&gender=0&from_age=0&to_age=99&region=11&addCode=0&kdc=0`;
 
   console.log('[API 키]', process.env.DATA4LIBRARY_API_KEY);
   console.log('[요청 URL]', url); 
 
   try {
-    const response = await axios.get(url, { responseType: 'text' });
-    console.log('[API 응답 XML]', response.data); 
+	   const response = await axios.get(url);
+    console.log('[API 응답 JSON]', response.data); 
+    
+    const docs = response.data?.response?.docs; // now docs is already an Array
 
-    const parsed = await parseXml(response.data);
-    console.log('[파싱된 전체 객체]', JSON.stringify(parsed, null, 2));
+if (!docs || docs.length === 0) {
+  console.warn('[경고] 인기 도서 결과 없음 또는 docs 미존재');
+  return [];
+}
 
-    const docs = parsed?.response?.docs?.doc;
+const books = docs; // 이미 배열이므로 바로 사용
 
-    if (!docs) {
-      console.warn('[경고] 인기 도서 결과 없음 또는 docs 미존재');
-      return [];
-    }
 
-    const books = Array.isArray(docs) ? docs : [docs]; // 단일 도서 대응
-    return books.map(book => ({
+     return docs.map(item => item.doc).map(book => ({
       title: book.bookname,
-      author: book.authors,
-      publisher: book.publisher,
-      year: book.publication_year,
-      isbn: book.isbn13,
-      loanCount: book.loan_count
+      imageUrl: book.bookImageURL,
     }));
   } catch (err) {
     console.error('[API 호출 또는 파싱 실패]', err);
