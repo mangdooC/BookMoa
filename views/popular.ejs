@@ -1,0 +1,17 @@
+<h2>이달의 인기 대출 도서</h2>
+<div class="book-list">
+  <% if (books && books.length > 0) { %>
+    <% books.forEach(book => { %>
+      <div class="book-item">
+        <p><strong><%= book.title %></strong></p>
+        <p>저자: <%= book.author %></p>
+        <p>출판사: <%= book.publisher %></p>
+        <p>출판년도: <%= book.year %></p>
+        <p>대출 횟수: <%= book.loanCount %>회</p>
+      </div>
+    <% }) %>
+  <% } else { %>
+    <p>데이터가 없습니다.</p>
+  <% } %>
+</div>
+
