@@ -23,17 +23,23 @@ exports.getAllPosts = async (req, res) => {
  * 요청의 본문에서 제목과 내용을 받아 새 게시글을 생성하고 저장합니다.
  */
 exports.createPost = async (req, res) => {
-  const { title, content, author } = req.body; // author = user_id
+  const { title, content } = req.body;
+  const user_id = req.user?.user_id;
+
+  if (!user_id) {
+    return res.status(401).json({ error: '로그인이 필요합니다' });
+  }
+
   try {
     const [result] = await db.query(
       'INSERT INTO community_post (title, content, user_id, created_at) VALUES (?, ?, ?, NOW())',
-      [title, content, author]
+      [title, content, user_id]
     );
     const newPost = {
       id: result.insertId,
       title,
       content,
-      author,
+      user_id,
       createdAt: new Date()
     };
     res.status(201).json(newPost);
