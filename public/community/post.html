@@ -13,8 +13,6 @@
     <h3>댓글</h3>
         <ul id="comment-list"></ul>
             <form id="comment-form">
-                <input type="text" name="author" placeholder="작성자" required>
-                <br>
                 <textarea name="content" rows="3" cols="40" placeholder="댓글 입력" required></textarea>
                 <br>
                 <button type="submit">댓글 작성</button>
@@ -38,7 +36,7 @@
         document.getElementById('post-container').innerHTML = `
           <h2>${post.title}</h2>
           <p><small>작성자: ${post.author_nickname ?? '알 수 없음'}</small></p>
-          <p><small>작성일: ${new Date(post.createdAt).toLocaleString()}</small></p>
+          <p><small>작성일: ${new Date(post.created_at).toLocaleString()}</small></p>
           <p>${post.content}</p>
           <a href="/community/communityList.html">← 목록으로 돌아가기</a>
         `;
@@ -51,7 +49,7 @@
         list.innerHTML = '';
         comments.forEach(c => {
           const li = document.createElement('li');
-          li.innerHTML = `<strong>${c.author}</strong> (${new Date(c.createdAt).toLocaleString()}): ${c.content}`;
+          li.innerHTML = `<strong>${c.author}</strong> (${new Date(c.created_at).toLocaleString()}): ${c.content}`;
           list.appendChild(li);
         });
       }
@@ -60,7 +58,6 @@
         e.preventDefault();
         const form = e.target;
         const comment = {
-          author: '알 수 없음', //데베 연결 후 이부분 수정해야댐
           content: form.content.value
         };
         const res = await fetch(`/comments/${postId}`, {
