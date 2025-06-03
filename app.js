@@ -5,6 +5,9 @@ const path = require('path');
 
 const app = express();
 
+app.set('views', path.join(__dirname, 'views'));
+app.set('view engine', 'ejs');
+
 // 미들웨어
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -41,6 +44,17 @@ app.use('/api/auth', authRouter); // 회원가입, 로그인
 app.use('/api/checkId', checkIdRouter); // 아이디 중복체크
 app.use('/api/user', userRouter); // 유저 관련 라우터 (마이페이지 관련)
 app.use('/api/user-contents', userContentsRouter); // 유저가 작성한 글, 댓글 목록
+// 예시 요청 경로:
+// - 내가 쓴 도서 리뷰:        GET /api/user-contents/reviews/book/:user_id
+// - 내가 쓴 도서관 리뷰:      GET /api/user-contents/reviews/library/:user_id
+// - 내가 쓴 커뮤니티 글:      GET /api/user-contents/posts/community/:user_id
+// - 내가 쓴 커뮤니티 댓글:    GET /api/user-contents/comments/community/:user_id
+
+
+//도서 관련 라우터
+const bookRouter = require('./routes/book');
+app.use('/book', bookRouter);
+
 
 //도서관 관련 라우터
 const favoritelibRouter = require('./routes/favoritelib');

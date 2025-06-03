@@ -32,12 +32,9 @@
 <body>
     <div class="review-form">
         <h2>도서 리뷰 작성</h2>
-        <form action="/book/<%= isbn13 %>/review" method="POST">
+        <form id="reviewForm">
             <div class="form-group">
-                <label for="user_id">작성자 ID:</label>
-                <input type="text" id="user_id" name="user_id" required>
-            </div>
-            
+            </div>            
             <div class="form-group">
                 <label for="rating">평점:</label>
                 <select id="rating" name="rating" required>
@@ -55,8 +52,6 @@
                 <textarea id="content" name="content" placeholder="리뷰 내용을 입력해주세요" required></textarea>
             </div>
 
-            <input type="hidden" name="book_id" value="<%= book_id %>">
-            
             <div class="button-group">
                 <button type="submit">리뷰 등록</button>
                 <a href="/book/<%= isbn13 %>">
@@ -65,5 +60,37 @@
             </div>
         </form>
     </div>
+
+    <script>
+    document.getElementById('reviewForm').addEventListener('submit', async function(e) {
+        e.preventDefault();
+        const token = localStorage.getItem('token');
+        if (!token) {
+            alert('로그인이 필요합니다.');
+            window.location.href = '/mypage/login.html';
+            return;
+        }
+        const rating = document.getElementById('rating').value;
+        const content = document.getElementById('content').value;
+
+        const res = await fetch(`/book/<%= isbn13 %>/review`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({ rating, content })
+        });
+
+        if (res.ok) {
+            window.location.href = '/book/<%= isbn13 %>';
+        } else if (res.status === 401) {
+            alert('로그인이 필요합니다.');
+            window.location.href = '/mypage/login.html';
+        } else {
+            alert('리뷰 등록에 실패했습니다.');
+        }
+    });
+    </script>
 </body>
 </html>
