@@ -87,6 +87,16 @@ const { user_id, password } = req.body;
 
     const token = jwt.sign({ user_id: user.user_id }, JWT_SECRET, { expiresIn: '1d' });
 
+    // DB에 토큰 저장 (ex: user 테이블에 token 칼럼 추가했다고 가정)
+    await pool.query('UPDATE user SET token = ? WHERE user_id = ?', [token, user.user_id]); 
+
+     // 쿠키에 세션 쿠키로 발급 (expires 안 넣으면 세션 쿠키)
+    res.cookie('token', token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'strict',
+    });
+
     res.json({ message: '로그인에 성공하셨습니다.', token, user_id: user.user_id});
     } catch (error) {
         console.error('로그인 에러:', error);

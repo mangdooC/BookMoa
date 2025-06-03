@@ -44,7 +44,7 @@ const bcrypt = require('bcrypt');
 
   // 비밀번호 변경 시 검증 및 해시화
   let hashedPassword = null;
-  if (password) {
+  if (password && password.trim() !== '') {
     const passwordRegex = /^[a-zA-Z0-9]{4,12}$/;
     if (!passwordRegex.test(password)) {
       return res.status(400).json({ error: '비밀번호는 영어와 숫자 4~12자만 가능합니다.' });
@@ -55,7 +55,7 @@ const bcrypt = require('bcrypt');
   // 닉네임 중복 검사
   if (nickname) {
     const [nicknameRows] = await pool.query(
-      'SELECT user_id FROM user WHERE nickname = ? AND is_deleted = 0',
+      'SELECT user_id FROM user WHERE nickname = ? AND is_deleted = 0 AND user_id != ?',
       [nickname, currentUserId]
     );
     if (nicknameRows.length > 0) {
