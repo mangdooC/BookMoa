@@ -1,14 +1,23 @@
 const express = require('express');
 const router = express.Router();
-const authMiddleware = require('../middlewares/authMiddleware'); // 토큰 검증 미들웨어
-const { getUserInfo, updatePreferredArea, getPreferredArea } = require('../controllers/userController');
+const authMiddleware = require('../middlewares/authMiddleware');
+const {
+  getUserInfo,
+  updatePreferredArea,
+  getPreferredArea,
+  updateUserInfo,
+} = require('../controllers/userController');
 
-router.get('/me', authMiddleware, getUserInfo);
-router.patch('/preferred-area', authMiddleware, updatePreferredArea);
+// 내 정보 조회
+router.get('/info', authMiddleware, getUserInfo);
+
+// 선호지역 조회
 router.get('/preferred-area', authMiddleware, getPreferredArea);
 
-router.get('/mypage', authMiddleware, (req, res) => {
-  res.send(`환영합니다, 사용자 ${req.user_id}님!`);
-});
+// 선호지역 업데이트
+router.put('/preferred-area', authMiddleware, updatePreferredArea);
+
+// 회원정보 수정 (아이디, 비번, 닉네임, 주소 등)
+router.put('/edit', authMiddleware, updateUserInfo);
 
 module.exports = router;

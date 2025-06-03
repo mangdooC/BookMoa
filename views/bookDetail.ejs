@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <title><%= book.bookname %> 상세정보</title>
+  <style>
+    /* 기존 스타일 유지 */
+    #map { width: 100%; height: 300px; margin-bottom: 20px; }
+    
+    /* 리뷰 섹션 스타일 추가 */
+    .reviews-section {
+      max-width: 800px;
+      margin: 20px auto;
+      padding: 20px;
+    }
+    
+    .review-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+    
+    .sort-form {
+      margin: 15px 0;
+    }
+    
+    .reviews-list {
+      list-style: none;
+      padding: 0;
+    }
+    
+    .review-item {
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      padding: 15px;
+      margin-bottom: 15px;
+    }
+    
+    .review-item .user-info {
+      font-weight: bold;
+      margin-bottom: 8px;
+    }
+    
+    .review-item .rating {
+      color: #ffd700;
+      margin-bottom: 8px;
+    }
+    
+    .review-item .content {
+      margin-bottom: 8px;
+      line-height: 1.5;
+    }
+    
+    .review-item .meta {
+      color: #666;
+      font-size: 0.9em;
+    }
+    
+    .pagination {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      margin-top: 20px;
+    }
+    
+    .pagination a, .pagination strong {
+      padding: 5px 10px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      text-decoration: none;
+    }
+    
+    .pagination strong {
+      background-color: #007bff;
+      color: white;
+    }
+  </style>
+<script type="text/javascript" src="https://oapi.map.naver.com/openapi/v3/maps.js?ncpKeyId=<%= NAVER_MAP_API_KEY %>"></script>
+</head>
+<body>
+  <div style="margin-bottom: 20px; display: flex; align-items: center;">
+    <img src="<%= book.bookImageURL %>" alt="책 표지" style="width: 80px; height: auto; margin-right: 16px;" />
+    <div>
+      <strong>
+        <%= book.bookname %>
+      </strong><br>
+      저자: <%= book.authors %><br>
+      출판사: <%= book.publisher %><br>
+      ISBN: <%= book.isbn13 %>
+    </div>
+  </div>
+
+<h3>소장 도서관 목록 (가까운 순 20개)</h3>
+<ul>
+  <% libraries.forEach((lib, idx) => { %>
+    <li>
+      <strong><%= idx + 1 %>.</strong>
+      <%= lib.name %> | ☎ <%= lib.tel || '-' %> | <%= lib.address %>
+      | <a href="<%= lib.url || '#' %>" target="_blank"><button>웹사이트</button></a>
+      | <button onclick="alert('즐겨찾기 기능은 추후 구현!')">★ 즐겨찾기</button>
+      <% if (lib.distance !== Infinity) { %>
+        (<%= lib.distance.toFixed(2) %>km)
+      <% } %>
+    </li>
+  <% }) %>
+</ul>
+
+<div id="map" style="width:100%;height:400px;margin-bottom:20px;"></div>
+<script type="text/javascript" src="https://oapi.map.naver.com/openapi/v3/maps.js?ncpClientId=YOUR_CLIENT_ID"></script>
+<script>
+  const libraries = <%- JSON.stringify(libraries) %>;
+  const centerLat = libraries.length > 0 ? Number(libraries[0].lat) : 37.5665;
+  const centerLng = libraries.length > 0 ? Number(libraries[0].lng) : 126.9780;
+
+  var map = new naver.maps.Map('map', {
+    center: new naver.maps.LatLng(centerLat, centerLng),
+    zoom: 11
+  });
+
+  libraries.forEach(lib => {
+    if (!lib.lat || !lib.lng) return;
+    var marker = new naver.maps.Marker({
+      position: new naver.maps.LatLng(Number(lib.lat), Number(lib.lng)),
+      map: map
+    });
+    var infowindow = new naver.maps.InfoWindow({
+      content: `<div style="padding:5px;font-size:12px;">${lib.name}</div>`
+    });
+    naver.maps.Event.addListener(marker, 'mouseover', function() {
+      infowindow.open(map, marker);
+    });
+    naver.maps.Event.addListener(marker, 'mouseout', function() {
+      infowindow.close();
+    });
+  });
+</script>
+
+<div class="reviews-section">
+  <div class="review-header">
+    <h3>후기</h3>
+    <a href="/book/<%= book.isbn13 %>/review/new">
+      <button type="button">후기 작성</button>
+    </a>
+  </div>
+
+  <h4>총 <%= reviewsTotal %>개의 후기</h4>
+  
+  <form method="get" action="/book/<%= book.isbn13 %>" class="sort-form">
+    <select name="sort" onchange="this.form.submit()">
+      <option value="recent" <%= sort === 'recent' ? 'selected' : '' %>>최신순</option>
+      <option value="popular" <%= sort === 'popular' ? 'selected' : '' %>>인기순</option>
+    </select>
+    <input type="hidden" name="page" value="<%= page %>">
+  </form>
+
+  <ul class="reviews-list">
+    <% reviews.forEach(r => { %>
+      <li class="review-item">
+        <div class="user-info"><%= r.nickname || r.user_id %></div>
+        <div class="rating">
+          <% for(let i = 0; i < r.rating; i++) { %>⭐<% } %>
+          (<%= r.rating %>점)
+        </div>
+        <div class="content"><%= r.content %></div>
+        <div class="meta">
+          작성일: <%= new Date(r.created_at).toLocaleDateString() %>
+          <span class="likes">추천: <%= r.likes || 0 %></span>
+        </div>
+      </li>
+    <% }) %>
+  </ul>
+
+  <div class="pagination">
+    <% for(let i = 1; i <= totalPages; i++) { %>
+      <% if(i === page) { %>
+        <strong><%= i %></strong>
+      <% } else { %>
+        <a href="/book/<%= book.isbn13 %>?sort=<%= sort %>&page=<%= i %>"><%= i %></a>
+      <% } %>
+    <% } %>
+  </div>
+</div>
+</body>
+</html>
