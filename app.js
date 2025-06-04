@@ -119,6 +119,10 @@ app.use('/posts', postsRouter);
 const commentsRouter = require('./routes/comments');
 app.use('/comments', commentsRouter);
 
+//bookReviews 라우터
+const bookReviewsRouter = require('./routes/bookReviews');
+app.use('/book-reviews', bookReviewsRouter);
+
 //회원 관련 라우터
 const authRouter = require('./routes/auth');
 const checkIdRouter = require('./routes/checkId');

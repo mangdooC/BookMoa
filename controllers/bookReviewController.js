@@ -20,7 +20,12 @@ exports.reviewForm = (req, res) => {
 // 리뷰 생성
 exports.createReview = async (req, res) => {
   const isbn13 = req.params.isbn13;
-  const { nickname, comment } = req.body;
+  const { comment } = req.body;
+  const user_id = req.user?.user_id;
+
+  if (!user_id) {
+    return res.status(401).send('로그인이 필요합니다.');
+  }
   
   try {
     // 1. 먼저 book_id 조회
@@ -39,7 +44,7 @@ exports.createReview = async (req, res) => {
     // 2. 리뷰 저장
     await pool.query(
       'INSERT INTO book_review (user_id, book_id, content) VALUES (?, ?, ?)',
-      [nickname, book_id, comment]
+      [user_id, book_id, comment]
     );
 
     res.redirect(`/book/${isbn13}`);
