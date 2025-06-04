@@ -51,18 +51,6 @@
       alert('서버 에러');
     }
   });
-
-  // 로그인 시 로그인, 회원가입 버튼 사라지고 로그아웃 버튼만 보이게
-    if (token) {
-      loginLink.style.display = 'none';
-      signupBtn.style.display = 'none';
-      logoutBtn.style.display = 'inline-block';
-    } else {
-      loginLink.style.display = 'inline-block';
-      signupBtn.style.display = 'inline-block';
-      logoutBtn.style.display = 'none';
-    }
 </script>
-
 </body>
 </html>

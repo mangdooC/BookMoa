@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -8,45 +7,126 @@
 </head>
 <body>
 
-<!-- 🔹 상단 헤더 -->
 <header class="top-header">
   <div class="logo">
     <a href="/">📖 책모아</a>
   </div>
   <div class="auth-buttons">
-    <% if (!user) { %>
-      <a href="/mypage/login.html">로그인</a>
-      <a href="/mypage/signUp.html">회원가입</a>
-    <% } else { %>
-      <a href="/mypage/editInfo.html"><%= user.nickname %>님</a>
-      <form action="/logout" method="POST" style="display:inline;">
-        <button type="submit">로그아웃</button>
-      </form>
-    <% } %>
+    <a href="/mypage/login.html" id="loginLink">로그인</a>
+    <a href="/mypage/signUp.html" id="signupBtn">회원가입</a>
+    <a href="/mypage/editInfo.html" id="mypageLink" style="display:none;">마이페이지</a>
+    <button id="logoutBtn" style="display:none; width: 100px;">로그아웃</button>
   </div>
 </header>
 
-  <!-- 🔹 검색창 -->
-  <section class="search-section">
-    <select>
-      <option>도서명</option>
-      <option>저자명</option>
+<!-- 🔹 검색창 --> 
+<section class="search-section">
+  <form action="/book/search/results" method="GET" style="display: flex; gap: 10px; align-items: center;">
+    <input type="text" name="keyword" placeholder="검색어 입력" required />
+
+    <label for="searchTarget">검색 대상:</label>
+    <select name="searchTarget" id="searchTarget">
+      <option value="title">제목</option>
+      <option value="author">저자</option>
+      <option value="publisher">출판사</option>
+      <option value="isbn13">ISBN</option>
     </select>
-    <input type="text" placeholder="원하는 도서를 검색하세요" />
-    <button class="search-btn">🔍</button>
-  </section>
+
+    <label for="sort">정렬 기준:</label>
+    <select name="sort" id="sort">
+      <option value="loanCnt">대출건수순</option>
+      <option value="pubDate">최신순</option>
+      <option value="title">제목명순</option>
+    </select>
+    
+    <input type="hidden" name="pageNo" value="1" />
+    <button type="submit" class="search-btn" >🔍</button>
+  </form>
+</section>
+
 
 <!-- 🔹 메뉴바 -->
 <nav class="main-menu">
   <a href="/community/communityList.html">커뮤니티</a>
   <a href="/bookReview/bookReviewList.html">도서 리뷰</a>
-  <a href="/library/library.html">도서관 리뷰</a>
+  <a href="/library/libraryList.html">도서관 리뷰</a>
 </nav>
 
   <!-- 🔹 본문 콘텐츠 -->
   <main class="content">
     <%- body %>
   </main>
+
+<main class="content">
+  <h1>📚 책모아에 오신 것을 환영합니다!</h1>
+  <%- body %>
+</main>
+
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const loginLink = document.getElementById('loginLink');
+    const signupBtn = document.getElementById('signupBtn');
+    const mypageLink = document.getElementById('mypageLink');
+    const logoutBtn = document.getElementById('logoutBtn');
+
+    async function checkLogin() {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        showLoggedOut();
+        return;
+      }
+
+      try {
+        const res = await fetch('/api/auth/me', {
+          headers: {
+            'Authorization': 'Bearer ' + token,
+          }
+        });
+        if (!res.ok) throw new Error('토큰 인증 실패');
+
+        const user = await res.json();
+        showLoggedIn(user);
+      } catch (err) {
+        localStorage.removeItem('token');
+        showLoggedOut();
+      }
+    }
+
+    function showLoggedIn(user) {
+      loginLink.style.display = 'none';
+      signupBtn.style.display = 'none';
+      logoutBtn.style.display = 'inline-block';
+      mypageLink.style.display = 'inline-block';
+      mypageLink.textContent = user.nickname + "님";
+    }
+
+    function showLoggedOut() {
+      loginLink.style.display = 'inline-block';
+      signupBtn.style.display = 'inline-block';
+      logoutBtn.style.display = 'none';
+      mypageLink.style.display = 'none';
+    }
+
+    mypageLink.addEventListener('click', (e) => {
+      e.preventDefault();
+      const token = localStorage.getItem('token');
+      if (!token) {
+        alert('로그인이 필요합니다.');
+        window.location.href = '/mypage/login.html';
+      } else {
+        window.location.href = '/mypage/editInfo.html';
+      }
+    });
+
+    logoutBtn.addEventListener('click', () => {
+      localStorage.removeItem('token');
+      alert('로그아웃 되었습니다');
+      location.reload();
+    });
+
+    checkLogin();
+  });
+</script>
 
 </body>
 </html>

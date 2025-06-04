@@ -1,61 +1,88 @@
-<!DOCTYPE html>
+<!-- <!DOCTYPE html>
 <html lang="ko">
 <head>
   <meta charset="UTF-8">
   <title>책모아 메인 페이지</title>
-  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="/styles.css">
 </head>
 <body>
   <h1>📚 책모아에 오신 것을 환영합니다!</h1>
   <nav>
     <ul>
-    <a href="./community/write.html">게시글 작성하기</a>
-    <a href="./community/communityList.html">커뮤니티 게시판</a>
-    <a href="./bookReview/bookReviewList.html">책 리뷰 게시판</a>
-    <a href="./library/library.html">도서관 정보 보기</a>
-    <a href="./mypage/login.html" id="loginLink">로그인</a>
-    <a href="./mypage/signUp.html" id="signupBtn">회원가입</a>
-    <a href="./mypage/editInfo.html" id="mypageLink">마이페이지</a>
+      <a href="./community/write.html">게시글 작성하기</a>
+      <a href="./community/communityList.html">커뮤니티 게시판</a>
+      <a href="./bookReview/bookReviewList.html">책 리뷰 게시판</a>
+      <a href="./library/library.html">도서관 정보 보기</a>
+      <a href="./mypage/login.html" id="loginLink">로그인</a>
+      <a href="./mypage/signUp.html" id="signupBtn">회원가입</a>
+      <a href="./mypage/editInfo.html" id="mypageLink">마이페이지</a>
     <button id="logoutBtn" style="display: none; width: 100px; height: auto;" >로그아웃</button>
     </ul>
   </nav>
 
   <script>
-      const token = localStorage.getItem('token');
+    document.addEventListener('DOMContentLoaded', () => {
       const loginLink = document.getElementById('loginLink');
       const signupBtn = document.getElementById('signupBtn');
       const mypageLink = document.getElementById('mypageLink');
       const logoutBtn = document.getElementById('logoutBtn');
 
-    // 로그인 안하고 마이 페이지 접근 시 로그인 페이지로 이동  
-    mypageLink.addEventListener('click', (e) => {
-      e.preventDefault();
-      const token = localStorage.getItem('token');
-      if (!token) {
-        alert('로그인이 필요합니다.');
-        window.location.href = '/mypage/login.html';  // 로그인 페이지로 보냄
-      } else {
-        window.location.href = '/mypage/editInfo.html';  // 마이페이지 진입
+      async function checkLogin() {
+        const token = localStorage.getItem('token');
+        if (!token) {
+          showLoggedOut();
+          return;
+        }
+
+        try {
+          const res = await fetch('/api/auth/me', {
+            headers: {
+              'Authorization': 'Bearer ' + token,
+            }
+          });
+          if (!res.ok) throw new Error('토큰 인증 실패');
+
+          const user = await res.json();
+          showLoggedIn(user);
+        } catch (err) {
+          localStorage.removeItem('token');
+          showLoggedOut();
+        }
       }
-    });
 
-      // 로그아웃 버튼 클릭 시
-      logoutBtn.addEventListener('click', () => {
-        localStorage.removeItem('token');
-        alert('로그아웃 되었습니다');
-        location.reload(); // 새로고침해서 상태 반영
-      });
-
-      // 로그인 시 로그인, 회원가입 버튼 사라지고 로그아웃 버튼만 보이게
-      if (token) {
+      function showLoggedIn(user) {
         loginLink.style.display = 'none';
         signupBtn.style.display = 'none';
         logoutBtn.style.display = 'inline-block';
-      } else {
+        mypageLink.style.display = 'inline-block';
+      }
+
+      function showLoggedOut() {
         loginLink.style.display = 'inline-block';
         signupBtn.style.display = 'inline-block';
         logoutBtn.style.display = 'none';
+        mypageLink.style.display = 'none';
       }
-</script>
+
+      mypageLink.addEventListener('click', (e) => {
+        e.preventDefault();
+        const token = localStorage.getItem('token');
+        if (!token) {
+          alert('로그인이 필요합니다.');
+          window.location.href = '/mypage/login.html';
+        } else {
+          window.location.href = '/mypage/editInfo.html';
+        }
+      });
+
+      logoutBtn.addEventListener('click', () => {
+        localStorage.removeItem('token');
+        alert('로그아웃 되었습니다');
+        location.reload();
+      });
+
+      checkLogin();
+    });
+  </script>
 </body>
-</html>
+</html> -->

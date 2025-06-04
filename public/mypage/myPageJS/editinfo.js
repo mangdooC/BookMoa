@@ -4,14 +4,13 @@ document.addEventListener('DOMContentLoaded', async () => {
   const nicknameDisplay = document.getElementById('nicknameDisplay');
   const profilePreview = document.getElementById('profilePreview');
   const profileImageInput = document.getElementById('profileImage');
-  const userIdInput = document.getElementById('user_id');
   const saveInfoBtn = document.getElementById('saveInfoBtn');
   const logoutBtn = document.getElementById('logoutBtn');
 
   // 초기 사용자 정보 로딩
   if (token) {
     try {
-      const res = await fetch('/api/user/info', {
+      const res = await fetch('/api/auth/me', {
         headers: { Authorization: `Bearer ${token}` },
       });
       if (!res.ok) throw new Error('정보 로딩 실패');
@@ -30,12 +29,16 @@ document.addEventListener('DOMContentLoaded', async () => {
       const profileImageUrl = data.profile_image || '/mypage/images/default.jpg';
       profilePreview.src = profileImageUrl;
 
+      // 주소도 서버에서 온 값으로 초기화
+      if (data.address) {
+        const addressInput = document.getElementById('address');
+        if (addressInput) addressInput.value = data.address;
+      }
+
     } catch (e) {
       console.error('초기 유저 정보 로딩 실패:', e);
     }
   }
-
-  if (userIdInput) userIdInput.readOnly = true;
 
   // 정보 수정 (닉네임, 비번, 주소)
   if (saveInfoBtn) {
@@ -87,8 +90,12 @@ document.addEventListener('DOMContentLoaded', async () => {
           document.getElementById('nickname').value = nickname;
         }
 
+        // 비밀번호랑 주소는 수정 후 초기화하지 말고 유지하자
         document.getElementById('password').value = '';
-        document.getElementById('address').value = '';
+        // 주소는 서버에서 최신 값으로 다시 세팅해도 되고 그냥 냅둬도 됨
+        // 만약 서버에서 갱신된 주소를 보내준다면 이거로 바꾸면 됨:
+        // if (data.address) document.getElementById('address').value = data.address;
+
       } catch (err) {
         alert('서버 오류 발생');
       }

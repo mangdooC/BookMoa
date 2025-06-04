@@ -15,7 +15,6 @@ body {
 
 .logo a {
   font-size: 30px;
-  font-size: 24px;
   font-weight: bold;
   color: #c84a2f;
   text-decoration: none;
@@ -27,7 +26,6 @@ body {
 .auth-buttons a,
 .auth-buttons button {
   background-color: #ffb59c;
-  background-color: #fff;
   border: 1px solid #333;
   border-radius: 12px;
   padding: 4px 10px;
@@ -41,8 +39,6 @@ body {
   font-family: inherit;
   display: inline-block;
   appearance: none; /* 브라우저 기본 버튼 스타일 제거 */
-  font-size: 13px;
-  cursor: pointer;
 }
 
 .auth-buttons form {
@@ -76,10 +72,6 @@ body {
   font-size: 16px;
   cursor: pointer;
   background-color: transparent;
-  background-color: #fff;
-  border: none;
-  font-size: 16px;
-  cursor: pointer;
 }
 
 /* 메뉴바 */

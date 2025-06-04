@@ -352,3 +352,9 @@ button[type="button"] {
 .post-category a:hover {
   text-decoration: underline;
 }
+
+.form-inline {
+  display: flex;
+  gap: 10px;
+  align-items: center; 
+}
