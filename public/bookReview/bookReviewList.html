@@ -1,5 +1,3 @@
-
-
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -49,10 +47,11 @@
           const li = document.createElement('li');
           li.className = 'review-item';
           li.innerHTML = `
-            <strong>${review.title}</strong> (${review.rating}점)<br />
-            ISBN: ${review.isbn}<br />
-            <small>작성자: ${review.author}</small><br />
-            <p>${review.content}</p>
+            <a href="/bookReview/bookReviewPost.html?review_id=${review.review_id}" style="text-decoration: none; color: inherit;">
+              <strong>${review.title}</strong> (${review.rating}점)<br />
+              ISBN: ${review.isbn}<br />
+              <small>작성자: ${review.author}</small>
+            </a>
           `;
           list.appendChild(li);
         });
