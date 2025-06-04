@@ -1,4 +1,4 @@
-<!-- <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="ko">
 <head>
   <meta charset="UTF-8">
@@ -15,7 +15,7 @@
       <a href="./library/library.html">도서관 정보 보기</a>
       <a href="./mypage/login.html" id="loginLink">로그인</a>
       <a href="./mypage/signUp.html" id="signupBtn">회원가입</a>
-      <a href="./mypage/editInfo.html" id="mypageLink">마이페이지</a>
+      <a href="./mypage/editInfo.html" id="mypageLink" display="none">마이페이지</a>
     <button id="logoutBtn" style="display: none; width: 100px; height: auto;" >로그아웃</button>
     </ul>
   </nav>
@@ -37,7 +37,7 @@
         try {
           const res = await fetch('/api/auth/me', {
             headers: {
-              'Authorization': 'Bearer ' + token,
+              'Authorization': 'Bearer ' + token
             }
           });
           if (!res.ok) throw new Error('토큰 인증 실패');
@@ -45,44 +45,39 @@
           const user = await res.json();
           showLoggedIn(user);
         } catch (err) {
+          console.error('인증 실패:', err);
           localStorage.removeItem('token');
           showLoggedOut();
         }
       }
 
       function showLoggedIn(user) {
-        loginLink.style.display = 'none';
-        signupBtn.style.display = 'none';
-        logoutBtn.style.display = 'inline-block';
-        mypageLink.style.display = 'inline-block';
+        if (loginLink) loginLink.style.display = 'none';
+        if (signupBtn) signupBtn.style.display = 'none';
+        if (mypageLink) {
+          mypageLink.style.display = 'inline-block';
+          mypageLink.textContent = `${user.nickname}님`;
+        }
+        if (logoutBtn) logoutBtn.style.display = 'inline-block';
       }
 
       function showLoggedOut() {
-        loginLink.style.display = 'inline-block';
-        signupBtn.style.display = 'inline-block';
-        logoutBtn.style.display = 'none';
-        mypageLink.style.display = 'none';
+        if (loginLink) loginLink.style.display = 'inline-block';
+        if (signupBtn) signupBtn.style.display = 'inline-block';
+        if (mypageLink) mypageLink.style.display = 'none';
+        if (logoutBtn) logoutBtn.style.display = 'none';
       }
 
-      mypageLink.addEventListener('click', (e) => {
-        e.preventDefault();
-        const token = localStorage.getItem('token');
-        if (!token) {
-          alert('로그인이 필요합니다.');
-          window.location.href = '/mypage/login.html';
-        } else {
-          window.location.href = '/mypage/editInfo.html';
-        }
-      });
-
-      logoutBtn.addEventListener('click', () => {
-        localStorage.removeItem('token');
-        alert('로그아웃 되었습니다');
-        location.reload();
-      });
+      if (logoutBtn) {
+        logoutBtn.addEventListener('click', () => {
+          localStorage.removeItem('token');
+          alert('로그아웃 되었습니다.');
+          location.reload();
+        });
+      }
 
       checkLogin();
     });
   </script>
 </body>
-</html> -->
+</html>
