@@ -10,9 +10,6 @@
     <label for="title">제목:</label><br />
     <input type="text" id="title" name="title" required /><br />
 
-    <label for="author">작성자:</label><br />
-    <input type="text" id="author" name="author" required /><br />
-
     <label for="isbn">ISBN 코드:</label><br />
     <input type="text" id="isbn" name="isbn" required /><br />
 
@@ -35,19 +32,18 @@
   <script>
     document.getElementById("review-form").addEventListener("submit", async function (e) {
       e.preventDefault();
-      const title = document.getElementById("title").value;
-      const author = document.getElementById("author").value;
       const isbn = document.getElementById("isbn").value;
       const rating = document.getElementById("rating").value;
       const content = document.getElementById("content").value;
 
       try {
-        const res = await fetch("/book-reviews", {
+        const res = await fetch(`/book-reviews/${isbn}`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
           },
-          body: JSON.stringify({ title, author, isbn, rating, content }),
+          credentials: "include",
+          body: JSON.stringify({ rating, comment: content }),
         });
 
         if (res.ok) {
