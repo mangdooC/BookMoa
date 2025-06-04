@@ -47,7 +47,7 @@ app.use(async (req, res, next) => {
     try {
       const decoded = jwt.verify(token, JWT_SECRET);
       // user_id로 닉네임 조회
-      const [rows] = await pool.query('SELECT nickname FROM users WHERE user_id = ?', [decoded.user_id]);
+      const [rows] = await pool.query('SELECT nickname FROM user WHERE user_id = ?', [decoded.user_id]);
       if (rows.length > 0) {
         req.session.user = {
           user_id: decoded.user_id,
