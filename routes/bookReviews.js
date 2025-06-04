@@ -1,7 +1,7 @@
 // routes/bookReviews.js
 const express = require('express');
 const router = express.Router();
-const pool = require('../config/db');
+const pool = require('../db');
 
 // 책 리뷰 목록 조회 API
 router.get('/', async (req, res) => {
