@@ -86,21 +86,26 @@ app.use(express.static(path.join(__dirname, 'public')));
 //  res.render('index', {title: '책모아 메인 페이지', user: req.session.user });
 //});
 const { getTop4Books } = require('./controllers/popularController');
+const { getLatestPosts } = require('./controllers/postsController');
 
 app.get('/', async (req, res) => {
   try {
     const popularBooks = await getTop4Books();
+    const latestPosts = await getLatestPosts();
+
     res.render('index', {
       title: '책모아 메인 페이지',
       user: req.session.user,
-      popularBooks 
+      popularBooks,
+	latestPosts 
     });
   } catch (err) {
     console.error('[메인 인기 도서 로딩 실패]', err);
     res.render('index', {
       title: '책모아 메인 페이지',
       user: req.session.user,
-      popularBooks: [] // 실패 시 빈 배열 전달
+      popularBooks: [], // 실패 시 빈 배열 전달
+	latestPosts: []
     });
   }
 });
@@ -132,6 +137,10 @@ app.use('/api/favorites', favoritelibRouter);
 //책검색 라우터
 const bookSearchRouter = require('./routes/book');
 app.use('/book', bookSearchRouter);
+
+//인기도서 라우터
+const popularRoute = require('./routes/popularRoute');
+app.use('/', popularRoute);
 
 
 const PORT = process.env.PORT || 3000;

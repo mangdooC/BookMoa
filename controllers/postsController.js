@@ -117,3 +117,26 @@ exports.deletePost = async (req, res) => {
     res.status(500).json({ error: 'DB 오류' });
   }
 };
+
+/**
+ * 메인 페이지용 최신 커뮤니티 글 2개 가져오기
+ */
+exports.getLatestPosts = async (limit = 2) => {
+  try {
+    const [rows] = await db.query(`
+      SELECT 
+        p.post_id, 
+        p.title, 
+        p.created_at, 
+        u.nickname AS author_nickname
+      FROM community_post p
+      JOIN user u ON p.user_id = u.user_id
+      ORDER BY p.created_at DESC
+      LIMIT ?
+    `, [limit]);
+    return rows;
+  } catch (err) {
+    console.error('최신 게시글 조회 실패:', err);
+    return [];
+  }
+};

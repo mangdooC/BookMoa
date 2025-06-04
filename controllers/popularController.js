@@ -19,7 +19,7 @@ const getPopularBooks = async () => {
             `&startDt=2024-03-01` +  // 하이픈 포함
             `&endDt=2024-03-31` +
             `&format=json` +
-            `&pageNo=1&pageSize=10`;
+            `&pageNo=1&pageSize=50`;
 
 
   console.log('[API 키]', process.env.DATA4LIBRARY_API_KEY);
@@ -58,10 +58,21 @@ exports.getTop4Books = async () => {
 // /popular 페이지 렌더링
 exports.renderPopularPage = async (req, res) => {
   try {
-    const books = await getPopularBooks();
-    res.render('popular', { books });
+    const pageNo = parseInt(req.query.pageNo, 10) || 1;
+    const pageSize = 10;
+
+    const allBooks = await getPopularBooks(); // 전체 도서 목록
+    const totalPages = Math.ceil(allBooks.length / pageSize);
+    const paginatedBooks = allBooks.slice((pageNo - 1) * pageSize, pageNo * pageSize);
+
+    res.render('popular', {
+      books: paginatedBooks,
+      pageNo,
+      totalPages
+    });
   } catch (err) {
     console.error('인기도서 페이지 오류:', err);
     res.status(500).send('인기도서를 불러오는 중 오류 발생');
   }
 };
+

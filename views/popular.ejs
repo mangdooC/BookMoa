@@ -1,17 +1,62 @@
-<h2>이달의 인기 대출 도서</h2>
-<div class="book-list">
-  <% if (books && books.length > 0) { %>
-    <% books.forEach(book => { %>
-      <div class="book-item">
-        <p><strong><%= book.title %></strong></p>
-        <p>저자: <%= book.author %></p>
-        <p>출판사: <%= book.publisher %></p>
-        <p>출판년도: <%= book.year %></p>
-        <p>대출 횟수: <%= book.loanCount %>회</p>
-      </div>
-    <% }) %>
-  <% } else { %>
-    <p>데이터가 없습니다.</p>
-  <% } %>
-</div>
 
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <title>이달의 인기 도서</title>
+  <style>
+    ul { list-style-type: none; padding: 0; }
+    li { margin-bottom: 20px; display: flex; align-items: center; cursor: pointer; }
+    img { width: 80px; height: auto; margin-right: 16px; }
+    div.pagination a {
+      margin: 0 5px;
+      text-decoration: none;
+      color: blue;
+    }
+    div.pagination strong {
+      margin: 0 5px;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+  <h2>📚 이달의 인기 대출 도서</h2>
+
+  <% if (books.length === 0) { %>
+    <p>인기 도서 데이터가 없습니다.</p>
+    <a href="/">메인으로 돌아가기</a>
+  <% } else { %>
+    <ul>
+      <% books.forEach(book => { %>
+        <li onclick="location.href='/book/<%= book.isbn13 || '' %>'">
+          <img src="<%= book.imageUrl || book.bookImageURL || '' %>" alt="책 표지" />
+          <div>
+            <strong><%= book.title || book.bookname %></strong><br>
+            저자: <%= book.author || book.authors || '정보 없음' %><br>
+            출판사: <%= book.publisher || '정보 없음' %><br>
+            ISBN: <%= book.isbn13 || '정보 없음' %><br>
+            <%= book.loanCount ? `대출 횟수: ${book.loanCount}회` : '' %>
+          </div>
+        </li>
+      <% }) %>
+    </ul>
+
+    <!-- 페이지네이션 -->
+    <div class="pagination">
+      <% 
+        const startPage = Math.max(1, pageNo - 2);
+        const endPage = Math.min(totalPages, startPage + 4);
+        for (let i = startPage; i <= endPage; i++) {
+      %>
+        <% if (i === pageNo) { %>
+          <strong><%= i %></strong>
+        <% } else { %>
+          <a href="/popular?pageNo=<%= i %>"><%= i %></a>
+        <% } %>
+      <% } %>
+    </div>
+  <% } %>
+
+  <a href="/">메인으로 돌아가기</a>
+</body>
+</html>
