@@ -20,7 +20,6 @@ function searchPreferredAddress(inputId) {
 }
 
 async function savePreferredAddresses() {
-<<<<<<< HEAD
   const token = localStorage.getItem('token');
   if (!token) {
     alert('로그인 필요');
@@ -63,25 +62,6 @@ async function savePreferredAddresses() {
       headers: {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${token}`,
-=======
-  const region_level1 = document.getElementById('preferredAddress1').value.trim();
-  const region_level2 = document.getElementById('preferredAddress2').value.trim();
-  const region_level3 = document.getElementById('preferredAddress3').value.trim();
-
-  if (!region_level1 || !region_level2 || !region_level3) {
-    alert('모든 선호지역 주소를 입력해주세요.');
-    return;
-  }
-
-  const token = localStorage.getItem('token'); 
-
-  try {
-    const res = await fetch('/api/user/preferred-area', {
-      method: 'PUT', 
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`, 
->>>>>>> b7d8fe4 (resolve conflict - keep current version of index_backup.html)
       },
       body: JSON.stringify({ region_level1, region_level2, region_level3 }),
     });
@@ -91,21 +71,12 @@ async function savePreferredAddresses() {
       throw new Error(errorData.error || '저장 실패');
     }
 
-<<<<<<< HEAD
     alert('선호지역이 저장되었습니다.');
   } catch (e) {
     alert('저장 실패: ' + e.message);
     console.error(e);
   }
 }
-=======
-      alert('선호지역이 저장되었습니다.');
-    } catch (e) {
-      alert('저장 실패: ' + e.message);
-      console.error(e);
-    }
-  }
->>>>>>> b7d8fe4 (resolve conflict - keep current version of index_backup.html)
 
   async function loadPreferredAddresses() {
   const token = localStorage.getItem('token');
