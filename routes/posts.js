@@ -1,12 +1,13 @@
 const express = require('express');
 const router = express.Router();
 const postsController = require('../controllers/postsController');
+const authenticateJWT = require('../middlewares/authMiddleware');
 
 // 게시글 목록 보기
 router.get('/', postsController.getAllPosts);
 
 // 게시글 작성
-router.post('/', postsController.createPost);
+router.post('/', authenticateJWT, postsController.createPost);
 
 // 게시글 상세 보기
 router.get('/:id', postsController.getPostById);

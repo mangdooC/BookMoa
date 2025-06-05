@@ -66,6 +66,8 @@ exports.searchBooks = async (req, res) => {
 
     // 결과를 뷰에 렌더링하면서 파라미터 전달
     res.render('bookSearchResult', {
+      title: '검색 결과',
+      user: req.session.user || null,
       keyword,
       searchTarget,
       sort,

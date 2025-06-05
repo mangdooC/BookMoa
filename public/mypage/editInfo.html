@@ -35,7 +35,7 @@
       <button type="button" onclick="showSection('preferredAreaSection')">선호지역</button>
       <button type="button" onclick="showSection('favorites')">즐겨찾는 도서관</button>
       <button type="button" onclick="showSection('posts')">작성한 글/댓글</button>
-      <button type="button" id="logoutBtn">로그아웃</button>
+      <button type="button" id="logoutBtn" style="color: rgb(195, 48, 48);">로그아웃</button>
     </div>
   </div>
 
@@ -58,7 +58,7 @@
         <label for="address">주소</label>
         <div class="address-search-wrapper">
           <input type="text" id="address" name="address" placeholder="주소를 입력하세요" readonly />
-          <button type="button" onclick="searchMainAddress()">주소 검색</button>
+          <button type="button" onclick="searchMainAddress()" id="address-btn">주소 검색</button>
         </div>
       </div>
 

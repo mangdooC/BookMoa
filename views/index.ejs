@@ -29,14 +29,27 @@
     </div>
   </section>
 
-  <!-- 커뮤니티 -->
-  <section class="section-box">
-    <h2>커뮤니티</h2>
-    <div class="community-reviews">
-      <div class="review-box">최신 리뷰</div>
-      <div class="review-box">최신 리뷰 2</div>
-    </div>
-  </section>
+ <!-- 커뮤니티 -->
+<section class="section-box">
+  <h2>커뮤니티</h2>
+  <div class="community-reviews">
+    <% if (latestPosts && latestPosts.length > 0) { %>
+      <% latestPosts.forEach(post => { %>
+        <div class="review-box">
+          <a href="/community/post.html?id=<%= post.post_id %>">
+            <strong><%= post.title %></strong>
+          </a><br>
+          <small>작성자: <%= post.author_nickname || '익명' %></small><br>
+          <small>작성일: <%= new Date(post.created_at).toLocaleString() %></small>
+        </div>
+      <% }) %>
+    <% } else { %>
+      <p>최근 게시글이 없습니다.</p>
+    <% } %>
+  </div>
+  <a href="/community/communityList.html">전체 게시글 보기 →</a>
+</section>
+
 
   <!-- 주변 도서관 정보 -->
   <section class="section-box">
@@ -44,3 +57,4 @@
   </section>
 
 </section>
+
