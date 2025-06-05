@@ -66,71 +66,71 @@ const deleteBookReview = async (req, res) => {
   }
 };
 
-// 4. 도서관 리뷰 조회 (사용자 기준)
-const getLibraryReviewsByUser = async (req, res) => {
-  const user_id = req.user.user_id;
-  try {
-    const [libraryReviews] = await pool.query(`
-      SELECT lr.review_id, lr.content, lr.rating, lr.created_at,
-             l.name AS library_name,
-             CONCAT('/libraries/reviews/', lr.review_id) AS url
-      FROM library_review lr
-      JOIN library l ON lr.library_id = l.library_id
-      WHERE lr.user_id = ?
-      ORDER BY lr.created_at DESC
-    `, [user_id]);
+// // 4. 도서관 리뷰 조회 (사용자 기준)
+// const getLibraryReviewsByUser = async (req, res) => {
+//   const user_id = req.user.user_id;
+//   try {
+//     const [libraryReviews] = await pool.query(`
+//       SELECT lr.review_id, lr.content, lr.rating, lr.created_at,
+//              l.name AS library_name,
+//              CONCAT('/libraries/reviews/', lr.review_id) AS url
+//       FROM library_review lr
+//       JOIN library l ON lr.library_id = l.library_id
+//       WHERE lr.user_id = ?
+//       ORDER BY lr.created_at DESC
+//     `, [user_id]);
 
-    res.json(libraryReviews);
-  } catch (err) {
-    console.error('도서관 리뷰 조회 실패:', err);
-    res.status(500).json({ message: '도서관 리뷰 조회 중 오류 발생' });
-  }
-};
+//     res.json(libraryReviews);
+//   } catch (err) {
+//     console.error('도서관 리뷰 조회 실패:', err);
+//     res.status(500).json({ message: '도서관 리뷰 조회 중 오류 발생' });
+//   }
+// };
 
-// 5. 도서관 리뷰 수정
-const updateLibraryReview = async (req, res) => {
-  const user_id = req.user.user_id;
-  const review_id = req.params.reviewId;
-  const { content, rating } = req.body;
+// // 5. 도서관 리뷰 수정
+// const updateLibraryReview = async (req, res) => {
+//   const user_id = req.user.user_id;
+//   const review_id = req.params.reviewId;
+//   const { content, rating } = req.body;
 
-  try {
-    const [result] = await pool.query(
-      `UPDATE library_review SET content = ?, rating = ? WHERE review_id = ? AND user_id = ?`,
-      [content, rating, review_id, user_id]
-    );
+//   try {
+//     const [result] = await pool.query(
+//       `UPDATE library_review SET content = ?, rating = ? WHERE review_id = ? AND user_id = ?`,
+//       [content, rating, review_id, user_id]
+//     );
 
-    if (result.affectedRows === 0) {
-      return res.status(404).json({ message: '도서관 리뷰가 없거나 권한이 없습니다.' });
-    }
+//     if (result.affectedRows === 0) {
+//       return res.status(404).json({ message: '도서관 리뷰가 없거나 권한이 없습니다.' });
+//     }
 
-    res.json({ message: '도서관 리뷰 수정 완료' });
-  } catch (err) {
-    console.error('도서관 리뷰 수정 실패:', err);
-    res.status(500).json({ message: '도서관 리뷰 수정 중 오류 발생' });
-  }
-};
+//     res.json({ message: '도서관 리뷰 수정 완료' });
+//   } catch (err) {
+//     console.error('도서관 리뷰 수정 실패:', err);
+//     res.status(500).json({ message: '도서관 리뷰 수정 중 오류 발생' });
+//   }
+// };
 
-// 6. 도서관 리뷰 삭제
-const deleteLibraryReview = async (req, res) => {
-  const user_id = req.user.user_id;
-  const review_id = req.params.reviewId;
+// // 6. 도서관 리뷰 삭제
+// const deleteLibraryReview = async (req, res) => {
+//   const user_id = req.user.user_id;
+//   const review_id = req.params.reviewId;
 
-  try {
-    const [result] = await pool.query(
-      `DELETE FROM library_review WHERE review_id = ? AND user_id = ?`,
-      [review_id, user_id]
-    );
+//   try {
+//     const [result] = await pool.query(
+//       `DELETE FROM library_review WHERE review_id = ? AND user_id = ?`,
+//       [review_id, user_id]
+//     );
 
-    if (result.affectedRows === 0) {
-      return res.status(404).json({ message: '도서관 리뷰가 없거나 권한이 없습니다.' });
-    }
+//     if (result.affectedRows === 0) {
+//       return res.status(404).json({ message: '도서관 리뷰가 없거나 권한이 없습니다.' });
+//     }
 
-    res.json({ message: '도서관 리뷰 삭제 완료' });
-  } catch (err) {
-    console.error('도서관 리뷰 삭제 실패:', err);
-    res.status(500).json({ message: '도서관 리뷰 삭제 중 오류 발생' });
-  }
-};
+//     res.json({ message: '도서관 리뷰 삭제 완료' });
+//   } catch (err) {
+//     console.error('도서관 리뷰 삭제 실패:', err);
+//     res.status(500).json({ message: '도서관 리뷰 삭제 중 오류 발생' });
+//   }
+// };
 
 // 7. 커뮤니티 글 조회 (사용자 기준)
 const getCommunityPostsByUser = async (req, res) => {
@@ -267,9 +267,9 @@ module.exports = {
   getBookReviewsByUser,
   updateBookReview,
   deleteBookReview,
-  getLibraryReviewsByUser,
-  updateLibraryReview,
-  deleteLibraryReview,
+  // getLibraryReviewsByUser,
+  // updateLibraryReview,
+  // deleteLibraryReview,
   getCommunityPostsByUser,
   updateCommunityPost,
   deleteCommunityPost,

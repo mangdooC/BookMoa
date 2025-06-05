@@ -20,17 +20,11 @@ function searchPreferredAddress(inputId) {
 }
 
 async function savePreferredAddresses() {
-  const token = localStorage.getItem('token');
-  if (!token) {
-    alert('로그인 필요');
-    return;
-  }
-
   // 기존 저장된 선호지역 받아오기
   let existing = { region_level1: '', region_level2: '', region_level3: '' };
   try {
     const res = await fetch('/api/user/preferred-area', {
-      headers: { 'Authorization': `Bearer ${token}` },
+      credentials: 'include',
     });
     if (res.ok) {
       const data = await res.json();
@@ -59,9 +53,9 @@ async function savePreferredAddresses() {
   try {
     const res = await fetch('/api/user/preferred-area', {
       method: 'PUT',
+      credentials: 'include',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`,
       },
       body: JSON.stringify({ region_level1, region_level2, region_level3 }),
     });
@@ -78,23 +72,21 @@ async function savePreferredAddresses() {
   }
 }
 
-  async function loadPreferredAddresses() {
-  const token = localStorage.getItem('token');
-  if (!token) return;
-
+async function loadPreferredAddresses() {
   try {
     const res = await fetch('/api/user/preferred-area', {
-      headers: { 'Authorization': `Bearer ${token}` },
+      credentials: 'include',
     });
     if (!res.ok) return;
 
     const data = await res.json();
-    const { region_level1, region_level2, region_level3 } = data.preferredArea;
+    const { region_level1, region_level2, region_level3 } = data.preferredArea || {};
     document.getElementById('preferredAddress1').value = region_level1 || '';
     document.getElementById('preferredAddress2').value = region_level2 || '';
     document.getElementById('preferredAddress3').value = region_level3 || '';
-    } catch (e) {
-      console.error('선호지역 불러오기 실패:', e);
-    }
+  } catch (e) {
+    console.error('선호지역 불러오기 실패:', e);
   }
-  window.addEventListener('DOMContentLoaded', loadPreferredAddresses);
+}
+
+window.addEventListener('DOMContentLoaded', loadPreferredAddresses);

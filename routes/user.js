@@ -10,9 +10,10 @@ const {
   getPreferredArea,
   updateUserInfo,
   uploadProfileImage,
+  deleteProfileImage,
 } = require('../controllers/userController');
 
-// 허용 확장자 및 MIME 타입 정의
+// 이미지 허용 확장자 & MIME 타입
 const IMAGE_EXTS = ['.jpg', '.jpeg', '.png', '.gif', '.webp'];
 const IMAGE_MIMES = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
 
@@ -24,19 +25,15 @@ if (!fs.existsSync(uploadDir)) {
 
 // multer 저장소 설정
 const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, uploadDir);
-  },
-
+  destination: (req, file, cb) => cb(null, uploadDir),
   filename: (req, file, cb) => {
-    // 파일 이름 인젝션 방지 + 안전하게 변경
     const safeOriginalName = file.originalname.replace(/[^a-zA-Z0-9.\-_]/g, '');
     const ext = path.extname(safeOriginalName).toLowerCase();
     cb(null, `user_${req.user.user_id}_${Date.now()}${ext}`);
   },
 });
 
-// 파일 필터링 설정
+// 파일 필터링
 const fileFilter = (req, file, cb) => {
   const ext = path.extname(file.originalname).toLowerCase();
   if (!IMAGE_EXTS.includes(ext) || !IMAGE_MIMES.includes(file.mimetype)) {
@@ -45,20 +42,27 @@ const fileFilter = (req, file, cb) => {
   cb(null, true);
 };
 
-// multer 업로더
 const upload = multer({
   storage,
   fileFilter,
   limits: { fileSize: 5 * 1024 * 1024 }, // 5MB 제한
 });
 
-// ----- 📌 라우팅 정의 -----
+// --- 라우터 정의 ---
+
+// 유저 정보 조회
 router.get('/info', authMiddleware, getUserInfo);
+
+// 선호 지역 조회
 router.get('/preferred-area', authMiddleware, getPreferredArea);
+
+// 선호 지역 수정
 router.put('/preferred-area', authMiddleware, updatePreferredArea);
+
+// 유저 정보 수정 (비밀번호, 닉네임, 주소)
 router.put('/edit', authMiddleware, updateUserInfo);
 
-// 프로필 이미지 업로드 (multer 에러 핸들링 포함)
+// 프로필 이미지 업로드
 router.post(
   '/upload-profile',
   authMiddleware,
@@ -66,7 +70,8 @@ router.post(
     upload.single('profileImage')(req, res, (err) => {
       if (err instanceof multer.MulterError) {
         return res.status(400).json({ message: `업로드 실패: ${err.message}` });
-      } else if (err) {
+      }
+      if (err) {
         return res.status(400).json({ message: `에러 발생: ${err.message}` });
       }
       next();
@@ -74,5 +79,8 @@ router.post(
   },
   uploadProfileImage
 );
+
+// 프로필 이미지 삭제
+router.delete('/delete-profile', authMiddleware, deleteProfileImage);
 
 module.exports = router;
