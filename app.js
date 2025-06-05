@@ -13,6 +13,9 @@ const jwt = require('jsonwebtoken');
 
 const app = express();
 
+// ---------- 정적 파일 제공 ----------Add commentMore actions
+app.use('/uploads/profile', express.static(path.join(__dirname, 'uploads/profile')));
+
 // ---------- 미들웨어 설정 ----------
 // EJS 뷰 엔진 세팅
 app.set('view engine', 'ejs');
@@ -62,21 +65,21 @@ app.use(async (req, res, next) => {
   next();
 });
 
-// 특정 정적 경로 추가 (mypage/images)
-app.use('/mypage/images', express.static(path.join(__dirname, 'public/mypage/images')));
+  // // 특정 정적 경로 추가 (mypage/images)
+  // app.use('/mypage/images', express.static(path.join(__dirname, 'public/mypage/images')));
 
-// 프로필 이미지 라우팅 (파일이 없으면 기본 이미지 제공)
-app.get('/uploads/profile/:filename', (req, res) => {
-  const filename = req.params.filename;
-  const filePath = path.join(__dirname, 'uploads/profile', filename);
-  const defaultPath = path.join(__dirname, 'public/mypage/images/default.jpg');
+  // // profile 이미지 직접 핸들링
+  // app.get('/uploads/profile/:filename', (req, res) => {
+  //   const filename = req.params.filename;
+  //   const filePath = path.join(__dirname, 'uploads/profile', filename);
+  //   const defaultPath = path.join(__dirname, 'public/mypage/images/default.jpg');
 
-  if (fs.existsSync(filePath)) {
-    res.sendFile(filePath);
-  } else {
-    res.sendFile(defaultPath);
-  }
-});
+  //   if (fs.existsSync(filePath)) {
+  //     res.sendFile(filePath);
+  //   } else {
+  //     res.sendFile(defaultPath);
+  //   }
+  // });
 
 // ---------- 라우터 등록 ----------
 
@@ -115,6 +118,7 @@ app.use('/api/auth', require('./routes/auth'));               // 회원가입 / 
 app.use('/api/checkId', require('./routes/checkId'));         // 아이디 중복확인
 app.use('/api/user', require('./routes/user'));               // 마이페이지
 app.use('/api/user-contents', require('./routes/userContents')); // 작성한 글/댓글 목록
+app.use('/uploads/profile', express.static(path.join(__dirname, 'uploads/profile')));
 
 // 도서관 즐겨찾기 라우터
 const favoritelibRouter = require('./routes/favoritelib');

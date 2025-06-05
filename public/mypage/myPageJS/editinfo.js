@@ -90,11 +90,15 @@ document.addEventListener('DOMContentLoaded', async () => {
           document.getElementById('nickname').value = nickname;
         }
 
-        // 비밀번호랑 주소는 수정 후 초기화하지 말고 유지하자
+        if (data.profile_image && data.profile_image.trim() !== '') {
+            profilePreview.src = data.profile_image;
+          } else {
+            profilePreview.src = '/mypage/images/default.jpg';
+          }
+
+
         document.getElementById('password').value = '';
-        // 주소는 서버에서 최신 값으로 다시 세팅해도 되고 그냥 냅둬도 됨
-        // 만약 서버에서 갱신된 주소를 보내준다면 이거로 바꾸면 됨:
-        // if (data.address) document.getElementById('address').value = data.address;
+        if (data.address) document.getElementById('address').value = data.address;
 
       } catch (err) {
         alert('서버 오류 발생');

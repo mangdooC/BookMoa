@@ -27,6 +27,7 @@ const storage = multer.diskStorage({
   destination: (req, file, cb) => {
     cb(null, uploadDir);
   },
+
   filename: (req, file, cb) => {
     // 파일 이름 인젝션 방지 + 안전하게 변경
     const safeOriginalName = file.originalname.replace(/[^a-zA-Z0-9.\-_]/g, '');

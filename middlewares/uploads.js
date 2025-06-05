@@ -13,7 +13,7 @@ const storage = multer.diskStorage({
 });
 
 const fileFilter = (req, file, cb) => {
-  const allowedExt = ['.jpg', '.jpeg', '.png', '.gif'];
+  const allowedExt = ['.jpg', '.jpeg', '.png', '.gif', 'webp'];
   const ext = path.extname(file.originalname).toLowerCase();
   if (!allowedExt.includes(ext)) {
     return cb(new Error('이미지 파일만 업로드 가능합니다.'));
