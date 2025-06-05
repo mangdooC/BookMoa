@@ -63,29 +63,5 @@
   <main class="content">
     <%- body %>
   </main>
-
-<!-- <script>
-  logoutBtn.addEventListener('click', async () => {
-    try {
-      const res = await fetch('/logout', {
-        method: 'POST',
-        credentials: 'include',
-      });
-
-      if (!res.ok) {
-        alert('로그아웃 실패');
-        return;
-      }
-
-      // alert 제거
-      location.href = '/'; // 홈으로 이동
-
-    } catch (err) {
-      console.error('로그아웃 중 에러:', err);
-      alert('서버 오류 발생');
-    }
-  });
-</script> -->
-
 </body>
 </html>
