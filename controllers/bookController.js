@@ -66,11 +66,8 @@ exports.searchBooks = async (req, res) => {
 
     // 결과를 뷰에 렌더링하면서 파라미터 전달
     res.render('bookSearchResult', {
-<<<<<<< HEAD
-=======
       title: '검색 결과',
       user: req.session.user || null,
->>>>>>> e53b9846de1247f217b4252222ab23d1e3c37b70
       keyword,
       searchTarget,
       sort,
@@ -88,8 +85,4 @@ exports.searchBooks = async (req, res) => {
 
 exports.searchForm = (req, res) => {
   res.render('bookSearch', { keyword: '', searchTarget: 'title', sort: 'loan' });
-<<<<<<< HEAD
 };
-=======
-};
->>>>>>> e53b9846de1247f217b4252222ab23d1e3c37b70
