@@ -103,7 +103,14 @@ const login = async (req, res) => {
       return res.status(400).json({ error: '비밀번호가 일치하지 않습니다.' });
     }
 
-    const token = jwt.sign({ user_id: user.user_id }, JWT_SECRET, { expiresIn: '1d' });
+    const token = jwt.sign({ user_id: user.user_id, nickname: user.nickname  }, JWT_SECRET, { expiresIn: '1d' });
+	
+	//JWT를 쿠키로 클라이언트에 저장
+	res.cookie('token', token, {
+	  httpOnly: true,
+ 	 secure: process.env.NODE_ENV === 'production', // HTTPS 환경에서만
+ 	 maxAge: 86400000 // 1일
+	});
 
     res.json({ message: '로그인에 성공하셨습니다.', token, user_id: user.user_id });
   } catch (error) {
