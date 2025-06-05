@@ -1,6 +1,7 @@
 const express = require('express');
 const path = require('path');
 const dotenv = require('dotenv');
+const multer = require('multer');  // multer 추가
 const pool = require('./db');
 const session = require('express-session');
 const ejsLayouts = require('express-ejs-layouts');
@@ -13,8 +14,22 @@ const app = express();
 
 const JWT_SECRET = process.env.JWT_SECRET;
 
+// multer 설정 추가
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, 'uploads/profile/')
+  },
+  filename: function (req, file, cb) {
+    cb(null, Date.now() + '-' + file.originalname)
+  }
+});
+
+const upload = multer({ storage: storage });
+app.locals.upload = upload;  // 라우터에서 사용할 수 있도록 locals에 저장
+
 // 정적 파일 제공
 app.use('/uploads/profile', express.static(path.join(__dirname, 'uploads/profile')));
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 app.use(express.static(path.join(__dirname, 'public')));
 
 // 뷰 엔진 세팅
@@ -114,7 +129,6 @@ app.use('/api/user', require('./routes/user'));
 app.use('/api/user-contents', require('./routes/userContents'));
 app.use('/api/favorites', require('./routes/favoritelib'));
 
-<<<<<<< HEAD
 //comment 라우터
 const commentsRouter = require('./routes/comments');
 app.use('/comments', commentsRouter);
@@ -148,28 +162,20 @@ const bookSearchRouter = require('./routes/book');
 app.use('/', bookSearchRouter);
 
 //인기도서 라우터
-=======
 //인기도서 
 const communityRouter = require('./routes/community');
 app.use('/', communityRouter);
 //커뮤니티
->>>>>>> 983f457d0a5b4b5aef9e0fc184737840229be61a
 const popularRoute = require('./routes/popularRoute');
 app.use('/', popularRoute);
-// 도서 상세
-const bookRouter = require('./routes/book');
-app.use('/book', bookRouter);
 
-<<<<<<< HEAD
 const apiRouter = require('./routes/api');
 app.use('/api', apiRouter);
-=======
 // 에러 핸들링
 app.use((err, req, res, next) => {
   console.error('서버 에러:', err.stack);
   res.status(500).json({ message: '서버 내부 에러가 발생했습니다.' });
 });
->>>>>>> 983f457d0a5b4b5aef9e0fc184737840229be61a
 
 // 서버 실행
 const PORT = process.env.PORT || 3000;
