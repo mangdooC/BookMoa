@@ -155,22 +155,4 @@ document.addEventListener('DOMContentLoaded', async () => {
       }
     });
   }
-
-  // 로그아웃
-  if (logoutBtn) {
-    logoutBtn.addEventListener('click', async () => {
-      try {
-        const res = await fetch('/api/auth/logout', {
-          method: 'POST',
-          credentials: 'include',  // 쿠키 같이 보내기
-        });
-        const data = await res.json();
-        alert(data.message || '로그아웃 되었습니다.');
-        location.href = '/'; // 홈으로 리다이렉트
-      } catch (err) {
-        console.error('로그아웃 실패:', err);
-        alert('로그아웃 중 오류가 발생했습니다.');
-      }
-    });
-  }
 });
