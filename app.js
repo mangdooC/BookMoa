@@ -74,13 +74,13 @@ app.post('/logout', (req, res) => {
 });
 
 // 컨트롤러들 require
-const { getTop4Books } = require('./controllers/popularController');
-const { getLatestPosts } = require('./controllers/communityController');
+const { getTopBooks } = require('./controllers/popularController');
+const { getLatestPosts } = require('./controllers/postsController');
 
 // 메인 페이지
 app.get('/', async (req, res) => {
   try {
-    const popularBooks = await getTop4Books();
+    const popularBooks = await getTopBooks();
     const latestPosts = await getLatestPosts();
 
     res.render('index', {
@@ -104,7 +104,6 @@ app.get('/', async (req, res) => {
 app.use('/posts', require('./routes/posts'));
 app.use('/comments', require('./routes/comments'));
 app.use('/book-reviews', require('./routes/bookReviews'));
-app.use('/community', require('./routes/community'));
 
 app.use('/api/auth', require('./routes/auth'));
 app.use('/api/checkId', require('./routes/checkId'));
@@ -114,7 +113,7 @@ app.use('/api/favorites', require('./routes/favoritelib'));
 
 //인기도서 
 const communityRouter = require('./routes/community');
-app.use('/', communityRouter);
+app.use('/community', communityRouter);
 
 //커뮤니티
 const popularRoute = require('./routes/popularRoute');
