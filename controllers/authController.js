@@ -85,19 +85,13 @@ const login = async (req, res) => {
 
 // 로그아웃
 const logout = (req, res) => {
-  req.session.destroy(err => {
-    if (err) {
-      return res.status(500).json({ message: '로그아웃 실패' });
-    }
-    res.clearCookie('token', {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
-    });
-    res.json({ message: '로그아웃 완료' });
+  res.clearCookie('token', {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'lax',
   });
+  res.json({ message: '로그아웃 완료' });
 };
-
 
 // 마이페이지 유저 정보
 const getUserInfo = async (req, res) => {
