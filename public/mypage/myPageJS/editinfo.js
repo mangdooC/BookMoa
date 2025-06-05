@@ -7,18 +7,29 @@ document.addEventListener('DOMContentLoaded', async () => {
   const saveInfoBtn = document.getElementById('saveInfoBtn');
   const logoutBtn = document.getElementById('logoutBtn');
 
-  let currentProfileImage = profilePreview.src;
+  const nicknameInput = document.getElementById('nickname');
+  const passwordInput = document.getElementById('password');
+  const addressInput = document.getElementById('address');
 
-  // 초기 사용자 정보 로딩
+  // 초기 정보 로딩 
   if (token) {
     try {
       const res = await fetch('/api/auth/me', {
         headers: { Authorization: `Bearer ${token}` },
       });
+
+      if (res.status === 401) {
+        alert('로그인 세션이 만료되었습니다.');
+        localStorage.removeItem('token');
+        location.href = '/login';
+        return;
+      }
+
       if (!res.ok) throw new Error('정보 로딩 실패');
 
       const data = await res.json();
 
+      // 닉네임 세팅
       if (data.nickname) {
         nicknameDisplay.textContent = data.nickname;
         const nicknameInput = document.getElementById('nickname');
@@ -27,27 +38,32 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
       }
 
-      // 프로필 이미지가 없으면 기본 이미지 경로로 대체
-      const profileImageUrl = data.profile_image || '/mypage/images/default.jpg';
-      profilePreview.src = profileImageUrl;
-      currentProfileImage = profileImageUrl; // 여기 최신화
-
-      // 주소도 서버에서 온 값으로 초기화
+      // 주소 세팅
       if (data.address) {
         const addressInput = document.getElementById('address');
         if (addressInput) addressInput.value = data.address;
       }
+
+      // 프로필 이미지 세팅
+      if (data.profile_image) {
+        profilePreview.src = data.profile_image;
+      } else {
+        profilePreview.src = '/mypage/images/default.jpg'; // 기본 이미지 경로
+      }
+
     } catch (e) {
       console.error('초기 유저 정보 로딩 실패:', e);
+      alert('유저 정보를 불러오는 중 오류가 발생했습니다.');
     }
   }
 
-  // 정보 수정 (닉네임, 비번, 주소)
+
+  // 정보 수정
   if (saveInfoBtn) {
     saveInfoBtn.addEventListener('click', async () => {
-      const password = document.getElementById('password')?.value.trim() || '';
-      const nickname = document.getElementById('nickname')?.value.trim() || '';
-      const address = document.getElementById('address')?.value.trim() || '';
+      const password = passwordInput?.value.trim() || '';
+      const nickname = nicknameInput?.value.trim() || '';
+      const address = addressInput?.value.trim() || '';
 
       if (nickname === '') {
         alert('닉네임은 공백일 수 없습니다.');
@@ -63,9 +79,9 @@ document.addEventListener('DOMContentLoaded', async () => {
       }
 
       const updateData = {};
-      if (password !== '') updateData.password = password;
-      if (nickname !== '') updateData.nickname = nickname;
-      if (address !== '') updateData.address = address;
+      if (password) updateData.password = password;
+      if (nickname) updateData.nickname = nickname;
+      if (address) updateData.address = address;
 
       try {
         const res = await fetch('/api/user/edit', {
@@ -77,6 +93,13 @@ document.addEventListener('DOMContentLoaded', async () => {
           body: JSON.stringify(updateData),
         });
 
+        if (res.status === 401) {
+          alert('로그인 세션이 만료되었습니다.');
+          localStorage.removeItem('token');
+          location.href = '/login';
+          return;
+        }
+
         const data = await res.json();
         if (!res.ok) {
           alert(data.error || '정보 수정 실패');
@@ -85,27 +108,22 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         alert(data.message || '정보 수정 완료');
 
-        if (nickname !== '') {
+        if (nickname) {
           nicknameDisplay.textContent = nickname;
-          document.getElementById('nickname').value = nickname;
+          nicknameInput.value = nickname;
         }
 
-        if (data.profile_image && data.profile_image.trim() !== '') {
-          profilePreview.src = data.profile_image;
-          currentProfileImage = data.profile_image; // 최신화
-        } else {
-          profilePreview.src = currentProfileImage || '/mypage/images/default.jpg';
-        }
+        passwordInput.value = '';
+        if (data.address) addressInput.value = data.address;
 
-        document.getElementById('password').value = '';
-        if (data.address) document.getElementById('address').value = data.address;
       } catch (err) {
+        console.error('정보 수정 중 에러:', err);
         alert('서버 오류 발생');
       }
     });
   }
 
-  // 프로필 이미지 클릭 → 선택 → 미리보기 + 업로드
+  // 프로필 이미지 업로드
   if (profilePreview && profileImageInput) {
     profilePreview.style.cursor = 'pointer';
 
@@ -119,14 +137,13 @@ document.addEventListener('DOMContentLoaded', async () => {
 
       if (!token) {
         alert('로그인 상태가 아닙니다.');
-        profileImageInput.value = ''; // 선택 초기화
         return;
       }
 
-      // 미리보기는 토큰 체크 후에
       const reader = new FileReader();
       reader.onload = e => {
-        profilePreview.src = e.target.result;
+        // 미리보기는 서버 성공 후에만 반영하자
+        profilePreview.dataset.temp = e.target.result;
       };
       reader.readAsDataURL(file);
 
@@ -142,28 +159,30 @@ document.addEventListener('DOMContentLoaded', async () => {
           body: formData,
         });
 
+        if (res.status === 401) {
+          alert('로그인 세션이 만료되었습니다.');
+          localStorage.removeItem('token');
+          location.href = '/login';
+          return;
+        }
+
         const data = await res.json();
         if (!res.ok) {
           alert(data.error || '업로드 실패');
-          profilePreview.src = currentProfileImage || '/mypage/images/default.jpg'; // 원복
-          profileImageInput.value = ''; // 선택 초기화
           return;
         }
 
         alert('프로필 이미지 업로드 완료');
         profilePreview.src = data.imageUrl;
-        currentProfileImage = data.imageUrl; // 최신화
-        profileImageInput.value = ''; // 선택 초기화
+
       } catch (err) {
-        console.error(err);
+        console.error('프로필 업로드 오류:', err);
         alert('서버 오류 발생');
-        profilePreview.src = currentProfileImage || '/mypage/images/default.jpg'; // 원복
-        profileImageInput.value = ''; // 선택 초기화
       }
     });
   }
 
-  // 로그아웃 처리
+  // 로그아웃
   if (logoutBtn) {
     logoutBtn.addEventListener('click', () => {
       localStorage.removeItem('token');
