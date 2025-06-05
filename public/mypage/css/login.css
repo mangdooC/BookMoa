@@ -1,46 +1,68 @@
 body {
-  font-family: Arial, sans-serif;
-  background-color: #f8f8f8;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 100vh;
+  background: #F6ECDD;
+  font-family: 'Inter', sans-serif;
   margin: 0;
+  height: 100vh;
+  display: flex;
+  flex-direction: column; /* 위 아래 정렬용 */
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+.logo {
+  width: 222px;
+  height: 100px;
+  background: url('/mypage/images/bookmoaLogo.png') no-repeat center center;
+  background-size: cover;
+  position: fixed; /* 고정 */
+  top: 15px; /* 위에서 15px 띄움 */
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 1000;
 }
 
 .login-container {
-  background-color: #fff;
-  padding: 30px;
-  border-radius: 10px;
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-  width: 300px;
+  background: white;
+  border-radius: 15px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+  padding: 60px 80px;
+  width: 400px;
+  box-sizing: border-box;
+  text-align: center;
+  z-index: 1;
 }
 
 .login-container h1 {
-  text-align: center;
-  margin-bottom: 20px;
+  font-size: 32px;
+  margin-bottom: 40px;
+  font-weight: 700;
 }
 
-.login-container input[type="text"],
-.login-container input[type="password"] {
+.login-container form input {
   width: 100%;
-  padding: 10px;
-  margin: 10px 0;
-  border: 1px solid #ddd;
-  border-radius: 5px;
+  padding: 15px;
+  margin-bottom: 25px;
+  border: 1px solid #000;
+  border-radius: 20px;
+  box-shadow: 0 4px 4px rgba(0,0,0,0.25);
+  font-size: 16px;
+  font-weight: 600;
+  box-sizing: border-box;
 }
 
-.login-container button {
+.login-container form button {
   width: 100%;
-  padding: 10px;
-  background-color: #4CAF50;
-  color: #fff;
-  border: none;
-  border-radius: 5px;
-  font-weight: bold;
+  padding: 15px 0;
+  background: #FFC1A9;
+  border: 1px solid #000;
+  border-radius: 15px;
+  font-size: 18px;
+  font-weight: 700;
   cursor: pointer;
+  transition: background 0.3s;
 }
 
-.login-container button:hover {
-  background-color: #45a049;
+.login-container form button:hover {
+  background: #FFA07A;
 }

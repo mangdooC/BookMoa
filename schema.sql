@@ -121,10 +121,14 @@ CREATE TABLE `community_comment` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 CREATE TABLE `image` (
-  `image_id` int NOT NULL AUTO_INCREMENT,
-  `post_id` int NOT NULL,
-  `image_url` varchar(225) NOT NULL,
+  `image_id` INT NOT NULL AUTO_INCREMENT,
+  `post_id` INT DEFAULT NULL,
+  `user_id` VARCHAR(20) DEFAULT NULL,
+  `image_url` VARCHAR(255) NOT NULL,
+  `image_type` ENUM('post', 'profile') NOT NULL DEFAULT 'post',
   PRIMARY KEY (`image_id`),
   KEY `post_id` (`post_id`),
-  CONSTRAINT `image_ibfk_1` FOREIGN KEY (`post_id`) REFERENCES `community_post` (`post_id`)
+  KEY `user_id` (`user_id`),
+  CONSTRAINT `image_ibfk_1` FOREIGN KEY (`post_id`) REFERENCES `community_post` (`post_id`) ON DELETE CASCADE,
+  CONSTRAINT `image_ibfk_2` FOREIGN KEY (`user_id`) REFERENCES `user` (`user_id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;

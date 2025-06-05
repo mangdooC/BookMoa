@@ -20,23 +20,48 @@ function searchPreferredAddress(inputId) {
 }
 
 async function savePreferredAddresses() {
-  const region_level1 = document.getElementById('preferredAddress1').value.trim();
-  const region_level2 = document.getElementById('preferredAddress2').value.trim();
-  const region_level3 = document.getElementById('preferredAddress3').value.trim();
-
-  if (!region_level1 || !region_level2 || !region_level3) {
-    alert('모든 선호지역 주소를 입력해주세요.');
+  const token = localStorage.getItem('token');
+  if (!token) {
+    alert('로그인 필요');
     return;
   }
 
-  const token = localStorage.getItem('token'); 
+  // 기존 저장된 선호지역 받아오기
+  let existing = { region_level1: '', region_level2: '', region_level3: '' };
+  try {
+    const res = await fetch('/api/user/preferred-area', {
+      headers: { 'Authorization': `Bearer ${token}` },
+    });
+    if (res.ok) {
+      const data = await res.json();
+      existing = data.preferredArea || {};
+    }
+  } catch (e) {
+    console.error('기존 선호지역 불러오기 실패:', e);
+  }
+
+  // 입력값 가져오기
+  let region_level1 = document.getElementById('preferredAddress1').value.trim();
+  let region_level2 = document.getElementById('preferredAddress2').value.trim();
+  let region_level3 = document.getElementById('preferredAddress3').value.trim();
+
+  // 비어있으면 기존 값으로 대체
+  region_level1 = region_level1 || existing.region_level1 || '';
+  region_level2 = region_level2 || existing.region_level2 || '';
+  region_level3 = region_level3 || existing.region_level3 || '';
+
+  // 3개 다 비었으면 저장 안 함
+  if (!region_level1 && !region_level2 && !region_level3) {
+    alert('최소 한 개 이상의 선호지역 주소를 입력해주세요.');
+    return;
+  }
 
   try {
     const res = await fetch('/api/user/preferred-area', {
-      method: 'PUT', 
+      method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`, 
+        'Authorization': `Bearer ${token}`,
       },
       body: JSON.stringify({ region_level1, region_level2, region_level3 }),
     });
@@ -46,12 +71,12 @@ async function savePreferredAddresses() {
       throw new Error(errorData.error || '저장 실패');
     }
 
-      alert('선호지역이 저장되었습니다.');
-    } catch (e) {
-      alert('저장 실패: ' + e.message);
-      console.error(e);
-    }
+    alert('선호지역이 저장되었습니다.');
+  } catch (e) {
+    alert('저장 실패: ' + e.message);
+    console.error(e);
   }
+}
 
   async function loadPreferredAddresses() {
   const token = localStorage.getItem('token');

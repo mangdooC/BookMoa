@@ -75,4 +75,3 @@ exports.renderPopularPage = async (req, res) => {
     res.status(500).send('인기도서를 불러오는 중 오류 발생');
   }
 };
-
