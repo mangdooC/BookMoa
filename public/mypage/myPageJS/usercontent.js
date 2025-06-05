@@ -1,91 +1,313 @@
-async function loadPostsList(userId) {
+async function loadPostsList() {
   const base = '/api/user-contents';
-  const token = localStorage.getItem('token');
-  if (!token) {
-    console.error('로그인 필요');
-    return;
-  }
-  
-  const headers = {
-    'Authorization': `Bearer ${token}`
-  };
 
   const bookReviewList = document.getElementById('bookReviewList');
   const libraryReviewList = document.getElementById('libraryReviewList');
   const communityPostList = document.getElementById('communityPostList');
   const communityCommentList = document.getElementById('communityCommentList');
 
+  // 초기화
   bookReviewList.innerHTML = '';
   libraryReviewList.innerHTML = '';
   communityPostList.innerHTML = '';
   communityCommentList.innerHTML = '';
 
   try {
-    // 1. 도서 리뷰
-    const bookRes = await fetch(`${base}/user/${userId}/book-reviews`, { headers });
-    if (!bookRes.ok) throw new Error('도서 리뷰 불러오기 실패');
-    const bookData = await bookRes.json();
-    bookData.forEach(item => {
+    // 도서 리뷰 조회
+    const bookReviewsRes = await fetch(`${base}/book-reviews`, {
+      headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+    });
+    const bookReviews = await bookReviewsRes.json();
+    bookReviews.forEach(review => {
       const li = document.createElement('li');
-      const a = document.createElement('a');
-      a.href = `/book/review/${item.review_id}`;
-      a.textContent = `[${item.book_id}] ${item.content} (${item.rating}점)`;
-      a.style.textDecoration = 'none';
-      a.style.color = 'inherit';
-      li.appendChild(a);
+      
+      const strong = document.createElement('strong');
+      strong.textContent = review.book_title;
+      li.appendChild(strong);
+
+      li.appendChild(document.createTextNode(` (${review.rating}점)\n${review.content}\n`));
+
+      const editBtn = document.createElement('button');
+      editBtn.textContent = '수정';
+      editBtn.onclick = () => editBookReview(review.review_id, review.content, review.rating);
+      li.appendChild(editBtn);
+
+      const deleteBtn = document.createElement('button');
+      deleteBtn.textContent = '삭제';
+      deleteBtn.onclick = () => deleteBookReview(review.review_id);
+      li.appendChild(deleteBtn);
+
       bookReviewList.appendChild(li);
     });
 
-    // 2. 도서관 리뷰
-    const libRes = await fetch(`${base}/user/${userId}/library-reviews`, { headers });
-    if (!libRes.ok) throw new Error('도서관 리뷰 불러오기 실패');
-    const libData = await libRes.json();
-    libData.forEach(item => {
-      const li = document.createElement('li');
-      const a = document.createElement('a');
-      a.href = `/library/review/${item.review_id}`;
-      a.textContent = `[${item.library_id}] ${item.content} (${item.rating}점)`;
-      a.style.textDecoration = 'none';
-      a.style.color = 'inherit';
-      li.appendChild(a);
-      libraryReviewList.appendChild(li);
-    });
+    // // 도서관 리뷰 조회
+    // const libraryReviewsRes = await fetch(`${base}/library-reviews`, {
+    //   headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+    // });
+    // const libraryReviews = await libraryReviewsRes.json();
+    // libraryReviews.forEach(review => {
+    //   const li = document.createElement('li');
 
-    // 3. 커뮤니티 게시글
-    const postRes = await fetch(`${base}/user/${userId}/community-posts`, { headers });
-    if (!postRes.ok) throw new Error('커뮤니티 게시글 불러오기 실패');
-    const postData = await postRes.json();
-    postData.forEach(item => {
+    //   const strong = document.createElement('strong');
+    //   strong.textContent = review.library_name;
+    //   li.appendChild(strong);
+
+    //   li.appendChild(document.createTextNode(` (${review.rating}점)\n${review.content}\n`));
+
+    //   const editBtn = document.createElement('button');
+    //   editBtn.textContent = '수정';
+    //   editBtn.onclick = () => editLibraryReview(review.review_id, review.content, review.rating);
+    //   li.appendChild(editBtn);
+
+    //   const deleteBtn = document.createElement('button');
+    //   deleteBtn.textContent = '삭제';
+    //   deleteBtn.onclick = () => deleteLibraryReview(review.review_id);
+    //   li.appendChild(deleteBtn);
+
+    //   libraryReviewList.appendChild(li);
+    // });
+
+    // 커뮤니티 글 조회
+    const communityPostsRes = await fetch(`${base}/community-posts`, {
+      headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+    });
+    const communityPosts = await communityPostsRes.json();
+    communityPosts.forEach(post => {
       const li = document.createElement('li');
-      const a = document.createElement('a');
-      a.href = `/community/post/${item.post_id}`;
-      a.textContent = `${item.title} (${item.view_count}조회수)`;
-      a.style.textDecoration = 'none';
-      a.style.color = 'inherit';
-      li.appendChild(a);
+
+      const strong = document.createElement('strong');
+      strong.textContent = post.title;
+      li.appendChild(strong);
+
+      li.appendChild(document.createTextNode(`\n${post.content}\n`));
+
+      const editBtn = document.createElement('button');
+      editBtn.textContent = '수정';
+      editBtn.onclick = () => editCommunityPost(post.post_id, post.title, post.content);
+      li.appendChild(editBtn);
+
+      const deleteBtn = document.createElement('button');
+      deleteBtn.textContent = '삭제';
+      deleteBtn.onclick = () => deleteCommunityPost(post.post_id);
+      li.appendChild(deleteBtn);
+
       communityPostList.appendChild(li);
     });
 
-    // 4. 커뮤니티 댓글
-    const commentRes = await fetch(`${base}/user/${userId}/community-comments`, { headers });
-    if (!commentRes.ok) throw new Error('커뮤니티 댓글 불러오기 실패');
-    const commentData = await commentRes.json();
-    commentData.forEach(item => {
+    // 커뮤니티 댓글 조회
+    const communityCommentsRes = await fetch(`${base}/community-comments`, {
+      headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+    });
+    const communityComments = await communityCommentsRes.json();
+    communityComments.forEach(comment => {
       const li = document.createElement('li');
-      li.textContent = `게시글 #${item.post_id}에 단 댓글: ${item.content}`;
+
+      const strong = document.createElement('strong');
+      strong.textContent = `${comment.post_title} 댓글`;
+      li.appendChild(strong);
+
+      li.appendChild(document.createTextNode(`\n${comment.content}\n`));
+
+      const editBtn = document.createElement('button');
+      editBtn.textContent = '수정';
+      editBtn.onclick = () => editCommunityComment(comment.comment_id, comment.content);
+      li.appendChild(editBtn);
+
+      const deleteBtn = document.createElement('button');
+      deleteBtn.textContent = '삭제';
+      deleteBtn.onclick = () => deleteCommunityComment(comment.comment_id);
+      li.appendChild(deleteBtn);
+
       communityCommentList.appendChild(li);
     });
 
   } catch (err) {
-    console.error('작성한 글 로딩 실패', err);
+    console.error('데이터 불러오기 실패:', err);
+    alert('데이터 불러오는 중 에러 발생');
   }
 }
 
-document.addEventListener('DOMContentLoaded', () => {
-  const userId = localStorage.getItem('userId');
-  if (userId) {
-    loadPostsList(userId);
-  } else {
-    console.error('userId 없음');
+// 수정/삭제 함수들
+
+async function editBookReview(reviewId, oldContent, oldRating) {
+  const content = prompt('리뷰 내용을 수정하세요', oldContent);
+  const rating = prompt('평점을 수정하세요 (1~5)', oldRating);
+  if (content !== null && rating !== null) {
+    try {
+      const res = await fetch(`/api/user-contents/book-reviews/${reviewId}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        },
+        body: JSON.stringify({ content, rating: Number(rating) })
+      });
+      if (res.ok) {
+        alert('도서 리뷰 수정 완료');
+        loadPostsList();
+      } else {
+        const data = await res.json();
+        alert(`수정 실패: ${data.message}`);
+      }
+    } catch (e) {
+      alert('수정 중 오류 발생');
+    }
   }
-});
+}
+
+async function deleteBookReview(reviewId) {
+  if (!confirm('도서 리뷰를 삭제하시겠습니까?')) return;
+  try {
+    const res = await fetch(`/api/user-contents/book-reviews/${reviewId}`, {
+      method: 'DELETE',
+      headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+    });
+    if (res.ok) {
+      alert('도서 리뷰 삭제 완료');
+      loadPostsList();
+    } else {
+      const data = await res.json();
+      alert(`삭제 실패: ${data.message}`);
+    }
+  } catch (e) {
+    alert('삭제 중 오류 발생');
+  }
+}
+
+async function editLibraryReview(reviewId, oldContent, oldRating) {
+  const content = prompt('리뷰 내용을 수정하세요', oldContent);
+  const rating = prompt('평점을 수정하세요 (1~5)', oldRating);
+  if (content !== null && rating !== null) {
+    try {
+      const res = await fetch(`/api/user-contents/library-reviews/${reviewId}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        },
+        body: JSON.stringify({ content, rating: Number(rating) })
+      });
+      if (res.ok) {
+        alert('도서관 리뷰 수정 완료');
+        loadPostsList();
+      } else {
+        const data = await res.json();
+        alert(`수정 실패: ${data.message}`);
+      }
+    } catch (e) {
+      alert('수정 중 오류 발생');
+    }
+  }
+}
+
+async function deleteLibraryReview(reviewId) {
+  if (!confirm('도서관 리뷰를 삭제하시겠습니까?')) return;
+  try {
+    const res = await fetch(`/api/user-contents/library-reviews/${reviewId}`, {
+      method: 'DELETE',
+      headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+    });
+    if (res.ok) {
+      alert('도서관 리뷰 삭제 완료');
+      loadPostsList();
+    } else {
+      const data = await res.json();
+      alert(`삭제 실패: ${data.message}`);
+    }
+  } catch (e) {
+    alert('삭제 중 오류 발생');
+  }
+}
+
+async function editCommunityPost(postId, oldTitle, oldContent) {
+  const title = prompt('게시글 제목을 수정하세요', oldTitle);
+  const content = prompt('게시글 내용을 수정하세요', oldContent);
+  if (title !== null && content !== null) {
+    try {
+      const res = await fetch(`/api/user-contents/community-posts/${postId}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        },
+        body: JSON.stringify({ title, content })
+      });
+      if (res.ok) {
+        alert('게시글 수정 완료');
+        loadPostsList();
+      } else {
+        const data = await res.json();
+        alert(`수정 실패: ${data.message}`);
+      }
+    } catch (e) {
+      alert('수정 중 오류 발생');
+    }
+  }
+}
+
+async function deleteCommunityPost(postId) {
+  if (!confirm('게시글을 삭제하시겠습니까?')) return;
+  try {
+    const res = await fetch(`/api/user-contents/community-posts/${postId}`, {
+      method: 'DELETE',
+      headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+    });
+    if (res.ok) {
+      alert('게시글 삭제 완료');
+      loadPostsList();
+    } else {
+      const data = await res.json();
+      alert(`삭제 실패: ${data.message}`);
+    }
+  } catch (e) {
+    alert('삭제 중 오류 발생');
+  }
+}
+
+async function editCommunityComment(commentId, oldContent) {
+  const content = prompt('댓글 내용을 수정하세요', oldContent);
+  if (content !== null) {
+    try {
+      const res = await fetch(`/api/user-contents/community-comments/${commentId}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        },
+        body: JSON.stringify({ content })
+      });
+      if (res.ok) {
+        alert('댓글 수정 완료');
+        loadPostsList();
+      } else {
+        const data = await res.json();
+        alert(`수정 실패: ${data.message}`);
+      }
+    } catch (e) {
+      alert('수정 중 오류 발생');
+    }
+  }
+}
+
+async function deleteCommunityComment(commentId) {
+  if (!confirm('댓글을 삭제하시겠습니까?')) return;
+  try {
+    const res = await fetch(`/api/user-contents/community-comments/${commentId}`, {
+      method: 'DELETE',
+      headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+    });
+    if (res.ok) {
+      alert('댓글 삭제 완료');
+      loadPostsList();
+    } else {
+      const data = await res.json();
+      alert(`삭제 실패: ${data.message}`);
+    }
+  } catch (e) {
+    alert('삭제 중 오류 발생');
+  }
+}
+
+window.onload = () => {
+  loadPostsList();
+};

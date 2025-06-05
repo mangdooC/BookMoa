@@ -23,7 +23,7 @@ const getUserInfo = async (req, res) => {
 
     const profileImage = imageRows.length > 0 ? imageRows[0].image_url : null;
 
-    res.json({
+    return res.json({
       nickname: userRows[0].nickname,
       address: userRows[0].address,
       profile_image: profileImage,
@@ -82,12 +82,13 @@ const updateUserInfo = async (req, res) => {
     }
 
     values.push(userId);
+
     const sql = `UPDATE user SET ${fields.join(', ')} WHERE user_id = ?`;
     await pool.query(sql, values);
 
     return res.json({ message: '회원정보가 성공적으로 수정되었습니다.' });
-  } catch (err) {
-    console.error('updateUserInfo 에러:', err);
+  } catch (error) {
+    console.error('updateUserInfo 에러:', error);
     return res.status(500).json({ error: '서버 오류 발생' });
   }
 };
@@ -103,6 +104,7 @@ const uploadProfileImage = async (req, res) => {
     const filename = req.file.filename;
     const imageUrl = `/uploads/profile/${filename}`;
 
+    // 기존 프로필 이미지 파일 삭제
     const [existingImages] = await pool.query(
       "SELECT image_url FROM image WHERE user_id = ? AND image_type = 'profile'",
       [userId]
@@ -113,30 +115,30 @@ const uploadProfileImage = async (req, res) => {
       try {
         await fs.unlink(filePath);
       } catch (err) {
-        console.warn('기존 이미지 삭제 실패 (존재하지 않거나 기타 이유):', filePath);
+        console.warn('기존 이미지 삭제 실패:', filePath);
       }
     }
 
-    // DB에서 기존 이미지 삭제
+    // 기존 이미지 DB 삭제
     await pool.query(
       "DELETE FROM image WHERE user_id = ? AND image_type = 'profile'",
       [userId]
     );
 
-    // 새 이미지 DB에 저장
-    const sql = "INSERT INTO image (user_id, image_url, image_type) VALUES (?, ?, ?)";
-    const params = [userId, imageUrl, 'profile'];
-    await pool.query(sql, params);
+    // 새 이미지 DB 저장
+    await pool.query(
+      "INSERT INTO image (user_id, image_url, image_type) VALUES (?, ?, ?)",
+      [userId, imageUrl, 'profile']
+    );
 
     const fullImageUrl = `${req.protocol}://${req.get('host')}${imageUrl}`;
     return res.json({ message: '프로필 이미지 업로드 성공', imageUrl: fullImageUrl });
 
-  } catch (err) {
-    console.error('uploadProfileImage 에러:', err);
+  } catch (error) {
+    console.error('uploadProfileImage 에러:', error);
     return res.status(500).json({ error: '서버 오류 발생' });
   }
 };
-
 
 const deleteProfileImage = async (req, res) => {
   try {
@@ -155,8 +157,8 @@ const deleteProfileImage = async (req, res) => {
       const filePath = path.join(__dirname, '..', img.image_url.replace(/^\//, ''));
       try {
         await fs.unlink(filePath);
-      } catch (err) {
-        console.error('프로필 이미지 삭제 실패:', err);
+      } catch (error) {
+        console.error('프로필 이미지 삭제 실패:', error);
       }
     }
 
@@ -166,8 +168,8 @@ const deleteProfileImage = async (req, res) => {
     );
 
     return res.json({ message: '프로필 이미지가 삭제되었습니다.' });
-  } catch (err) {
-    console.error('deleteProfileImage 에러:', err);
+  } catch (error) {
+    console.error('deleteProfileImage 에러:', error);
     return res.status(500).json({ error: '서버 오류 발생' });
   }
 };
@@ -200,7 +202,7 @@ const updatePreferredArea = async (req, res) => {
           region_level1 || current.region_level1,
           region_level2 || current.region_level2,
           region_level3 || current.region_level3,
-          userId
+          userId,
         ]
       );
     } else {
@@ -211,8 +213,8 @@ const updatePreferredArea = async (req, res) => {
     }
 
     return res.json({ message: '선호 지역이 성공적으로 수정되었습니다.' });
-  } catch (err) {
-    console.error('updatePreferredArea 에러:', err);
+  } catch (error) {
+    console.error('updatePreferredArea 에러:', error);
     return res.status(500).json({ error: '서버 오류 발생' });
   }
 };
@@ -231,8 +233,8 @@ const getPreferredArea = async (req, res) => {
     }
 
     return res.json({ preferredArea: rows[0] });
-  } catch (err) {
-    console.error('getPreferredArea 에러:', err);
+  } catch (error) {
+    console.error('getPreferredArea 에러:', error);
     return res.status(500).json({ error: '서버 오류 발생' });
   }
 };

@@ -24,10 +24,6 @@ app.set('layout', 'layout');
 app.use(ejsLayouts);
 
 // 요청 바디 파싱
-app.set('views', path.join(__dirname, 'views'));
-app.set('view engine', 'ejs');
-
-// 미들웨어
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
@@ -68,7 +64,7 @@ app.use((req, res, next) => {
   next();
 });
 
-// 로그아웃 라우터
+// 로그아웃 라우터 (뷰용 POST 로그아웃 라우터)
 app.post('/logout', (req, res) => {
   req.session.destroy(err => {
     if (err) console.error('세션 삭제 실패:', err);
@@ -76,6 +72,10 @@ app.post('/logout', (req, res) => {
     res.redirect('/');
   });
 });
+
+// 도서 관련 라우터
+const bookRouter = require('./routes/book');
+app.use('/book', bookRouter);
 
 // 컨트롤러들 require
 const { getTop4Books } = require('./controllers/popularController');
@@ -86,10 +86,6 @@ app.get('/', async (req, res) => {
   try {
     const popularBooks = await getTop4Books();
     const latestPosts = await getLatestPosts();
-
-//도서 관련 라우터
-const bookRouter = require('./routes/book');
-app.use('/book', bookRouter);
 
     res.render('index', {
       title: '책모아 메인 페이지',
@@ -108,7 +104,7 @@ app.use('/book', bookRouter);
   }
 });
 
-// 라우터 등록
+// 기타 라우터 등록
 app.use('/posts', require('./routes/posts'));
 app.use('/comments', require('./routes/comments'));
 app.use('/book-reviews', require('./routes/bookReviews'));

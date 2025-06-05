@@ -14,12 +14,12 @@
   </div>
   <div class="auth-buttons">
     <% if (!user) { %>
-      <a href="/mypage/login.html">로그인</a>
-      <a href="/mypage/signUp.html">회원가입</a>
+      <a id="loginLink" href="/mypage/login.html">로그인</a>
+      <a id="signupBtn" href="/mypage/signUp.html">회원가입</a>
     <% } else { %>
-      <a href="/mypage/editInfo.html"><%= user.nickname %>님</a>
+      <a id="mypageLink" href="/mypage/editInfo.html"><%= user.nickname %>님</a>
       <form action="/logout" method="POST" style="display:inline;">
-        <button type="submit">로그아웃</button>
+        <button type="submit" id="logoutBtn">로그아웃</button>
       </form>
     <% } %>
   </div>
@@ -46,10 +46,9 @@
     </select>
     
     <input type="hidden" name="pageNo" value="1" />
-    <button type="submit" class="search-btn" >🔍</button>
+    <button type="submit" class="search-btn">🔍</button>
   </form>
 </section>
-
 
 <!-- 🔹 메뉴바 -->
 <nav class="main-menu">
@@ -58,74 +57,31 @@
   <a href="/library/libraryList.html">도서관 리뷰</a>
 </nav>
 
-  <!-- 🔹 본문 콘텐츠 -->
-  <main class="content">
-    <%- body %>
-  </main>
+<!-- 🔹 본문 콘텐츠 -->
+<main class="content">
+  <%- body %>
+</main>
 
 <script>
-  document.addEventListener('DOMContentLoaded', () => {
-    const loginLink = document.getElementById('loginLink');
-    const signupBtn = document.getElementById('signupBtn');
-    const mypageLink = document.getElementById('mypageLink');
-    const logoutBtn = document.getElementById('logoutBtn');
+  logoutBtn.addEventListener('click', async () => {
+    try {
+      const res = await fetch('/logout', {
+        method: 'POST',
+        credentials: 'include',
+      });
 
-    async function checkLogin() {
-      const token = localStorage.getItem('token');
-      if (!token) {
-        showLoggedOut();
+      if (!res.ok) {
+        alert('로그아웃 실패');
         return;
       }
 
-      try {
-        const res = await fetch('/api/auth/me', {
-          headers: {
-            'Authorization': 'Bearer ' + token,
-          }
-        });
-        if (!res.ok) throw new Error('토큰 인증 실패');
+      // alert 제거
+      location.href = '/'; // 홈으로 이동
 
-        const user = await res.json();
-        showLoggedIn(user);
-      } catch (err) {
-        localStorage.removeItem('token');
-        showLoggedOut();
-      }
+    } catch (err) {
+      console.error('로그아웃 중 에러:', err);
+      alert('서버 오류 발생');
     }
-
-    function showLoggedIn(user) {
-      loginLink.style.display = 'none';
-      signupBtn.style.display = 'none';
-      logoutBtn.style.display = 'inline-block';
-      mypageLink.style.display = 'inline-block';
-      mypageLink.textContent = user.nickname + "님";
-    }
-
-    function showLoggedOut() {
-      loginLink.style.display = 'inline-block';
-      signupBtn.style.display = 'inline-block';
-      logoutBtn.style.display = 'none';
-      mypageLink.style.display = 'none';
-    }
-
-    mypageLink.addEventListener('click', (e) => {
-      e.preventDefault();
-      const token = localStorage.getItem('token');
-      if (!token) {
-        alert('로그인이 필요합니다.');
-        window.location.href = '/mypage/login.html';
-      } else {
-        window.location.href = '/mypage/editInfo.html';
-      }
-    });
-
-    logoutBtn.addEventListener('click', () => {
-      localStorage.removeItem('token');
-      alert('로그아웃 되었습니다');
-      location.reload();
-    });
-
-    checkLogin();
   });
 </script>
 
