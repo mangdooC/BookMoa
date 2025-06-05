@@ -1,13 +1,11 @@
 const jwt = require('jsonwebtoken');
 
 function authMiddleware(req, res, next) {
-  const authHeader = req.headers.authorization;
+  const token = req.cookies?.token;  // 쿠키로부터 토큰 읽기
 
-  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+  if (!token) {
     return res.status(401).send('로그인 필요');
   }
-
-  const token = authHeader.split(' ')[1];
 
   if (!process.env.JWT_SECRET) {
     console.error('JWT_SECRET 설정 안됨');

@@ -1,44 +1,61 @@
-const fs = require('fs');
-const path = require('path');
-
-// 경로 설정: 프로젝트 내 data/comments.json 파일을 조작
-const commentsFile = path.join(__dirname, '../data/comments.json');
-
-// 댓글 파일에서 JSON 데이터를 읽어서 반환
-function readComments() {
-  return JSON.parse(fs.readFileSync(commentsFile, 'utf8'));
-}
-
-// 댓글 데이터를 JSON 형식으로 파일에 저장
-function writeComments(data) {
-  fs.writeFileSync(commentsFile, JSON.stringify(data, null, 2));
-}
+const db = require('../db');
 
 // GET /comments/:postId
 // 특정 게시글(postId)에 대한 모든 댓글을 조회
-exports.getComments = (req, res) => {
-  const postId = parseInt(req.params.postId); // URL 파라미터에서 게시글 ID 추출
-  const comments = readComments().filter(c => c.postId === postId); // 해당 게시글의 댓글만 필터링
-  res.json(comments); // 필터링된 댓글 목록 반환
+exports.getComments = async (req, res) => {
+  const postId = parseInt(req.params.postId);
+
+  try {
+    const [comments] = await db.query(`
+      SELECT c.comment_id AS id, c.post_id, u.nickname AS author, c.content, c.created_at
+      FROM community_comment c
+      JOIN user u ON c.user_id = u.user_id
+      WHERE c.post_id = ?
+      ORDER BY c.created_at ASC
+    `, [postId]);
+
+    res.json(comments);
+  } catch (err) {
+    console.error('댓글 조회 실패:', err);
+    res.status(500).json({ error: '댓글 조회 중 오류 발생' });
+  }
 };
 
 // POST /comments/:postId
-// 특정 게시글에 댓글을 추가
-exports.addComment = (req, res) => {
-  const postId = parseInt(req.params.postId); // URL 파라미터에서 게시글 ID 추출
-  const { author, content } = req.body; // 요청 본문에서 작성자와 내용 추출
-  const comments = readComments(); // 기존 댓글 불러오기
+// 특정 게시글에 댓글을 추가 (로그인된 사용자 기준)
+exports.addComment = async (req, res) => {
+  const postId = parseInt(req.params.postId);
+  const userId = req.user?.user_id;
+  const { content } = req.body;
 
-  // 새로운 댓글 객체 생성
-  const newComment = {
-    id: Date.now(), // 고유 ID를 위한 timestamp 사용
-    postId, // 어떤 게시글에 속한 댓글인지 명시
-    author,
-    content,
-    createdAt: new Date() // 댓글 작성 시간
-  };
+  console.log("댓글 작성 요청:", {
+    postId,
+    user: req.user,
+    content
+  });
 
-  comments.push(newComment); // 새 댓글을 배열에 추가
-  writeComments(comments); // 업데이트된 배열을 파일에 저장
-  res.status(201).json(newComment); // 생성된 댓글 반환
+  if (!userId) {
+    return res.status(401).json({ error: '로그인 필요' });
+  }
+
+  try {
+    await db.query(`
+      INSERT INTO community_comment (post_id, user_id, content, created_at)
+      VALUES (?, ?, ?, NOW())
+    `, [postId, userId, content]);
+
+    const [newComment] = await db.query(`
+      SELECT c.comment_id AS id, c.post_id, u.nickname AS author, c.content, c.created_at
+      FROM community_comment c
+      JOIN user u ON c.user_id = u.user_id
+      WHERE c.post_id = ? AND c.user_id = ?
+      ORDER BY c.created_at DESC
+      LIMIT 1
+    `, [postId, userId]);
+
+    res.status(201).json(newComment[0]);
+  } catch (err) {
+    console.error('댓글 작성 실패:', err.message, err.code);
+    res.status(500).json({ error: '댓글 저장 중 오류 발생' });
+  }
 };

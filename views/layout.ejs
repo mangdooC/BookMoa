@@ -1,3 +1,7 @@
+<<<<<<< HEAD
+=======
+
+>>>>>>> e53b9846de1247f217b4252222ab23d1e3c37b70
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -7,15 +11,31 @@
 </head>
 <body>
 
+<<<<<<< HEAD
+=======
+<!-- 🔹 상단 헤더 -->
+>>>>>>> e53b9846de1247f217b4252222ab23d1e3c37b70
 <header class="top-header">
   <div class="logo">
     <a href="/">📖 책모아</a>
   </div>
   <div class="auth-buttons">
+<<<<<<< HEAD
     <a href="/mypage/login.html" id="loginLink">로그인</a>
     <a href="/mypage/signUp.html" id="signupBtn">회원가입</a>
     <a href="/mypage/editInfo.html" id="mypageLink" style="display:none;">마이페이지</a>
     <button id="logoutBtn" style="display:none; width: 100px;">로그아웃</button>
+=======
+    <% if (!user) { %>
+      <a href="/mypage/login.html">로그인</a>
+      <a href="/mypage/signUp.html">회원가입</a>
+    <% } else { %>
+      <a href="/mypage/editInfo.html"><%= user.nickname %>님</a>
+      <form action="/logout" method="POST" style="display:inline;">
+        <button type="submit">로그아웃</button>
+      </form>
+    <% } %>
+>>>>>>> e53b9846de1247f217b4252222ab23d1e3c37b70
   </div>
 </header>
 
@@ -47,7 +67,11 @@
 
 <!-- 🔹 메뉴바 -->
 <nav class="main-menu">
+<<<<<<< HEAD
   <a href="/community/communityList.html">커뮤니티</a>
+=======
+  <a href="/community/communityList">커뮤니티</a>
+>>>>>>> e53b9846de1247f217b4252222ab23d1e3c37b70
   <a href="/bookReview/bookReviewList.html">도서 리뷰</a>
   <a href="/library/libraryList.html">도서관 리뷰</a>
 </nav>
@@ -57,6 +81,7 @@
     <%- body %>
   </main>
 
+<<<<<<< HEAD
 <script>
   document.addEventListener('DOMContentLoaded', () => {
     const loginLink = document.getElementById('loginLink');
@@ -125,3 +150,7 @@
 
 </body>
 </html>
+=======
+</body>
+</html>
+>>>>>>> e53b9846de1247f217b4252222ab23d1e3c37b70

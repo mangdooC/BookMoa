@@ -10,7 +10,17 @@ const postsFile = path.join(__dirname, '../data/posts.json');
  */
 exports.getAllPosts = async (req, res) => {
   try {
-    const [rows] = await db.query('SELECT * FROM community_post ORDER BY created_at DESC');
+    const [rows] = await db.query(`
+      SELECT 
+        p.post_id, 
+        p.title, 
+        p.content,
+        p.created_at, 
+        u.nickname AS author_nickname
+      FROM community_post p
+      JOIN user u ON p.user_id = u.user_id
+      ORDER BY p.created_at DESC
+    `);
     res.json(rows);
   } catch (err) {
     console.error('게시글 전체 조회 실패:', err);
@@ -23,17 +33,23 @@ exports.getAllPosts = async (req, res) => {
  * 요청의 본문에서 제목과 내용을 받아 새 게시글을 생성하고 저장합니다.
  */
 exports.createPost = async (req, res) => {
-  const { title, content, author } = req.body; // author = user_id
+  const { title, content } = req.body;
+  const user_id = req.user?.user_id;
+
+  if (!user_id) {
+    return res.status(401).json({ error: '로그인이 필요합니다' });
+  }
+
   try {
     const [result] = await db.query(
       'INSERT INTO community_post (title, content, user_id, created_at) VALUES (?, ?, ?, NOW())',
-      [title, content, author]
+      [title, content, user_id]
     );
     const newPost = {
       id: result.insertId,
       title,
       content,
-      author,
+      user_id,
       createdAt: new Date()
     };
     res.status(201).json(newPost);
@@ -49,7 +65,17 @@ exports.createPost = async (req, res) => {
  */
 exports.getPostById = async (req, res) => {
   try {
-    const [rows] = await db.query('SELECT * FROM community_post WHERE id = ?', [req.params.id]);
+    const [rows] = await db.query(`
+      SELECT 
+        p.post_id, 
+        p.title, 
+        p.content, 
+        p.created_at, 
+        u.nickname AS author_nickname 
+      FROM community_post p
+      JOIN user u ON p.user_id = u.user_id
+      WHERE p.post_id = ?
+    `, [req.params.id]);
     if (rows.length === 0) return res.status(404).json({ error: '게시글 없음' });
     res.json(rows[0]);
   } catch (err) {
@@ -66,7 +92,7 @@ exports.updatePost = async (req, res) => {
   const { title, content } = req.body;
   try {
     const [result] = await db.query(
-      'UPDATE community_post SET title = ?, content = ?, updated_at = NOW() WHERE id = ?',
+      'UPDATE community_post SET title = ?, content = ?, updated_at = NOW() WHERE post_id = ?',
       [title, content, req.params.id]
     );
     if (result.affectedRows === 0) return res.status(404).json({ error: '게시글 없음' });
@@ -83,11 +109,34 @@ exports.updatePost = async (req, res) => {
  */
 exports.deletePost = async (req, res) => {
   try {
-    const [result] = await db.query('DELETE FROM community_post WHERE id = ?', [req.params.id]);
+    const [result] = await db.query('DELETE FROM community_post WHERE post_id = ?', [req.params.id]);
     if (result.affectedRows === 0) return res.status(404).json({ error: '게시글 없음' });
     res.status(204).send(); // No Content
   } catch (err) {
     console.error('게시글 삭제 실패:', err);
     res.status(500).json({ error: 'DB 오류' });
+  }
+};
+
+/**
+ * 메인 페이지용 최신 커뮤니티 글 2개 가져오기
+ */
+exports.getLatestPosts = async (limit = 2) => {
+  try {
+    const [rows] = await db.query(`
+      SELECT 
+        p.post_id, 
+        p.title, 
+        p.created_at, 
+        u.nickname AS author_nickname
+      FROM community_post p
+      JOIN user u ON p.user_id = u.user_id
+      ORDER BY p.created_at DESC
+      LIMIT ?
+    `, [limit]);
+    return rows;
+  } catch (err) {
+    console.error('최신 게시글 조회 실패:', err);
+    return [];
   }
 };

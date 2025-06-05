@@ -15,28 +15,35 @@
   </form>
 
   <script>
-    const form = document.getElementById('write-form');
-    form.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const formData = new FormData(form);
-      const post = {
-        title: formData.get('title'),
-        content: formData.get('content'),
-        author: '알 수 없음' //이부분 나중에 고쳐야함
-      };
+    document.addEventListener('DOMContentLoaded', () => {
+      const form = document.getElementById('write-form');
+      form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const formData = new FormData(form);
+        const title = formData.get('title');
+        const content = formData.get('content');
 
-      const res = await fetch('/posts', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(post)
+        try {
+          const res = await fetch('/posts', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            credentials: 'include',
+            body: JSON.stringify({ title, content })
+          });
+
+          if (res.ok) {
+            alert('게시글 작성 완료!');
+            window.location.href = '/community/communityList.html';
+          } else {
+            alert('작성 실패');
+          }
+        } catch (err) {
+          console.error('요청 중 오류 발생:', err);
+          alert('서버 오류로 인해 작성에 실패했습니다.');
+        }
       });
-
-      if (res.ok) {
-        alert('게시글 작성 완료!');
-        window.location.href = '/community/communityList.html'; // 글 목록 페이지 연결
-      } else {
-        alert('작성 실패');
-      }
     });
   </script>
 </body>

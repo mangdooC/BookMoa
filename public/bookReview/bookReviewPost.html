@@ -1,5 +1,3 @@
-
-
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -22,23 +20,13 @@
   <p><strong>내용:</strong></p>
   <p id="content"></p>
 
-  <div class="comment">
-    <h3>댓글</h3>
-    <ul id="comment-list"></ul>
-    <form id="comment-form">
-      <input type="text" id="comment-author" placeholder="작성자" required />
-      <input type="text" id="comment-content" placeholder="댓글 내용" required />
-      <button type="submit">댓글 작성</button>
-    </form>
-  </div>
-
   <script>
     const params = new URLSearchParams(window.location.search);
-    const id = params.get("id");
+    const id = params.get("review_id");
 
     async function loadReview() {
       try {
-        const res = await fetch(`/book-reviews/${id}`);
+        const res = await fetch(`/book-reviews/review?id=${id}`);
         const review = await res.json();
         document.getElementById("title").textContent = review.title;
         document.getElementById("author").textContent = review.author;
@@ -51,47 +39,7 @@
       }
     }
 
-    async function loadComments() {
-      try {
-        const res = await fetch(`/book-review-comments/${id}`);
-        const comments = await res.json();
-        const list = document.getElementById("comment-list");
-        list.innerHTML = "";
-        comments.forEach(comment => {
-          const li = document.createElement("li");
-          li.textContent = `${comment.author}: ${comment.content}`;
-          list.appendChild(li);
-        });
-      } catch (err) {
-        console.error("댓글 불러오기 실패:", err);
-      }
-    }
-
-    document.getElementById("comment-form").addEventListener("submit", async function (e) {
-      e.preventDefault();
-      const author = document.getElementById("comment-author").value;
-      const content = document.getElementById("comment-content").value;
-
-      try {
-        const res = await fetch(`/book-review-comments/${id}`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ author, content }),
-        });
-        if (res.ok) {
-          document.getElementById("comment-author").value = "";
-          document.getElementById("comment-content").value = "";
-          await loadComments();
-        } else {
-          alert("댓글 작성에 실패했습니다.");
-        }
-      } catch (err) {
-        console.error("댓글 작성 중 오류:", err);
-      }
-    });
-
     loadReview();
-    loadComments();
   </script>
 </body>
 </html>

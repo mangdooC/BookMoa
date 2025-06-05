@@ -11,6 +11,11 @@ const ejsLayouts = require('express-ejs-layouts');
 const cookieParser = require('cookie-parser');
 const jwt = require('jsonwebtoken');
 
+const session = require('express-session');
+const ejsLayouts = require('express-ejs-layouts');
+const cookieParser = require('cookie-parser');
+const jwt = require('jsonwebtoken')
+
 const app = express();
 
 // ---------- 정적 파일 제공 ----------Add commentMore actions
@@ -26,6 +31,53 @@ app.use(ejsLayouts);
 // 요청 바디 파싱
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use(cookieParser());
+app.use(express.static(path.join(__dirname, 'public')));
+
+
+//  세션 설정
+app.use(session({
+  secret: 'bookmoa-secret',
+  resave: false,
+  saveUninitialized: true
+}));
+
+//  로그인된 사용자 동기화 (쿠키에서 JWT → 세션)
+const JWT_SECRET = process.env.JWT_SECRET;
+app.use((req, res, next) => {
+  const token = req.cookies.token;
+  if (token && !req.session.user) {
+    try {
+      const decoded = jwt.verify(token, JWT_SECRET);
+      req.session.user = {
+        user_id: decoded.user_id,
+        nickname: decoded.nickname
+      };
+    } catch (err) {
+      console.error('JWT 인증 실패:', err.message);
+    }
+  }
+  next();
+});
+
+// layout용 기본 변수 설정
+app.use((req, res, next) => {
+  res.locals.title = '책모아'; // 기본 타이틀
+  res.locals.user = req.session.user || null; // 로그인 사용자 정보
+  next();
+});
+
+// 로그아웃 라우터 추가
+app.post('/logout', (req, res) => {
+  req.session.destroy((err) => {
+    if (err) {
+      console.error('세션 삭제 실패:', err);
+    }
+    res.clearCookie('token'); // 쿠키에 jwt 삭제
+    res.redirect('/'); // 메인 페이지로 리디렉션
+  });
+});
+
 
 // 쿠키 파서 적용
 app.use(cookieParser());
@@ -64,22 +116,6 @@ app.use(async (req, res, next) => {
   }
   next();
 });
-
-  // // 특정 정적 경로 추가 (mypage/images)
-  // app.use('/mypage/images', express.static(path.join(__dirname, 'public/mypage/images')));
-
-  // // profile 이미지 직접 핸들링
-  // app.get('/uploads/profile/:filename', (req, res) => {
-  //   const filename = req.params.filename;
-  //   const filePath = path.join(__dirname, 'uploads/profile', filename);
-  //   const defaultPath = path.join(__dirname, 'public/mypage/images/default.jpg');
-
-  //   if (fs.existsSync(filePath)) {
-  //     res.sendFile(filePath);
-  //   } else {
-  //     res.sendFile(defaultPath);
-  //   }
-  // });
 
 // ---------- 라우터 등록 ----------
 
