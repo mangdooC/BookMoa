@@ -1,46 +1,57 @@
 const express = require('express');
-const pool = require('./db');
-require('dotenv').config();
 const path = require('path');
-
+const dotenv = require('dotenv');
+const pool = require('./db');
 const session = require('express-session');
 const ejsLayouts = require('express-ejs-layouts');
 const cookieParser = require('cookie-parser');
-const jwt = require('jsonwebtoken')
+const jwt = require('jsonwebtoken');
+
+dotenv.config();
 
 const app = express();
 
-//  EJS 설정
+const JWT_SECRET = process.env.JWT_SECRET;
+
+// 정적 파일 제공
+app.use('/uploads/profile', express.static(path.join(__dirname, 'uploads/profile')));
+app.use(express.static(path.join(__dirname, 'public')));
+
+// 뷰 엔진 세팅
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
 app.set('layout', 'layout');
 app.use(ejsLayouts);
  
 // 미들웨어
+
+// 요청 바디 파싱
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+// 쿠키 파서
 app.use(cookieParser());
-app.use(express.static(path.join(__dirname, 'public')));
 
-
-//  세션 설정
+// 세션 설정
 app.use(session({
   secret: 'bookmoa-secret',
   resave: false,
   saveUninitialized: true
 }));
 
-//  로그인된 사용자 동기화 (쿠키에서 JWT → 세션)
-const JWT_SECRET = process.env.JWT_SECRET;
-app.use((req, res, next) => {
+// JWT 토큰 쿠키 → 세션 동기화 미들웨어 (닉네임 DB 조회 포함)
+app.use(async (req, res, next) => {
   const token = req.cookies.token;
   if (token && !req.session.user) {
     try {
       const decoded = jwt.verify(token, JWT_SECRET);
-      req.session.user = {
-        user_id: decoded.user_id,
-        nickname: decoded.nickname
-      }; 
+      const [rows] = await pool.query('SELECT nickname FROM user WHERE user_id = ?', [decoded.user_id]);
+      if (rows.length > 0) {
+        req.session.user = {
+          user_id: decoded.user_id,
+          nickname: rows[0].nickname
+        };
+      }
     } catch (err) {
       console.error('JWT 인증 실패:', err.message);
     }
@@ -48,73 +59,62 @@ app.use((req, res, next) => {
   next();
 });
 
-// layout용 기본 변수 설정
+// 레이아웃용 기본 변수 설정
 app.use((req, res, next) => {
-  res.locals.title = '책모아'; // 기본 타이틀
-  res.locals.user = req.session.user || null; // 로그인 사용자 정보
+  res.locals.title = '책모아';
+  res.locals.user = req.session.user || null;
   next();
 });
 
-// 로그아웃 라우터 추가
+// 로그아웃 라우터
 app.post('/logout', (req, res) => {
-  req.session.destroy((err) => {
-    if (err) {
-      console.error('세션 삭제 실패:', err);
-    }
-    res.clearCookie('token'); // 쿠키에 jwt 삭제
-    res.redirect('/'); // 메인 페이지로 리디렉션
+  req.session.destroy(err => {
+    if (err) console.error('세션 삭제 실패:', err);
+    res.clearCookie('token');
+    res.redirect('/');
   });
 });
 
-
-// 정적 파일 서빙
-app.use(express.static(path.join(__dirname, 'public')));
-
-// 테스트 라우터
-// app.get('/', async (req, res) => {
-//   const [rows] = await pool.query('SELECT 1 + 1 AS result');
-//   res.send(`DB 연결 성공! 결과: ${rows[0].result}`);
-// });
-
-// 루트 라우터
-//app.get('/', (req, res) => {
-//  res.send('책모아 서버에 오신 것을 환영합니다!');
-//});
-
-//  루트 라우터 (EJS 렌더링)
-//app.get('/', (req, res) => {
-//  res.render('index', {title: '책모아 메인 페이지', user: req.session.user });
-//});
-const { getTop4Books } = require('./controllers/popularController');
+// 컨트롤러들 require
+const { getTopBooks } = require('./controllers/popularController');
 const { getLatestPosts } = require('./controllers/postsController');
 
+// 메인 페이지
 app.get('/', async (req, res) => {
   try {
-    const popularBooks = await getTop4Books();
+    const popularBooks = await getTopBooks();
     const latestPosts = await getLatestPosts();
 
     res.render('index', {
       title: '책모아 메인 페이지',
       user: req.session.user,
       popularBooks,
-	latestPosts 
+      latestPosts
     });
   } catch (err) {
-    console.error('[메인 인기 도서 로딩 실패]', err);
+    console.error('[메인 페이지 로딩 실패]', err);
     res.render('index', {
       title: '책모아 메인 페이지',
       user: req.session.user,
-      popularBooks: [], // 실패 시 빈 배열 전달
-	latestPosts: []
+      popularBooks: [],
+      latestPosts: []
     });
   }
 });
 
+// 라우터 등록
+app.use('/posts', require('./routes/posts'));
+app.use('/comments', require('./routes/comments'));
+app.use('/book-reviews', require('./routes/bookReviews'));
+app.use('/community', require('./routes/community'));
 
-//post 라우터
-const postsRouter = require('./routes/posts');
-app.use('/posts', postsRouter);
+app.use('/api/auth', require('./routes/auth'));
+app.use('/api/checkId', require('./routes/checkId'));
+app.use('/api/user', require('./routes/user'));
+app.use('/api/user-contents', require('./routes/userContents'));
+app.use('/api/favorites', require('./routes/favoritelib'));
 
+<<<<<<< HEAD
 //comment 라우터
 const commentsRouter = require('./routes/comments');
 app.use('/comments', commentsRouter);
@@ -148,13 +148,31 @@ const bookSearchRouter = require('./routes/book');
 app.use('/', bookSearchRouter);
 
 //인기도서 라우터
+=======
+//인기도서 
+const communityRouter = require('./routes/community');
+app.use('/', communityRouter);
+//커뮤니티
+>>>>>>> 983f457d0a5b4b5aef9e0fc184737840229be61a
 const popularRoute = require('./routes/popularRoute');
 app.use('/', popularRoute);
+// 도서 상세
+const bookRouter = require('./routes/book');
+app.use('/book', bookRouter);
 
+<<<<<<< HEAD
 const apiRouter = require('./routes/api');
 app.use('/api', apiRouter);
+=======
+// 에러 핸들링
+app.use((err, req, res, next) => {
+  console.error('서버 에러:', err.stack);
+  res.status(500).json({ message: '서버 내부 에러가 발생했습니다.' });
+});
+>>>>>>> 983f457d0a5b4b5aef9e0fc184737840229be61a
 
+// 서버 실행
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
-  console.log(` 서버가 포트 ${PORT}에서 실행 중`);
+  console.log(`🚀 서버가 포트 ${PORT}에서 실행 중`);
 });

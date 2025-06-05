@@ -1,25 +1,53 @@
 <section class="main-sections">
 
   <!-- 이달의 인기 도서 -->
-  <section class="section-box">
+<section class="section-box">
+  <div class="section-header">
     <h2>이달의 인기 도서</h2>
+    <a href="/popular" class="more-button">더보기</a>
+  </div>
 
-	<!-- 👉 더보기 버튼 -->
-  <a href="/popular" class="more-button">더보기</a>
+  <div class="book-list" id="popular-book-list" style="display: flex; flex-wrap: wrap; gap: 16px;"></div>
 
-  <div class="book-list">
-  <% if (popularBooks && popularBooks.length > 0) { %>
-    <% popularBooks.forEach(book => { %>
-      <div class="book-item">
-        <img src="<%= book.imageUrl %>" alt="<%= book.title %>" width="100" height="150">
-        <p><strong><%= book.title %></strong></p>
-      </div>
-    <% }) %>
-  <% } else { %>
-    <p>데이터가 없습니다.</p>
-  <% } %>
-</div>
-  </section>
+  <script>
+    const allPopularBooks = <%- JSON.stringify(popularBooks) %>;
+
+    const container = document.getElementById('popular-book-list');
+
+    function renderBooks(count) {
+      container.innerHTML = '';
+      allPopularBooks.slice(0, count).forEach(book => {
+        const item = document.createElement('a');
+        item.href = `/book/${book.isbn13}`;
+        item.className = 'book-item';
+        item.innerHTML = `
+          <img src="${book.imageUrl}" alt="${book.title}">
+          <p><strong>${book.title}</strong></p>
+        `;
+        container.appendChild(item);
+      });
+    }
+
+    function getDisplayCount() {
+      const width = window.innerWidth;
+        if (width >= 1600) return 8;
+  if (width >= 1400) return 7;
+  if (width >= 1200) return 6;
+  if (width >= 1050) return 5;
+  if (width >= 900) return 4;
+  if (width >= 750) return 3;
+   return 2;
+    }
+
+    function onResize() {
+      renderBooks(getDisplayCount());
+    }
+
+    window.addEventListener('resize', onResize);
+    window.addEventListener('DOMContentLoaded', onResize);
+  </script>
+</section>
+
 
   <!-- 추천 도서 -->
   <section class="section-box">
@@ -31,23 +59,28 @@
 
  <!-- 커뮤니티 -->
 <section class="section-box">
-  <h2>커뮤니티</h2>
+  <div class="section-header">
+    <h2>커뮤니티</h2>
+    <a href="/community/communityList" class="more-button">더보기</a>
+  </div>
   <div class="community-reviews">
     <% if (latestPosts && latestPosts.length > 0) { %>
       <% latestPosts.forEach(post => { %>
+        <a href="/community/post/<%= post.post_id %>" class="review-box-link">
         <div class="review-box">
-          <a href="/community/post.html?id=<%= post.post_id %>">
-            <strong><%= post.title %></strong>
-          </a><br>
+            <strong><%= post.title %></strong><br>
           <small>작성자: <%= post.author_nickname || '익명' %></small><br>
           <small>작성일: <%= new Date(post.created_at).toLocaleString() %></small>
+	  <p>
+          <%= post.content ? (post.content.length > 100 ? post.content.substring(0, 100) + '...' : post.content) : '내용 없음' %>
+          </p> 
         </div>
+       </a>
       <% }) %>
     <% } else { %>
       <p>최근 게시글이 없습니다.</p>
     <% } %>
   </div>
-  <a href="/community/communityList.html">전체 게시글 보기 →</a>
 </section>
 
 
@@ -57,4 +90,3 @@
   </section>
 
 </section>
-

@@ -3,11 +3,24 @@
 <head>
   <meta charset="UTF-8">
   <title>책모아 메인 페이지</title>
+<<<<<<< HEAD
+  <link rel="stylesheet" href="/styles.css">
+=======
+>>>>>>> e53b9846de1247f217b4252222ab23d1e3c37b70
 </head>
 <body>
   <h1>📚 책모아에 오신 것을 환영합니다!</h1>
   <nav>
     <ul>
+<<<<<<< HEAD
+      <a href="./community/write.html">게시글 작성하기</a>
+      <a href="./community/communityList.html">커뮤니티 게시판</a>
+      <a href="./bookReview/bookReviewList.html">책 리뷰 게시판</a>
+      <a href="./library/library.html">도서관 정보 보기</a>
+      <a href="./mypage/login.html" id="loginLink">로그인</a>
+      <a href="./mypage/signUp.html" id="signupBtn">회원가입</a>
+      <a href="./mypage/editInfo.html" id="mypageLink" display="none">마이페이지</a>
+=======
     <a href="./community/write.html">게시글 작성하기</a>
     <a href="./community/communityList.html">커뮤니티 게시판</a>
     <a href="./bookReview/bookReviewList.html">책 리뷰 게시판</a>
@@ -15,17 +28,78 @@
     <a href="./mypage/login.html" id="loginLink">로그인</a>
     <a href="./mypage/signUp.html" id="signupBtn">회원가입</a>
     <a href="./mypage/editInfo.html" id="mypageLink">마이페이지</a>
+>>>>>>> e53b9846de1247f217b4252222ab23d1e3c37b70
     <button id="logoutBtn" style="display: none; width: 100px; height: auto;" >로그아웃</button>
     </ul>
   </nav>
 
   <script>
+<<<<<<< HEAD
+    document.addEventListener('DOMContentLoaded', () => {
+=======
       const token = localStorage.getItem('token');
+>>>>>>> e53b9846de1247f217b4252222ab23d1e3c37b70
       const loginLink = document.getElementById('loginLink');
       const signupBtn = document.getElementById('signupBtn');
       const mypageLink = document.getElementById('mypageLink');
       const logoutBtn = document.getElementById('logoutBtn');
 
+<<<<<<< HEAD
+      async function checkLogin() {
+        const token = localStorage.getItem('token');
+        if (!token) {
+          showLoggedOut();
+          return;
+        }
+
+        try {
+          const res = await fetch('/api/auth/me', {
+            headers: {
+              'Authorization': 'Bearer ' + token
+            }
+          });
+          if (!res.ok) throw new Error('토큰 인증 실패');
+
+          const user = await res.json();
+          showLoggedIn(user);
+        } catch (err) {
+          console.error('인증 실패:', err);
+          localStorage.removeItem('token');
+          showLoggedOut();
+        }
+      }
+
+      function showLoggedIn(user) {
+        if (loginLink) loginLink.style.display = 'none';
+        if (signupBtn) signupBtn.style.display = 'none';
+        if (mypageLink) {
+          mypageLink.style.display = 'inline-block';
+          mypageLink.textContent = `${user.nickname}님`;
+        }
+        if (logoutBtn) logoutBtn.style.display = 'inline-block';
+      }
+
+      function showLoggedOut() {
+        if (loginLink) loginLink.style.display = 'inline-block';
+        if (signupBtn) signupBtn.style.display = 'inline-block';
+        if (mypageLink) mypageLink.style.display = 'none';
+        if (logoutBtn) logoutBtn.style.display = 'none';
+      }
+
+      if (logoutBtn) {
+        logoutBtn.addEventListener('click', () => {
+          localStorage.removeItem('token');
+          alert('로그아웃 되었습니다.');
+          location.reload();
+        });
+      }
+
+      checkLogin();
+    });
+  </script>
+</body>
+</html>
+=======
     // 로그인 안하고 마이 페이지 접근 시 로그인 페이지로 이동  
     mypageLink.addEventListener('click', (e) => {
       e.preventDefault();
@@ -58,3 +132,4 @@
 </script>
 </body>
 </html>
+>>>>>>> e53b9846de1247f217b4252222ab23d1e3c37b70
