@@ -152,3 +152,62 @@ body {
 .more-button:hover {
   background-color: #004999;
 }
+
+/* 도서관 목록 스타일 */
+.libraries-section {
+  margin: 20px 0;
+}
+
+.libraries-section ul {
+  list-style: none;
+  padding: 0;
+}
+
+.libraries-section li {
+  background-color: #fff6ef;
+  padding: 16px;
+  margin-bottom: 12px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.libraries-section strong {
+  color: #c84a2f;
+  min-width: 24px;
+}
+
+.libraries-section button,
+.libraries-section a button {
+  background-color: #ffb59c;
+  border: 1px solid #333;
+  border-radius: 12px;
+  padding: 4px 10px;
+  color: #333;
+  font-weight: bold;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.location-controls {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 20px 0;
+}
+
+.location-controls button {
+  background-color: #ffb59c;
+  border: 1px solid #333;
+  border-radius: 12px;
+  padding: 8px 16px;
+  color: #333;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.hint-text {
+  color: #666;
+  font-size: 14px;
+}
