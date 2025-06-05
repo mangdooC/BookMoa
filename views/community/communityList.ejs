@@ -1,0 +1,46 @@
+
+<h1>자유게시판</h1>
+
+<div class="write-btn" style="text-align: right; margin: 10px;">
+  <a href="write.html">
+    <button>작성하기</button>
+  </a>
+</div>
+<table class="post-table" border="1" cellspacing="0" cellpadding="5" style="width: 100%;">
+  <thead>
+    <tr>
+      <th>제목</th>
+      <th>작성자</th>
+      <th>작성일</th>
+    </tr>
+  </thead>
+  <tbody id="post-list">
+    <!-- 글 목록이 여기 들어감 -->
+  </tbody>
+</table>
+
+<script>
+  async function fetchPosts() {
+    const res = await fetch('/posts');
+    const posts = await res.json();
+
+    const list = document.getElementById('post-list');
+
+    if (posts.length === 0) {
+      list.innerHTML = '<tr><td colspan="3" style="text-align:center;">등록된 게시글이 없습니다.</td></tr>';
+      return;
+    }
+
+    posts.forEach(post => {
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td><a href="post.html?id=${post.post_id}"><strong>${post.title}</strong></a></td>
+        <td>${post.author_nickname ?? '알 수 없음'}</td>
+        <td>${new Date(post.created_at).toLocaleString()}</td>
+      `;
+      list.appendChild(tr);
+    });
+  }
+
+  fetchPosts();
+</script>
