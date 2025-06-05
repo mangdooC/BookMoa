@@ -1,17 +1,16 @@
-
-<div class="board-container">
-  <h1>자유게시판</h1>
-  <div class="write-btn" style="text-align: right; margin: 10px;">
+<div class="board-container" style="max-width: 900px; margin: 40px auto; padding: 30px; background-color: #fff9f3; border-radius: 12px;">
+  <h1 style="text-align: center; font-size: 2rem; margin-bottom: 20px;">자유게시판</h1>
+  <div class="write-btn" style="text-align: right; margin-bottom: 16px;">
     <a href="/community/write">
       <button>작성하기</button>
     </a>
   </div>
-  <table class="post-table" border="1" cellspacing="0" cellpadding="5" style="width: 100%;">
+  <table class="post-table" style="width: 100%; border-collapse: collapse; font-size: 0.95rem;">
     <thead>
       <tr>
-        <th>제목</th>
-        <th>작성자</th>
-        <th>작성일</th>
+        <th style="padding: 12px; border-bottom: 2px solid #333; background-color: #f5eee4; text-align: left;">제목</th>
+        <th style="padding: 12px; border-bottom: 2px solid #333; background-color: #f5eee4; text-align: left;">작성자</th>
+        <th style="padding: 12px; border-bottom: 2px solid #333; background-color: #f5eee4; text-align: left;">작성일</th>
       </tr>
     </thead>
     <tbody id="post-list">
@@ -28,16 +27,16 @@
     const list = document.getElementById('post-list');
 
     if (posts.length === 0) {
-      list.innerHTML = '<tr><td colspan="3" style="text-align:center;">등록된 게시글이 없습니다.</td></tr>';
+      list.innerHTML = '<tr><td colspan="3" style="text-align:center; padding: 20px;">등록된 게시글이 없습니다.</td></tr>';
       return;
     }
 
     posts.forEach(post => {
       const tr = document.createElement('tr');
       tr.innerHTML = `
-        <td><a href="post.html?id=${post.post_id}"><strong>${post.title}</strong></a></td>
-        <td>${post.author_nickname ?? '알 수 없음'}</td>
-        <td>${new Date(post.created_at).toLocaleString()}</td>
+        <td style="padding: 12px; border-bottom: 1px solid #ccc;"><a href="post.html?id=${post.post_id}"><strong>${post.title}</strong></a></td>
+        <td style="padding: 12px; border-bottom: 1px solid #ccc;">${post.author_nickname ?? '알 수 없음'}</td>
+        <td style="padding: 12px; border-bottom: 1px solid #ccc;">${new Date(post.created_at).toLocaleString()}</td>
       `;
       list.appendChild(tr);
     });
