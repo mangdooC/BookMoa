@@ -1,7 +1,3 @@
-<<<<<<< HEAD
-=======
-
->>>>>>> e53b9846de1247f217b4252222ab23d1e3c37b70
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -11,21 +7,12 @@
 </head>
 <body>
 
-<<<<<<< HEAD
-=======
 <!-- 🔹 상단 헤더 -->
->>>>>>> e53b9846de1247f217b4252222ab23d1e3c37b70
 <header class="top-header">
   <div class="logo">
     <a href="/">📖 책모아</a>
   </div>
   <div class="auth-buttons">
-<<<<<<< HEAD
-    <a href="/mypage/login.html" id="loginLink">로그인</a>
-    <a href="/mypage/signUp.html" id="signupBtn">회원가입</a>
-    <a href="/mypage/editInfo.html" id="mypageLink" style="display:none;">마이페이지</a>
-    <button id="logoutBtn" style="display:none; width: 100px;">로그아웃</button>
-=======
     <% if (!user) { %>
       <a href="/mypage/login.html">로그인</a>
       <a href="/mypage/signUp.html">회원가입</a>
@@ -35,7 +22,6 @@
         <button type="submit">로그아웃</button>
       </form>
     <% } %>
->>>>>>> e53b9846de1247f217b4252222ab23d1e3c37b70
   </div>
 </header>
 
@@ -67,11 +53,7 @@
 
 <!-- 🔹 메뉴바 -->
 <nav class="main-menu">
-<<<<<<< HEAD
-  <a href="/community/communityList.html">커뮤니티</a>
-=======
   <a href="/community/communityList">커뮤니티</a>
->>>>>>> e53b9846de1247f217b4252222ab23d1e3c37b70
   <a href="/bookReview/bookReviewList.html">도서 리뷰</a>
   <a href="/library/libraryList.html">도서관 리뷰</a>
 </nav>
@@ -81,76 +63,5 @@
     <%- body %>
   </main>
 
-<<<<<<< HEAD
-<script>
-  document.addEventListener('DOMContentLoaded', () => {
-    const loginLink = document.getElementById('loginLink');
-    const signupBtn = document.getElementById('signupBtn');
-    const mypageLink = document.getElementById('mypageLink');
-    const logoutBtn = document.getElementById('logoutBtn');
-
-    async function checkLogin() {
-      const token = localStorage.getItem('token');
-      if (!token) {
-        showLoggedOut();
-        return;
-      }
-
-      try {
-        const res = await fetch('/api/auth/me', {
-          headers: {
-            'Authorization': 'Bearer ' + token,
-          }
-        });
-        if (!res.ok) throw new Error('토큰 인증 실패');
-
-        const user = await res.json();
-        showLoggedIn(user);
-      } catch (err) {
-        localStorage.removeItem('token');
-        showLoggedOut();
-      }
-    }
-
-    function showLoggedIn(user) {
-      loginLink.style.display = 'none';
-      signupBtn.style.display = 'none';
-      logoutBtn.style.display = 'inline-block';
-      mypageLink.style.display = 'inline-block';
-      mypageLink.textContent = user.nickname + "님";
-    }
-
-    function showLoggedOut() {
-      loginLink.style.display = 'inline-block';
-      signupBtn.style.display = 'inline-block';
-      logoutBtn.style.display = 'none';
-      mypageLink.style.display = 'none';
-    }
-
-    mypageLink.addEventListener('click', (e) => {
-      e.preventDefault();
-      const token = localStorage.getItem('token');
-      if (!token) {
-        alert('로그인이 필요합니다.');
-        window.location.href = '/mypage/login.html';
-      } else {
-        window.location.href = '/mypage/editInfo.html';
-      }
-    });
-
-    logoutBtn.addEventListener('click', () => {
-      localStorage.removeItem('token');
-      alert('로그아웃 되었습니다');
-      location.reload();
-    });
-
-    checkLogin();
-  });
-</script>
-
 </body>
 </html>
-=======
-</body>
-</html>
->>>>>>> e53b9846de1247f217b4252222ab23d1e3c37b70
