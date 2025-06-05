@@ -5,23 +5,23 @@
   <title><%= typeof title !== 'undefined' ? title : '책모아 - 글쓰기' %></title>
 </head>
 <body>
-  <div class="wrap">
+  <div class="wrap" style="background-color: #f8efdf; max-width: 720px; margin: 0 auto; padding: 40px; border-radius: 12px;">
     <h1>게시글 작성</h1>
     <form id="write-form">
       <div class="form-group">
-        <label for="title">제목:</label>
-        <input type="text" name="title" id="title" required>
+        <label for="title" style="display: block; margin-bottom: 6px; font-weight: bold;">제목:</label>
+        <input type="text" name="title" id="title" required style="width: 100%; padding: 12px; border-radius: 8px; border: none; margin-top: 4px; font-size: 16px;">
       </div>
 
       <div class="form-group">
-        <label for="content">내용:</label>
-        <textarea name="content" id="content" rows="8" cols="50" required></textarea>
+        <label for="content" style="display: block; margin-bottom: 6px; font-weight: bold;">내용:</label>
+        <textarea name="content" id="content" rows="8" cols="50" required style="width: 100%; padding: 12px; border-radius: 8px; border: none; margin-top: 4px; font-size: 16px;"></textarea>
       </div>
 
 
-      <div class="form-buttons">
-        <button type="submit">글쓰기</button>
-        <button type="button" onclick="window.history.back()">취소</button>
+      <div class="form-buttons" style="text-align: right; margin-top: 20px;">
+        <button type="submit" style="padding: 8px 16px; border: 1px solid #333; border-radius: 6px; background-color: #fff; font-weight: bold; cursor: pointer; margin-left: 6px;">글쓰기</button>
+        <button type="button" onclick="window.history.back()" style="padding: 8px 16px; border: 1px solid #333; border-radius: 6px; background-color: #fff; font-weight: bold; cursor: pointer; margin-left: 6px;">취소</button>
       </div>
     </form>
   </div>
