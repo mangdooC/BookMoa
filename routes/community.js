@@ -3,11 +3,29 @@ const router = express.Router();
 const db = require('../db');
 
 // 커뮤니티 리스트 페이지
-router.get('/communityList', (req, res) => {
-  res.render('community/communityList', {
-    title: '커뮤니티',
-    user: req.session.user  // req.user → req.session.user 로 수정
-  });
+router.get('/communityList', async (req, res) => {
+  try {
+    const [posts] = await db.query(`
+      SELECT 
+        p.post_id, 
+        p.title, 
+        p.content, 
+        p.created_at, 
+        u.nickname AS author_nickname
+      FROM community_post p
+      JOIN user u ON p.user_id = u.user_id
+      ORDER BY p.created_at DESC
+    `);
+
+    res.render('community/communityList', {
+      title: '커뮤니티',
+      user: req.session.user,
+      posts  // 👈 게시글 목록을 EJS에 넘김
+    });
+  } catch (err) {
+    console.error('게시글 목록 조회 실패:', err);
+    res.status(500).send('게시글 목록 불러오기 실패');
+  }
 });
 
 // 글쓰기 페이지
@@ -47,5 +65,6 @@ router.get('/post/:postId', async (req, res) => {
     res.status(500).send('서버 에러');
   }
 });
+
 
 module.exports = router;

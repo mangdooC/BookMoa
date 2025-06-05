@@ -126,7 +126,8 @@ exports.getLatestPosts = async (limit = 2) => {
     const [rows] = await db.query(`
       SELECT 
         p.post_id, 
-        p.title, 
+        p.title,
+	p.content, 
         p.created_at, 
         u.nickname AS author_nickname
       FROM community_post p

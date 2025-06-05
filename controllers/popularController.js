@@ -42,6 +42,7 @@ const books = docs; // 이미 배열이므로 바로 사용
      return docs.map(item => item.doc).map(book => ({
       title: book.bookname,
       imageUrl: book.bookImageURL,
+      isbn13: book.isbn13
     }));
   } catch (err) {
     console.error('[API 호출 또는 파싱 실패]', err);
@@ -53,6 +54,10 @@ const books = docs; // 이미 배열이므로 바로 사용
 exports.getTop4Books = async () => {
   const books = await getPopularBooks();
   return books.slice(0, 4);
+};
+
+exports.getTopBooks = async () => {
+  return await getPopularBooks(); // 전체 목록
 };
 
 // /popular 페이지 렌더링
