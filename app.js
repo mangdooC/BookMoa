@@ -11,11 +11,6 @@ const ejsLayouts = require('express-ejs-layouts');
 const cookieParser = require('cookie-parser');
 const jwt = require('jsonwebtoken');
 
-const session = require('express-session');
-const ejsLayouts = require('express-ejs-layouts');
-const cookieParser = require('cookie-parser');
-const jwt = require('jsonwebtoken')
-
 const app = express();
 
 // ---------- 정적 파일 제공 ----------Add commentMore actions
