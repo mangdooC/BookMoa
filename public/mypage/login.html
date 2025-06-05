@@ -6,7 +6,7 @@
   <link rel="stylesheet" href="/mypage/css/login.css">
 </head>
 <body>
-
+  <div class="logo"></div>
   <div class="login-container">
     <h1>로그인</h1>
     <form method="POST" id="loginForm" action="/auth/login">
@@ -33,6 +33,7 @@
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({ user_id, password }),
+      credentials: 'include',
     });
 
       const data = await res.json();
@@ -51,6 +52,5 @@
     }
   });
 </script>
-
 </body>
 </html>
