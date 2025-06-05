@@ -73,10 +73,6 @@ app.post('/logout', (req, res) => {
   });
 });
 
-// 도서 관련 라우터
-const bookRouter = require('./routes/book');
-app.use('/book', bookRouter);
-
 // 컨트롤러들 require
 const { getTop4Books } = require('./controllers/popularController');
 const { getLatestPosts } = require('./controllers/communityController');
@@ -115,6 +111,18 @@ app.use('/api/checkId', require('./routes/checkId'));
 app.use('/api/user', require('./routes/user'));
 app.use('/api/user-contents', require('./routes/userContents'));
 app.use('/api/favorites', require('./routes/favoritelib'));
+
+//인기도서 
+const communityRouter = require('./routes/community');
+app.use('/', communityRouter);
+
+//커뮤니티
+const popularRoute = require('./routes/popularRoute');
+app.use('/', popularRoute);
+
+// 도서 상세
+const bookRouter = require('./routes/book');
+app.use('/book', bookRouter);
 
 // 에러 핸들링
 app.use((err, req, res, next) => {
