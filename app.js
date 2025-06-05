@@ -123,10 +123,9 @@ app.use('/comments', commentsRouter);
 const bookReviewsRouter = require('./routes/bookReviews');
 app.use('/book-reviews', bookReviewsRouter);
 
-// communityList 라우터
-app.get('/community/communityList', (req, res) => {
-  res.render('community/communityList', { title: '커뮤니티', user: req.user }); // 필요 시 user 전달
-});
+// community 라우터
+const communityRouter = require('./routes/community');
+app.use('/community', communityRouter);
 
 //회원 관련 라우터
 const authRouter = require('./routes/auth');

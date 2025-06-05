@@ -1,23 +1,24 @@
 
-<h1>자유게시판</h1>
-
-<div class="write-btn" style="text-align: right; margin: 10px;">
-  <a href="write.html">
-    <button>작성하기</button>
-  </a>
+<div class="board-container">
+  <h1>자유게시판</h1>
+  <div class="write-btn" style="text-align: right; margin: 10px;">
+    <a href="/community/write">
+      <button>작성하기</button>
+    </a>
+  </div>
+  <table class="post-table" border="1" cellspacing="0" cellpadding="5" style="width: 100%;">
+    <thead>
+      <tr>
+        <th>제목</th>
+        <th>작성자</th>
+        <th>작성일</th>
+      </tr>
+    </thead>
+    <tbody id="post-list">
+      <!-- 글 목록이 여기 들어감 -->
+    </tbody>
+  </table>
 </div>
-<table class="post-table" border="1" cellspacing="0" cellpadding="5" style="width: 100%;">
-  <thead>
-    <tr>
-      <th>제목</th>
-      <th>작성자</th>
-      <th>작성일</th>
-    </tr>
-  </thead>
-  <tbody id="post-list">
-    <!-- 글 목록이 여기 들어감 -->
-  </tbody>
-</table>
 
 <script>
   async function fetchPosts() {

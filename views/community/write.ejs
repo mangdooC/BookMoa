@@ -2,17 +2,29 @@
 <html lang="ko">
 <head>
   <meta charset="UTF-8">
-  <title>책모아 - 글쓰기</title>
+  <title><%= typeof title !== 'undefined' ? title : '책모아 - 글쓰기' %></title>
 </head>
 <body>
-  <h1>게시글 작성</h1>
-  <form id="write-form">
-    <label>제목: <input type="text" name="title" required></label><br><br>
-    <label>내용: <br>
-      <textarea name="content" rows="8" cols="50" required></textarea>
-    </label><br><br>
-    <button type="submit">작성</button>
-  </form>
+  <div class="wrap">
+    <h1>게시글 작성</h1>
+    <form id="write-form">
+      <div class="form-group">
+        <label for="title">제목:</label>
+        <input type="text" name="title" id="title" required>
+      </div>
+
+      <div class="form-group">
+        <label for="content">내용:</label>
+        <textarea name="content" id="content" rows="8" cols="50" required></textarea>
+      </div>
+
+
+      <div class="form-buttons">
+        <button type="submit">글쓰기</button>
+        <button type="button" onclick="window.history.back()">취소</button>
+      </div>
+    </form>
+  </div>
 
   <script>
     document.addEventListener('DOMContentLoaded', () => {
@@ -35,7 +47,7 @@
 
           if (res.ok) {
             alert('게시글 작성 완료!');
-            window.location.href = '/community/communityList.html';
+            window.location.href = '/community/communityList';
           } else {
             alert('작성 실패');
           }
