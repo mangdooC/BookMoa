@@ -15,7 +15,7 @@ app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
 app.set('layout', 'layout');
 app.use(ejsLayouts);
-
+ 
 // 미들웨어
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -40,7 +40,7 @@ app.use((req, res, next) => {
       req.session.user = {
         user_id: decoded.user_id,
         nickname: decoded.nickname
-      };
+      }; 
     } catch (err) {
       console.error('JWT 인증 실패:', err.message);
     }
@@ -129,10 +129,15 @@ const checkIdRouter = require('./routes/checkId');
 const userRouter = require('./routes/user');
 const userContentsRouter = require('./routes/userContents');
 
+
 app.use('/api/auth', authRouter); // 회원가입, 로그인
 app.use('/api/checkId', checkIdRouter); // 아이디 중복체크
 app.use('/api/user', userRouter); // 유저 관련 라우터 (마이페이지 관련)
 app.use('/api/user-contents', userContentsRouter); // 유저가 작성한 글, 댓글 목록
+
+//도서 라우터
+const bookRouter = require('./routes/book');
+app.use('/book', bookRouter);
 
 //도서관 관련 라우터
 const favoritelibRouter = require('./routes/favoritelib');
@@ -140,12 +145,14 @@ app.use('/api/favorites', favoritelibRouter);
 
 //책검색 라우터
 const bookSearchRouter = require('./routes/book');
-app.use('/book', bookSearchRouter);
+app.use('/', bookSearchRouter);
 
 //인기도서 라우터
 const popularRoute = require('./routes/popularRoute');
 app.use('/', popularRoute);
 
+const apiRouter = require('./routes/api');
+app.use('/api', apiRouter);
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {

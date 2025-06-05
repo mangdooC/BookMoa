@@ -7,8 +7,8 @@ const bookDetailController = require('../controllers/bookDetailController');
 router.get('/search/results', bookController.searchBooks);
 router.get('/search', bookController.searchForm);
 // 도서 상세 페이지
-router.get('/:isbn13', bookDetailController.bookDetail);
 router.get('/:isbn13/review/new', bookDetailController.reviewForm);
 router.post('/:isbn13/review', bookDetailController.createReview);
+router.get('/:isbn13', bookDetailController.bookDetail);
 
 module.exports = router;

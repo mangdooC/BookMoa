@@ -27,9 +27,6 @@ exports.searchBooks = async (req, res) => {
   const API_KEY = process.env.DATA4LIBRARY_API_KEY;
   if (!API_KEY) return res.send('API 키가 설정되어 있지 않습니다.');
 
-  // 'bookname' 'title'로 치환
-  if (searchTarget === 'bookname') searchTarget = 'title';
-
   try {
     // API 호출에 필요한 파라미터 세팅
     const params = {

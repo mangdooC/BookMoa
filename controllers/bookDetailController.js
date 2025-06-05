@@ -1,83 +1,136 @@
-//도서관 검색할 때 지역코드 사용하므로 지역 경계에 위치할 때 처리 방법 구현해야함
 const axios = require('axios');
 const pool = require('../db');
 
-// isbn13별 후기 저장용 객체
-const reviewStore = {};
 
 exports.bookDetail = async (req, res) => {
   const isbn13 = req.params.isbn13;
-  const API_KEY = process.env.DATA4LIBRARY_API_KEY;
+  const DATA4LIB_KEY = process.env.DATA4LIBRARY_API_KEY;
 
-  const userPreferredRegions = [
-      { name: '서울특별시', code: 11 },
-      { name: '경기도', code: 41 }
-    ];
-  // 책 정보 API 호출
+  // 책 정보 API 호출을 먼저 수행
   let book = {};
   try {
-    const url = 'http://data4library.kr/api/srchBooks';
-    const params = {
-      authKey: API_KEY,
-      isbn13,
-      format: 'json'
-    };
-    const response = await axios.get(url, { params });
+    const response = await axios.get('http://data4library.kr/api/srchBooks', {
+      params: {
+        authKey: DATA4LIB_KEY,
+        isbn13,
+        format: 'json'
+      }
+    });
     book = response.data?.response?.docs?.[0]?.doc || {};
   } catch (e) {
+    console.error('책 정보 조회 실패:', e);
     book = {};
   }
+
+  // 쿼리 파라미터 확인
+  const { region, lat, lng } = req.query;
+  
+  // URL에 파라미터가 없으면 기본 페이지로
+  if (!region || !lat || !lng) {
+    return res.render('bookDetail', {
+      book,
+      libraries: [],
+      reviews: [],
+      reviewsTotal: 0,
+      sort: 'recent',
+      page: 1,
+      totalPages: 1,
+      lat: 37.5665,  // 서울시청 기본값
+      lng: 126.9780, // 서울시청 기본값
+      NAVER_MAP_API_KEY: process.env.NAVER_CLIENT_ID
+    });
+  }
+
+  const nearRegions = req.query.nearRegions ? JSON.parse(req.query.nearRegions) : [];
+
+  console.log('받은 파라미터:', {
+    region,
+    lat,
+    lng,
+    nearRegions
+  });
+
+  // 위치 정보나 지역코드가 없으면 위치 정보 요청
+  if (!lat || !lng || !region) {
+    console.log('위치 정보 누락');
+    return res.status(400).send('위치 정보가 필요합니다. 위치 정보 제공을 허용해주세요.');
+  }
+
+  console.log('요청 받은 위치 정보:', { lat, lng, region });
+
+  // 기준 좌표 설정
+  const myLat = parseFloat(lat);
+  const myLng = parseFloat(lng);
 
   // 대출 가능한 도서관 정보 API 호출
   let libraries = [];
   try {
-    const libUrl = 'http://data4library.kr/api/libSrchByBook';
-const libParams = {
-  authKey: API_KEY,
-  isbn: isbn13,      
-  region: 11,         //지역코드(11:서울)
-  format: 'json'
-};
+    // 현재 지역 코드와 인접 지역들을 합침
+    const mainRegion = region.toString();
+    
+    // 현재 지역과 인접 지역들을 모두 포함
+    const allRegions = Array.from(new Set([mainRegion, ...nearRegions]));
+    
+    console.log('현재 지역:', mainRegion);
+    console.log('인접 지역들:', nearRegions);
+    console.log('검색할 모든 지역들:', allRegions);
 
-    const libResponse = await axios.get(libUrl, { params: libParams });
-    console.log(JSON.stringify(libResponse.data, null, 2));
-    libraries = (libResponse.data?.response?.libs || []).map(lib => ({
-  name: lib.lib.libName,
-  tel: lib.lib.tel,
-  address: lib.lib.address,
-  url: lib.lib.homepage,
-  lat: lib.lib.latitude,
-  lng: lib.lib.longitude
-}));
+    // 모든 지역의 도서관 정보를 병렬로 가져오기
+    const requests = allRegions.map(regionCode => 
+      axios.get('http://data4library.kr/api/libSrchByBook', {
+        params: {
+          authKey: DATA4LIB_KEY,
+          isbn: isbn13,      
+          region: regionCode,
+          format: 'json',
+          pageSize: 500
+        }
+      })
+    );
+
+    const responses = await Promise.all(requests);
+    
+    // 모든 응답의 도서관 정보 합치기
+    libraries = responses.flatMap(response => {
+      const libs = response.data?.response?.libs || [];
+      return libs.map(lib => ({
+        name: lib.lib.libName,
+        tel: lib.lib.tel,
+        address: lib.lib.address,
+        url: lib.lib.homepage,
+        lat: lib.lib.latitude,
+        lng: lib.lib.longitude,
+        libCode: lib.lib.libCode 
+      }));
+    });
+
+    // 사용자 위치 기준으로 거리 계산 및 정렬
+    libraries = libraries
+      .map(lib => ({
+        ...lib,
+        distance: getDistance(myLat, myLng, Number(lib.lat), Number(lib.lng))
+      }))
+      .sort((a, b) => a.distance - b.distance)
+      .slice(0, 20);
+
   } catch (e) {
+    console.error('도서관 정보 조회 실패:', e);
     libraries = [];
   }
 
-  // 기준 좌표(예: 서울시청)
-const myLat = 37.5665;
-const myLng = 126.9780;
+  // 거리 계산 함수
+  function getDistance(lat1, lng1, lat2, lng2) {
+    function toRad(x) { return x * Math.PI / 180; }
+    const R = 6371; // km
+    const dLat = toRad(lat2 - lat1);
+    const dLng = toRad(lng2 - lng1);
+    const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+              Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) *
+              Math.sin(dLng/2) * Math.sin(dLng/2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+    return R * c;
+  }
 
-// 거리 계산 함수
-function getDistance(lat1, lng1, lat2, lng2) {
-  function toRad(x) { return x * Math.PI / 180; }
-  const R = 6371; // km
-  const dLat = toRad(lat2 - lat1);
-  const dLng = toRad(lng2 - lng1);
-  const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
-            Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) *
-            Math.sin(dLng/2) * Math.sin(dLng/2);
-  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-  return R * c;
-}
-
-// 도서관에 거리 추가 및 거리순 정렬, 20개만 추출
-libraries = libraries
-  .map(lib => ({
-    ...lib,
-    distance: (lib.lat && lib.lng) ? getDistance(myLat, myLng, Number(lib.lat), Number(lib.lng)) : Infinity
-  }))
-  .sort((a, b) => a.distance - b.distance)
-  .slice(0, 20);
 
   // 후기 목록, 총 개수, 정렬, 페이지네이션
   const sort = req.query.sort || 'recent';
@@ -131,7 +184,9 @@ libraries = libraries
       sort,
       page,
       totalPages,
-      NAVER_MAP_API_KEY: process.env.NAVER_MAP_API_KEY
+      lat: parseFloat(lat),
+      lng: parseFloat(lng),
+      NAVER_MAP_API_KEY: process.env.NAVER_CLIENT_ID
     });
 
   } catch (error) {

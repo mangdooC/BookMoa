@@ -76,7 +76,7 @@
       color: white;
     }
   </style>
-<script type="text/javascript" src="https://oapi.map.naver.com/openapi/v3/maps.js?ncpKeyId=<%= NAVER_MAP_API_KEY %>"></script>
+  <script type="text/javascript" src="https://oapi.map.naver.com/openapi/v3/maps.js?ncpKeyId=<%= NAVER_MAP_API_KEY %>&callback=initMap"></script>
 </head>
 <body>
   <div style="margin-bottom: 20px; display: flex; align-items: center;">
@@ -106,35 +106,155 @@
   <% }) %>
 </ul>
 
+<div style="margin-bottom: 10px;">
+  <button onclick="requestLocation()" style="margin-right: 10px;">내 주변 도서관 찾기</button>
+  <span style="color: #666;">또는 지도를 클릭하여 원하는 위치의 도서관을 찾아보세요</span>
+</div>
+
 <div id="map" style="width:100%;height:400px;margin-bottom:20px;"></div>
-<script type="text/javascript" src="https://oapi.map.naver.com/openapi/v3/maps.js?ncpClientId=YOUR_CLIENT_ID"></script>
 <script>
-  const libraries = <%- JSON.stringify(libraries) %>;
-  const centerLat = libraries.length > 0 ? Number(libraries[0].lat) : 37.5665;
-  const centerLng = libraries.length > 0 ? Number(libraries[0].lng) : 126.9780;
+    var map = null;
+    var markers = [];
+    var currentLocationMarker = null;
 
-  var map = new naver.maps.Map('map', {
-    center: new naver.maps.LatLng(centerLat, centerLng),
-    zoom: 11
-  });
+    window.navermap_authFailure = function() {
+      alert('네이버 지도 인증에 실패했습니다.');
+    }
 
-  libraries.forEach(lib => {
-    if (!lib.lat || !lib.lng) return;
-    var marker = new naver.maps.Marker({
-      position: new naver.maps.LatLng(Number(lib.lat), Number(lib.lng)),
-      map: map
-    });
-    var infowindow = new naver.maps.InfoWindow({
-      content: `<div style="padding:5px;font-size:12px;">${lib.name}</div>`
-    });
-    naver.maps.Event.addListener(marker, 'mouseover', function() {
-      infowindow.open(map, marker);
-    });
-    naver.maps.Event.addListener(marker, 'mouseout', function() {
-      infowindow.close();
-    });
-  });
-</script>
+    function initMap() {
+      const libraries = <%- JSON.stringify(libraries) %>;
+      const centerLat = libraries.length > 0 ? Number(libraries[0].lat) : 37.5665;
+      const centerLng = libraries.length > 0 ? Number(libraries[0].lng) : 126.9780;
+
+      map = new naver.maps.Map('map', {
+        center: new naver.maps.LatLng(centerLat, centerLng),
+        zoom: 11
+      });
+
+      // 현재 위치 마커 추가 (빨간색)
+      const myMarker = new naver.maps.Marker({
+        position: new naver.maps.LatLng(<%= lat %>, <%= lng %>),
+        map: map,
+        icon: {
+          content: '<div style="width: 12px; height: 12px; background: red; border-radius: 50%;"></div>',
+          anchor: new naver.maps.Point(6, 6)
+        }
+      });
+
+      // 현재 위치 정보창
+      const myInfowindow = new naver.maps.InfoWindow({
+        content: '<div style="padding:5px;font-size:12px;">현재 위치</div>'
+      });
+
+      naver.maps.Event.addListener(myMarker, 'mouseover', function() {
+        myInfowindow.open(map, myMarker);
+      });
+      naver.maps.Event.addListener(myMarker, 'mouseout', function() {
+        myInfowindow.close();
+      });
+
+      // 도서관 마커 추가
+      libraries.forEach(lib => {
+        if (!lib.lat || !lib.lng) return;
+        var marker = new naver.maps.Marker({
+          position: new naver.maps.LatLng(Number(lib.lat), Number(lib.lng)),
+          map: map
+        });
+        markers.push(marker);
+        var infowindow = new naver.maps.InfoWindow({
+          content: `
+            <div style="padding:10px;font-size:12px;">
+              <strong>${lib.name}</strong><br>
+              <span id="status-${lib.libCode}">확인 중...</span>
+            </div>`
+        });
+
+        naver.maps.Event.addListener(marker, 'click', async function() {
+          infowindow.open(map, marker);
+          console.log('도서관 마커 클릭:', { 
+            name: lib.name, 
+            libCode: lib.libCode, 
+            isbn: '<%= book.isbn13 %>' 
+          });
+          
+          try {
+            const statusElement = document.getElementById(`status-${lib.libCode}`);
+            statusElement.innerHTML = '<span style="color:#666">⟳ 확인중...</span>';
+            
+            const apiUrl = `/api/library/status?isbn=<%= book.isbn13 %>&libCode=${lib.libCode}`;
+            console.log('도서관 상태 요청:', apiUrl);
+            
+            const response = await fetch(apiUrl);
+            if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+            const data = await response.json();
+            console.log('도서관 상태 응답:', data);
+
+            let status, color;
+            // 서버에서 받은 응답의 hasBook과 loanAvailable 값 직접 사용
+            if (data.hasBook === 'Y') {
+              if (data.loanAvailable === 'Y') {
+                status = '대출 가능';
+                color = '#2ecc71';
+              } else {
+                status = '대출 중';
+                color = '#e74c3c';
+              }
+            } else {
+              status = '미소장';
+              color = '#999';
+            }
+            
+            console.log('상태 업데이트:', { status, color });
+            statusElement.innerHTML = `<span style="color:${color}">● ${status}</span>`;
+          } catch (error) {
+            console.error('도서관 상태 조회 실패:', error);
+            document.getElementById(`status-${lib.libCode}`).innerHTML = 
+              '<span style="color:#666">⚠️ 확인 실패</span>';
+          }
+        });
+      });
+
+      // 지도 클릭 이벤트 추가
+      naver.maps.Event.addListener(map, 'click', async function(e) {
+        const clickedLat = e.coord.y;
+        const clickedLng = e.coord.x;
+        
+        try {
+          // 클릭한 위치로 역지오코딩 요청
+          const response = await fetch(`/api/geocode?coords=${clickedLng},${clickedLat}`);
+          const data = await response.json();
+          
+          if (data.status === 'OK') {
+            // 기존 현재 위치 마커 제거
+            if (currentLocationMarker) {
+              currentLocationMarker.setMap(null);
+            }
+            
+            // 새로운 위치에 마커 표시
+            currentLocationMarker = new naver.maps.Marker({
+              position: new naver.maps.LatLng(clickedLat, clickedLng),
+              map: map,
+              icon: {
+                content: '<div style="width: 12px; height: 12px; background: red; border-radius: 50%;"></div>',
+                anchor: new naver.maps.Point(6, 6)
+              }
+            });
+
+            // 새 위치로 페이지 이동
+            const url = new URL(window.location.href);
+            url.searchParams.set('region', data.regionCode);
+            url.searchParams.set('lat', clickedLat);
+            url.searchParams.set('lng', clickedLng);
+            url.searchParams.set('nearRegions', JSON.stringify(data.nearRegions));
+            window.location.href = url.toString();
+          }
+        } catch (error) {
+          console.error('위치 변경 실패:', error);
+          alert('선택한 위치의 정보를 가져오는데 실패했습니다.');
+        }
+      });
+    }
+  </script>
 
 <div class="reviews-section">
   <div class="review-header">
@@ -181,5 +301,46 @@
     <% } %>
   </div>
 </div>
+<script>
+
+async function requestLocation() {
+  if (navigator.geolocation) {
+    navigator.geolocation.getCurrentPosition(async function(position) {
+      const lat = position.coords.latitude;
+      const lng = position.coords.longitude;
+      console.log('위치 확인:', lat, lng);
+
+      try {
+        const response = await fetch(`/api/geocode?coords=${lng},${lat}`);
+        const data = await response.json();
+        console.log('API 응답:', data);
+
+        if (data.regionCode) {
+          const url = new URL(window.location.href);
+          url.searchParams.set('region', data.regionCode);
+          url.searchParams.set('lat', lat);
+          url.searchParams.set('lng', lng);
+          url.searchParams.set('nearRegions', JSON.stringify(data.nearRegions));
+          
+          console.log('새 URL:', url.toString());
+          window.location.replace(url.toString());
+        }
+      } catch (error) {
+        console.error('에러:', error);
+      }
+    }, function(error) {
+      console.error('위치 에러:', error);
+      alert('위치 정보 제공을 허용해주세요');
+    });
+  }
+}
+
+// 페이지 로드 시 실행
+document.addEventListener('DOMContentLoaded', function() {
+  if (!window.location.search.includes('region=')) {
+    requestLocation();
+  }
+});
+</script>
 </body>
 </html>
