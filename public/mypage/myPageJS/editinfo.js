@@ -7,6 +7,8 @@ document.addEventListener('DOMContentLoaded', async () => {
   const saveInfoBtn = document.getElementById('saveInfoBtn');
   const logoutBtn = document.getElementById('logoutBtn');
 
+  let currentProfileImage = profilePreview.src;
+
   // 초기 사용자 정보 로딩
   if (token) {
     try {
@@ -28,13 +30,13 @@ document.addEventListener('DOMContentLoaded', async () => {
       // 프로필 이미지가 없으면 기본 이미지 경로로 대체
       const profileImageUrl = data.profile_image || '/mypage/images/default.jpg';
       profilePreview.src = profileImageUrl;
+      currentProfileImage = profileImageUrl; // 여기 최신화
 
       // 주소도 서버에서 온 값으로 초기화
       if (data.address) {
         const addressInput = document.getElementById('address');
         if (addressInput) addressInput.value = data.address;
       }
-
     } catch (e) {
       console.error('초기 유저 정보 로딩 실패:', e);
     }
@@ -47,13 +49,11 @@ document.addEventListener('DOMContentLoaded', async () => {
       const nickname = document.getElementById('nickname')?.value.trim() || '';
       const address = document.getElementById('address')?.value.trim() || '';
 
-      // 닉네임 공백 체크
       if (nickname === '') {
         alert('닉네임은 공백일 수 없습니다.');
         return;
       }
 
-      // 비밀번호 정규식 - 특수문자 포함 4~12자
       if (password !== '') {
         const pwRegex = /^[a-zA-Z0-9!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]{4,12}$/;
         if (!pwRegex.test(password)) {
@@ -91,15 +91,14 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
 
         if (data.profile_image && data.profile_image.trim() !== '') {
-            profilePreview.src = data.profile_image;
-          } else {
-            profilePreview.src = '/mypage/images/default.jpg';
-          }
-
+          profilePreview.src = data.profile_image;
+          currentProfileImage = data.profile_image; // 최신화
+        } else {
+          profilePreview.src = currentProfileImage || '/mypage/images/default.jpg';
+        }
 
         document.getElementById('password').value = '';
         if (data.address) document.getElementById('address').value = data.address;
-
       } catch (err) {
         alert('서버 오류 발생');
       }
@@ -118,17 +117,18 @@ document.addEventListener('DOMContentLoaded', async () => {
       const file = profileImageInput.files[0];
       if (!file) return;
 
-      // 미리보기
+      if (!token) {
+        alert('로그인 상태가 아닙니다.');
+        profileImageInput.value = ''; // 선택 초기화
+        return;
+      }
+
+      // 미리보기는 토큰 체크 후에
       const reader = new FileReader();
       reader.onload = e => {
         profilePreview.src = e.target.result;
       };
       reader.readAsDataURL(file);
-
-      if (!token) {
-        alert('로그인 상태가 아닙니다.');
-        return;
-      }
 
       const formData = new FormData();
       formData.append('profileImage', file);
@@ -145,14 +145,20 @@ document.addEventListener('DOMContentLoaded', async () => {
         const data = await res.json();
         if (!res.ok) {
           alert(data.error || '업로드 실패');
+          profilePreview.src = currentProfileImage || '/mypage/images/default.jpg'; // 원복
+          profileImageInput.value = ''; // 선택 초기화
           return;
         }
 
         alert('프로필 이미지 업로드 완료');
-        profilePreview.src = data.imageUrl; // 서버에서 최신 이미지 주소로 갱신
+        profilePreview.src = data.imageUrl;
+        currentProfileImage = data.imageUrl; // 최신화
+        profileImageInput.value = ''; // 선택 초기화
       } catch (err) {
         console.error(err);
         alert('서버 오류 발생');
+        profilePreview.src = currentProfileImage || '/mypage/images/default.jpg'; // 원복
+        profileImageInput.value = ''; // 선택 초기화
       }
     });
   }

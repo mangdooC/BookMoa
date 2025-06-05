@@ -85,7 +85,18 @@ const updateUserInfo = async (req, res) => {
     const sql = `UPDATE user SET ${fields.join(', ')} WHERE user_id = ?`;
 
     await pool.query(sql, values);
-    return res.json({ message: '회원정보가 성공적으로 수정되었습니다.' });
+
+    // 수정 후 최신 프로필 이미지 조회
+    const [imageRows] = await pool.query(
+      `SELECT image_url FROM image WHERE user_id = ? AND image_type = 'profile' ORDER BY image_id DESC LIMIT 1`,
+      [userId]
+    );
+    const profileImage = imageRows.length > 0 ? imageRows[0].image_url : null;
+
+    return res.json({ 
+      message: '회원정보가 성공적으로 수정되었습니다.',
+      profile_image: profileImage,
+    });
   } catch (err) {
     console.error('updateUserInfo 에러:', err);
     return res.status(500).json({ error: '서버 오류 발생' });
