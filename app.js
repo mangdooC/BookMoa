@@ -136,6 +136,25 @@ app.use('/', popularRoute);
 const bookRouter = require('./routes/book');
 app.use('/book', bookRouter);
 
+//bookReviews 라우터
+const bookReviewsRouter = require('./routes/bookReviews');
+app.use('/book-reviews', bookReviewsRouter);
+
+//도서관 관련 라우터
+const favoritelibRouter = require('./routes/favoritelib');
+app.use('/api/favorites', favoritelibRouter);
+
+//책검색 라우터
+const bookSearchRouter = require('./routes/book');
+app.use('/', bookSearchRouter);
+
+const apiRouter = require('./routes/api');
+app.use('/api', apiRouter);
+
+//도서관 검색 라우터
+const libraryRouter = require('./routes/library');
+app.use('/library', libraryRouter);
+
 // 에러 핸들링
 app.use((err, req, res, next) => {
   console.error('서버 에러:', err.stack);
