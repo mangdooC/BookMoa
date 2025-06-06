@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const favoriteController = require('../controllers/favoriteController');
-const authMiddleware = require('../middlewares/authMiddleware'); // JWT 인증 미들웨어
+const authMiddleware = require('../middlewares/authMiddleware');
 
 router.post('/', authMiddleware, favoriteController.addFavorite);
 router.get('/', authMiddleware, favoriteController.getFavorites);

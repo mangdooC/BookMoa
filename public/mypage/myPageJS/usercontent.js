@@ -40,32 +40,32 @@ async function loadPostsList() {
       bookReviewList.appendChild(li);
     });
 
-    // 도서관 리뷰 조회
-    const libraryReviewsRes = await fetch(`${base}/library-reviews`, {
-      headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
-    });
-    const libraryReviews = await libraryReviewsRes.json();
-    libraryReviews.forEach(review => {
-      const li = document.createElement('li');
+    // // 도서관 리뷰 조회
+    // const libraryReviewsRes = await fetch(`${base}/library-reviews`, {
+    //   headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+    // });
+    // const libraryReviews = await libraryReviewsRes.json();
+    // libraryReviews.forEach(review => {
+    //   const li = document.createElement('li');
 
-      const strong = document.createElement('strong');
-      strong.textContent = review.library_name;
-      li.appendChild(strong);
+    //   const strong = document.createElement('strong');
+    //   strong.textContent = review.library_name;
+    //   li.appendChild(strong);
 
-      li.appendChild(document.createTextNode(` (${review.rating}점)\n${review.content}\n`));
+    //   li.appendChild(document.createTextNode(` (${review.rating}점)\n${review.content}\n`));
 
-      const editBtn = document.createElement('button');
-      editBtn.textContent = '수정';
-      editBtn.onclick = () => editLibraryReview(review.review_id, review.content, review.rating);
-      li.appendChild(editBtn);
+    //   const editBtn = document.createElement('button');
+    //   editBtn.textContent = '수정';
+    //   editBtn.onclick = () => editLibraryReview(review.review_id, review.content, review.rating);
+    //   li.appendChild(editBtn);
 
-      const deleteBtn = document.createElement('button');
-      deleteBtn.textContent = '삭제';
-      deleteBtn.onclick = () => deleteLibraryReview(review.review_id);
-      li.appendChild(deleteBtn);
+    //   const deleteBtn = document.createElement('button');
+    //   deleteBtn.textContent = '삭제';
+    //   deleteBtn.onclick = () => deleteLibraryReview(review.review_id);
+    //   li.appendChild(deleteBtn);
 
-      libraryReviewList.appendChild(li);
-    });
+    //   libraryReviewList.appendChild(li);
+    // });
 
     // 커뮤니티 글 조회
     const communityPostsRes = await fetch(`${base}/community-posts`, {

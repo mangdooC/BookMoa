@@ -81,7 +81,7 @@ app.use((req, res, next) => {
   next();
 });
 
-// 로그아웃 라우터
+// 로그아웃 라우터 (뷰용 POST 로그아웃 라우터)
 app.post('/logout', (req, res) => {
   req.session.destroy(err => {
     if (err) console.error('세션 삭제 실패:', err);
@@ -117,11 +117,10 @@ app.get('/', async (req, res) => {
   }
 });
 
-// 라우터 등록
+// 기타 라우터 등록
 app.use('/posts', require('./routes/posts'));
 app.use('/comments', require('./routes/comments'));
-app.use('/book-reviews', require('./routes/bookReviews'));
-app.use('/community', require('./routes/community'));
+// app.use('/book-reviews', require('./routes/bookReviews'));
 
 app.use('/api/auth', require('./routes/auth'));
 app.use('/api/checkId', require('./routes/checkId'));
@@ -129,29 +128,21 @@ app.use('/api/user', require('./routes/user'));
 app.use('/api/user-contents', require('./routes/userContents'));
 app.use('/api/favorites', require('./routes/favoritelib'));
 
-//comment 라우터
-const commentsRouter = require('./routes/comments');
-app.use('/comments', commentsRouter);
+//인기도서 
+const communityRouter = require('./routes/community');
+app.use('/community', communityRouter);
+
+//커뮤니티
+const popularRoute = require('./routes/popularRoute');
+app.use('/', popularRoute);
+
+// 도서 상세
+const bookRouter = require('./routes/book');
+app.use('/book', bookRouter);
 
 //bookReviews 라우터
 const bookReviewsRouter = require('./routes/bookReviews');
 app.use('/book-reviews', bookReviewsRouter);
-
-//회원 관련 라우터
-const authRouter = require('./routes/auth');
-const checkIdRouter = require('./routes/checkId');
-const userRouter = require('./routes/user');
-const userContentsRouter = require('./routes/userContents');
-
-
-app.use('/api/auth', authRouter); // 회원가입, 로그인
-app.use('/api/checkId', checkIdRouter); // 아이디 중복체크
-app.use('/api/user', userRouter); // 유저 관련 라우터 (마이페이지 관련)
-app.use('/api/user-contents', userContentsRouter); // 유저가 작성한 글, 댓글 목록
-
-//도서 라우터
-const bookRouter = require('./routes/book');
-app.use('/book', bookRouter);
 
 //도서관 관련 라우터
 const favoritelibRouter = require('./routes/favoritelib');
@@ -161,16 +152,9 @@ app.use('/api/favorites', favoritelibRouter);
 const bookSearchRouter = require('./routes/book');
 app.use('/', bookSearchRouter);
 
-//인기도서 라우터
-//인기도서 
-const communityRouter = require('./routes/community');
-app.use('/', communityRouter);
-//커뮤니티
-const popularRoute = require('./routes/popularRoute');
-app.use('/', popularRoute);
-
 const apiRouter = require('./routes/api');
 app.use('/api', apiRouter);
+
 // 에러 핸들링
 app.use((err, req, res, next) => {
   console.error('서버 에러:', err.stack);

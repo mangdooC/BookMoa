@@ -1,6 +1,4 @@
 document.addEventListener('DOMContentLoaded', async () => {
-  const token = localStorage.getItem('token');
-
   const nicknameDisplay = document.getElementById('nicknameDisplay');
   const profilePreview = document.getElementById('profilePreview');
   const profileImageInput = document.getElementById('profileImage');
@@ -11,52 +9,40 @@ document.addEventListener('DOMContentLoaded', async () => {
   const passwordInput = document.getElementById('password');
   const addressInput = document.getElementById('address');
 
-  // 초기 정보 로딩 
-  if (token) {
-    try {
-      const res = await fetch('/api/auth/me', {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+  // 초기 정보 로딩
+  try {
+    const res = await fetch('/api/user/info', {  
+      credentials: 'include',  // 쿠키 같이 보내야 JWT 인증 가능
+    });
 
-      if (res.status === 401) {
-        alert('로그인 세션이 만료되었습니다.');
-        localStorage.removeItem('token');
-        location.href = '/login';
-        return;
-      }
-
-      if (!res.ok) throw new Error('정보 로딩 실패');
-
-      const data = await res.json();
-
-      // 닉네임 세팅
-      if (data.nickname) {
-        nicknameDisplay.textContent = data.nickname;
-        const nicknameInput = document.getElementById('nickname');
-        if (nicknameInput) {
-          nicknameInput.value = data.nickname;
-        }
-      }
-
-      // 주소 세팅
-      if (data.address) {
-        const addressInput = document.getElementById('address');
-        if (addressInput) addressInput.value = data.address;
-      }
-
-      // 프로필 이미지 세팅
-      if (data.profile_image) {
-        profilePreview.src = data.profile_image;
-      } else {
-        profilePreview.src = '/mypage/images/default.jpg'; // 기본 이미지 경로
-      }
-
-    } catch (e) {
-      console.error('초기 유저 정보 로딩 실패:', e);
-      alert('유저 정보를 불러오는 중 오류가 발생했습니다.');
+    if (res.status === 401) {
+      alert('로그인 세션이 만료되었습니다.');
+      location.href = '/login';
+      return;
     }
-  }
 
+    if (!res.ok) throw new Error('정보 로딩 실패');
+
+    const data = await res.json();
+
+    if (data.nickname) {
+      nicknameDisplay.textContent = data.nickname;
+      nicknameInput.value = data.nickname;
+    }
+
+    if (data.address) {
+      addressInput.value = data.address;
+    }
+
+    if (data.profile_image) {
+      profilePreview.src = data.profile_image;
+    } else {
+      profilePreview.src = '/mypage/images/default.jpg'; // 기본 이미지 경로
+    }
+  } catch (e) {
+    console.error('초기 유저 정보 로딩 실패:', e);
+    alert('유저 정보를 불러오는 중 오류가 발생했습니다.');
+  }
 
   // 정보 수정
   if (saveInfoBtn) {
@@ -84,18 +70,17 @@ document.addEventListener('DOMContentLoaded', async () => {
       if (address) updateData.address = address;
 
       try {
-        const res = await fetch('/api/user/edit', {
+        const res = await fetch('/api/user/edit', {  
           method: 'PUT',
           headers: {
             'Content-Type': 'application/json',
-            Authorization: `Bearer ${token}`,
           },
+          credentials: 'include', // 쿠키 같이 보내기
           body: JSON.stringify(updateData),
         });
 
         if (res.status === 401) {
           alert('로그인 세션이 만료되었습니다.');
-          localStorage.removeItem('token');
           location.href = '/login';
           return;
         }
@@ -115,7 +100,6 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         passwordInput.value = '';
         if (data.address) addressInput.value = data.address;
-
       } catch (err) {
         console.error('정보 수정 중 에러:', err);
         alert('서버 오류 발생');
@@ -135,15 +119,9 @@ document.addEventListener('DOMContentLoaded', async () => {
       const file = profileImageInput.files[0];
       if (!file) return;
 
-      if (!token) {
-        alert('로그인 상태가 아닙니다.');
-        return;
-      }
-
       const reader = new FileReader();
       reader.onload = e => {
-        // 미리보기는 서버 성공 후에만 반영하자
-        profilePreview.dataset.temp = e.target.result;
+        profilePreview.src = e.target.result; // 미리보기 적용
       };
       reader.readAsDataURL(file);
 
@@ -151,17 +129,14 @@ document.addEventListener('DOMContentLoaded', async () => {
       formData.append('profileImage', file);
 
       try {
-        const res = await fetch('/api/user/upload-profile', {
+        const res = await fetch('/api/user/upload-profile', {  
           method: 'POST',
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
+          credentials: 'include', // 쿠키 같이 보내기
           body: formData,
         });
 
         if (res.status === 401) {
           alert('로그인 세션이 만료되었습니다.');
-          localStorage.removeItem('token');
           location.href = '/login';
           return;
         }
@@ -174,20 +149,10 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         alert('프로필 이미지 업로드 완료');
         profilePreview.src = data.imageUrl;
-
       } catch (err) {
         console.error('프로필 업로드 오류:', err);
         alert('서버 오류 발생');
       }
-    });
-  }
-
-  // 로그아웃
-  if (logoutBtn) {
-    logoutBtn.addEventListener('click', () => {
-      localStorage.removeItem('token');
-      alert('로그아웃 되었습니다.');
-      location.href = '/';
     });
   }
 });
