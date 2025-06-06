@@ -142,48 +142,14 @@ router.post(
       next();
     });
   },
-  async (req, res) => {
-    try {
-      const userId = req.user.user_id;
+   async (req, res) => {
+    if (!req.file) return res.status(400).json({ error: '파일이 없습니다.' });
+    // DB에 프로필 이미지 경로 업데이트 코드 삽입 가능
 
-      if (!req.file) {
-        return res.status(400).render('user/profile', { error: '파일이 업로드되지 않았습니다.' });
-      }
-
-      const filename = req.file.filename;
-      const imageUrl = `/uploads/profile/${filename}`;
-
-      // 기존 이미지 삭제
-      const [existingImages] = await pool.query(
-        "SELECT image_url FROM image WHERE user_id = ? AND image_type = 'profile'",
-        [userId]
-      );
-
-      for (const img of existingImages) {
-        const filePath = path.join(__dirname, '..', img.image_url.replace(/^\//, ''));
-        try {
-          await fsPromises.unlink(filePath);
-        } catch (err) {
-          console.warn('기존 이미지 삭제 실패:', filePath);
-        }
-      }
-
-      await pool.query(
-        "DELETE FROM image WHERE user_id = ? AND image_type = 'profile'",
-        [userId]
-      );
-
-      await pool.query(
-        "INSERT INTO image (user_id, image_url, image_type) VALUES (?, ?, ?)",
-        [userId, imageUrl, 'profile']
-      );
-
-      return res.redirect('/user/profile');
-    } catch (error) {
-      console.error('uploadProfileImage 에러:', error);
-      return res.status(500).render('error', { message: '서버 오류 발생' });
-    }
-  }
+    // 예시 응답
+    res.json({ imageUrl: `/uploads/profile/${req.file.filename}` });
+   },
+   uploadProfileImage
 );
 
 // 프로필 이미지 삭제

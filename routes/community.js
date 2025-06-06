@@ -66,5 +66,4 @@ router.get('/post/:postId', async (req, res) => {
   }
 });
 
-
 module.exports = router;

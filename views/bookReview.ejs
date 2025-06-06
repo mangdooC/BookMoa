@@ -33,10 +33,7 @@
     <div class="review-form">
         <h2>도서 리뷰 작성</h2>
         <form action="/book/<%= isbn13 %>/review" method="POST">
-            <div class="form-group">
-                <label for="user_id">작성자 ID:</label>
-                <input type="text" id="user_id" name="user_id" required>
-            </div>
+            <input type="hidden" name="user_id" value="<%= user.user_id %>">
             
             <div class="form-group">
                 <label for="rating">평점:</label>

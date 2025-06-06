@@ -5,13 +5,9 @@
   <title>이달의 인기 도서</title>
   <style>
     body {
+      background-color: #f4f4f4;
       font-family: 'Arial', sans-serif;
     }
-.popular-title {
-  text-align: center;
-  font-size: 22px;
-  margin-bottom: 24px;
-}
 
     .book-section-box {
       background-color: #ffffff;
@@ -22,12 +18,12 @@
       margin: 40px auto;
     }
 
-    .popular-book-list {
+    .book-list {
       list-style-type: none;
       padding: 0;
     }
 
-    .popular-book-list li {
+    .book-list li {
       margin-bottom: 20px;
       display: flex;
       align-items: center;
@@ -39,11 +35,11 @@
       border-bottom: 1px solid #ddd;
     }
 
-    .popular-book-list li:hover {
+    .book-list li:hover {
       background: #f0f0f0;
     }
 
-    .popular-book-list img {
+    .book-list img {
       width: 80px;
       height: auto;
       margin-right: 16px;
@@ -69,19 +65,19 @@
 </head>
 <body>
   <div class="book-section-box">
-    <h2 class="popular-title"> 이달의 인기 대출 도서</h2>
+    <h2>📚 이달의 인기 대출 도서</h2>
 
     <% if (books.length === 0) { %>
       <p>인기 도서 데이터가 없습니다.</p>
       <a href="/">메인으로 돌아가기</a>
     <% } else { %>
-      <ul class="popular-book-list">
+      <ul class=popular-"book-list">
         <% books.forEach(book => { %>
           <li onclick="location.href='/book/<%= book.isbn13 || '' %>'">
             <img src="<%= book.imageUrl || book.bookImageURL || '' %>" alt="책 표지" />
             <div>
               <strong><%= book.title || book.bookname %></strong><br>
-              <%= book.author || book.authors || '정보 없음' %><br>
+              저자: <%= book.author || book.authors || '정보 없음' %><br>
               출판사: <%= book.publisher || '정보 없음' %><br>
               ISBN: <%= book.isbn13 || '정보 없음' %><br>
               <%= book.loanCount ? `대출 횟수: ${book.loanCount}회` : '' %>
