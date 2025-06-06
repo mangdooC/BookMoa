@@ -155,6 +155,10 @@ app.use('/', bookSearchRouter);
 const apiRouter = require('./routes/api');
 app.use('/api', apiRouter);
 
+//도서관 검색 라우터
+const libraryRouter = require('./routes/library');
+app.use('/library', libraryRouter);
+
 // 에러 핸들링
 app.use((err, req, res, next) => {
   console.error('서버 에러:', err.stack);
