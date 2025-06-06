@@ -1,7 +1,7 @@
 const express = require('express');
 const path = require('path');
 const dotenv = require('dotenv');
-const multer = require('multer');  // multer 추가
+const multer = require('multer');
 const pool = require('./db');
 const session = require('express-session');
 const ejsLayouts = require('express-ejs-layouts');
@@ -25,7 +25,6 @@ const storage = multer.diskStorage({
 });
 
 const upload = multer({ storage: storage });
-app.locals.upload = upload;  // 라우터에서 사용할 수 있도록 locals에 저장
 
 // 정적 파일 제공
 app.use('/uploads/profile', express.static(path.join(__dirname, 'uploads/profile')));
@@ -37,8 +36,6 @@ app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
 app.set('layout', 'layout');
 app.use(ejsLayouts);
- 
-// 미들웨어
 
 // 요청 바디 파싱
 app.use(express.json());

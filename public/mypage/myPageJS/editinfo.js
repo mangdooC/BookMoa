@@ -9,10 +9,16 @@ document.addEventListener('DOMContentLoaded', async () => {
   const passwordInput = document.getElementById('password');
   const addressInput = document.getElementById('address');
 
+  // 에러 시 디폴트 사진으로 뜨게
+  profilePreview.onerror = () => {
+    profilePreview.onerror = null; 
+    profilePreview.src = '/mypage/images/default.jpg';
+  };
+
   // 초기 정보 로딩
   try {
     const res = await fetch('/api/user/info', {  
-      credentials: 'include',  // 쿠키 같이 보내야 JWT 인증 가능
+      credentials: 'include',
     });
 
     if (res.status === 401) {
@@ -34,17 +40,13 @@ document.addEventListener('DOMContentLoaded', async () => {
       addressInput.value = data.address;
     }
 
-    if (data.profile_image) {
-      profilePreview.src = data.profile_image;
-    } else {
-      profilePreview.src = '/mypage/images/default.jpg'; // 기본 이미지 경로
-    }
+    profilePreview.src = data.profile_image || '/mypage/images/default.jpg';
   } catch (e) {
     console.error('초기 유저 정보 로딩 실패:', e);
     alert('유저 정보를 불러오는 중 오류가 발생했습니다.');
   }
 
-  // 정보 수정
+  // 정보 수정 이벤트
   if (saveInfoBtn) {
     saveInfoBtn.addEventListener('click', async () => {
       const password = passwordInput?.value.trim() || '';
@@ -75,7 +77,7 @@ document.addEventListener('DOMContentLoaded', async () => {
           headers: {
             'Content-Type': 'application/json',
           },
-          credentials: 'include', // 쿠키 같이 보내기
+          credentials: 'include',
           body: JSON.stringify(updateData),
         });
 
@@ -107,7 +109,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
   }
 
-  // 프로필 이미지 업로드
+  // 프로필 이미지 업로드 & 미리보기
   if (profilePreview && profileImageInput) {
     profilePreview.style.cursor = 'pointer';
 
@@ -121,7 +123,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
       const reader = new FileReader();
       reader.onload = e => {
-        profilePreview.src = e.target.result; // 미리보기 적용
+        profilePreview.src = e.target.result;
       };
       reader.readAsDataURL(file);
 
@@ -131,7 +133,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       try {
         const res = await fetch('/api/user/upload-profile', {  
           method: 'POST',
-          credentials: 'include', // 쿠키 같이 보내기
+          credentials: 'include',
           body: formData,
         });
 

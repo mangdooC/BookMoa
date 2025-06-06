@@ -77,7 +77,14 @@ router.post(
       next();
     });
   },
-  uploadProfileImage
+   async (req, res) => {
+    if (!req.file) return res.status(400).json({ error: '파일이 없습니다.' });
+    // DB에 프로필 이미지 경로 업데이트 코드 삽입 가능
+
+    // 예시 응답
+    res.json({ imageUrl: `/uploads/profile/${req.file.filename}` });
+   },
+   uploadProfileImage
 );
 
 // 프로필 이미지 삭제
