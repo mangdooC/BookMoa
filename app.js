@@ -1,6 +1,7 @@
 const express = require('express');
 const path = require('path');
 const dotenv = require('dotenv');
+const multer = require('multer');
 const pool = require('./db');
 const session = require('express-session');
 const ejsLayouts = require('express-ejs-layouts');
@@ -12,6 +13,18 @@ dotenv.config();
 const app = express();
 
 const JWT_SECRET = process.env.JWT_SECRET;
+
+// multer 설정 추가
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, 'uploads/profile/')
+  },
+  filename: function (req, file, cb) {
+    cb(null, Date.now() + '-' + file.originalname)
+  }
+});
+
+const upload = multer({ storage: storage });
 
 // 정적 파일 제공
 app.use('/uploads/profile', express.static(path.join(__dirname, 'uploads/profile')));
