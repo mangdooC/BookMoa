@@ -141,6 +141,10 @@ app.use('/book', bookRouter);
 const bookReviewsRouter = require('./routes/bookReviews');
 app.use('/book-reviews', bookReviewsRouter);
 
+//새 bookReview 라우터
+const bookReviewRouter = require('./routes/bookReviewRouter');
+app.use('/bookReview', bookReviewRouter);
+
 //도서관 관련 라우터
 const favoritelibRouter = require('./routes/favoritelib');
 app.use('/api/favorites', favoritelibRouter);
