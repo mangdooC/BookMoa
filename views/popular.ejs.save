@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <title>이달의 인기 도서</title>
+  <style>
+    body {
+      background-color: #f4f4f4;
+      font-family: 'Arial', sans-serif;
+    }
+
+    .book-section-box {
+      background-color: #ffffff;
+      padding: 24px;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+      max-width: 900px;
+      margin: 40px auto;
+    }
+
+    .book-list {
+      list-style-type: none;
+      padding: 0;
+    }
+
+    .book-list li {
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      background: #fafafa;
+      padding: 16px;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background 0.2s;
+      border-bottom: 1px solid #ddd;
+    }
+
+    .book-list li:hover {
+      background: #f0f0f0;
+    }
+
+    .book-list img {
+      width: 80px;
+      height: auto;
+      margin-right: 16px;
+      border-radius: 4px;
+    }
+
+    .pagination {
+      text-align: center;
+      margin-top: 20px;
+    }
+
+    .pagination a {
+      margin: 0 5px;
+      text-decoration: none;
+      color: blue;
+    }
+
+    .pagination strong {
+      margin: 0 5px;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+  <div class="book-section-box">
+    <h2>📚 이달의 인기 대출 도서</h2>
+
+    <% if (books.length === 0) { %>
+      <p>인기 도서 데이터가 없습니다.</p>
+      <a href="/">메인으로 돌아가기</a>
+    <% } else { %>
+      <ul class=popular-"book-list">
+        <% books.forEach(book => { %>
+          <li onclick="location.href='/book/<%= book.isbn13 || '' %>'">
+            <img src="<%= book.imageUrl || book.bookImageURL || '' %>" alt="책 표지" />
+            <div>
+              <strong><%= book.title || book.bookname %></strong><br>
+              저자: <%= book.author || book.authors || '정보 없음' %><br>
+              출판사: <%= book.publisher || '정보 없음' %><br>
+              ISBN: <%= book.isbn13 || '정보 없음' %><br>
+              <%= book.loanCount ? `대출 횟수: ${book.loanCount}회` : '' %>
+            </div>
+          </li>
+        <% }) %>
+      </ul>
+
+      <!-- 페이지네이션 -->
+      <div class="pagination">
+        <% 
+          const startPage = Math.max(1, pageNo - 2);
+          const endPage = Math.min(totalPages, startPage + 4);
+          for (let i = startPage; i <= endPage; i++) {
+        %>
+          <% if (i === pageNo) { %>
+            <strong><%= i %></strong>
+          <% } else { %>
+            <a href="/popular?pageNo=<%= i %>"><%= i %></a>
+          <% } %>
+        <% } %>
+      </div>
+    <% } %>
+  </div>
+</body>
+</html>

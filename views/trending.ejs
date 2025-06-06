@@ -1,0 +1,90 @@
+<!-- views/trending.ejs -->
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <title>이달의 대출 급상승 도서</title>
+  <style>
+    body {
+      font-family: 'Arial', sans-serif;
+    }
+.section-title{
+  text-align: center;
+  font-size: 22px;
+  margin-bottom: 24px;
+}
+    .book-section-box {
+      max-width: 900px;
+      margin: 40px auto;
+      background: #fff;
+      padding: 24px;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    }
+    .section-title {
+      font-size: 24px;
+      margin-bottom: 20px;
+      text-align: center;
+    }
+    .date-title {
+      font-size: 20px;
+      margin-top: 30px;
+      border-bottom: 1px solid #ccc;
+      padding-bottom: 6px;
+      text-align: center;
+    }
+    .book-item {
+      width: 100%;     
+ cursor: pointer;
+      display: flex;
+      align-items: center;
+      margin: 20px 0;
+      padding: 16px;
+      background: #fafafa;
+      border-radius: 8px;
+     transition: background 0.2s ease;
+     border-bottom: 1px solid #ddd;
+    }
+    .book-item:hover {
+      background: #f0f0f0;
+    }
+    .book-item img {
+      width: 80px;
+      height: auto;
+      margin-right: 16px;
+    }
+.book-item div {
+  flex: 1;
+  text-align: left;
+}
+  </style>
+</head>
+<body>
+  <div class="book-section-box">
+    <h2 class="section-title">대출 급상승 도서</h2>
+
+    <% if (books.length === 0) { %>
+      <p>대출 급상승 도서 데이터가 없습니다.</p>
+      <a href="/">메인으로 돌아가기</a>
+    <% } else { 
+      let currentDate = null;
+      books.forEach(book => {
+        if (book.date !== currentDate) {
+          currentDate = book.date;
+    %>
+          <div class="date-title"><%= currentDate %></div>
+    <%  } %>
+        <div class="book-item" onclick="location.href='/book/<%= book.isbn13 %>'">
+          <img src="<%= book.imageUrl %>" alt="책 표지" />
+          <div>
+            <strong><%= book.title %></strong><br>
+            저자: <%= book.author || '정보 없음' %><br>
+            출판사: <%= book.publisher || '정보 없음' %><br>
+            ISBN: <%= book.isbn13 %><br>
+            순위 상승폭: <%= book.rankDiff || '?' %> / 순위: <%= book.baseWeekRank %>위
+          </div>
+        </div>
+    <% }); } %>
+  </div>
+</body>
+</html>

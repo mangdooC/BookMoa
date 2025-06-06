@@ -90,29 +90,41 @@ app.post('/logout', (req, res) => {
 // 컨트롤러들 require
 const { getTopBooks } = require('./controllers/popularController');
 const { getLatestPosts } = require('./controllers/postsController');
+const { getTrendingBooks } = require('./controllers/trendingController');
 
 // 메인 페이지
 app.get('/', async (req, res) => {
-  try {
-    const popularBooks = await getTopBooks();
-    const latestPosts = await getLatestPosts();
+  let popularBooks = [];
+  let latestPosts = [];
+  let trendingBooks = [];
 
-    res.render('index', {
-      title: '책모아 메인 페이지',
-      user: req.session.user,
-      popularBooks,
-      latestPosts
-    });
+  try {
+    popularBooks = await getTopBooks();
   } catch (err) {
-    console.error('[메인 페이지 로딩 실패]', err);
-    res.render('index', {
-      title: '책모아 메인 페이지',
-      user: req.session.user,
-      popularBooks: [],
-      latestPosts: []
-    });
+    console.error('[인기 도서 로딩 실패]', err.message);
   }
+
+  try {
+    latestPosts = await getLatestPosts();
+  } catch (err) {
+    console.error('[최신 글 로딩 실패]', err.message);
+  }
+
+  try {
+    trendingBooks = await getTrendingBooks();
+  } catch (err) {
+    console.error('[트렌딩 로딩 실패]', err.message);
+  }
+
+  res.render('index', {
+    title: '책모아 메인 페이지',
+    user: req.session.user,
+    popularBooks,
+    latestPosts,
+    trendingBooks
+  });
 });
+
 
 // 기타 라우터 등록
 app.use('/posts', require('./routes/posts'));
@@ -150,11 +162,16 @@ const favoritelibRouter = require('./routes/favoritelib');
 app.use('/api/favorites', favoritelibRouter);
 
 //책검색 라우터
+const trendingRoutes = require('./routes/trending');
+app.use('/', trendingRoutes);
+
 const bookSearchRouter = require('./routes/book');
 app.use('/', bookSearchRouter);
 
 const apiRouter = require('./routes/api');
 app.use('/api', apiRouter);
+
+
 
 //도서관 검색 라우터
 const libraryRouter = require('./routes/library');

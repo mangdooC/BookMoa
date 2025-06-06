@@ -1,9 +1,9 @@
 <section class="main-sections">
 
-  <!-- 이달의 인기 도서 -->
+  <!-- 인기 도서 -->
 <section class="section-box">
   <div class="section-header">
-    <h2>이달의 인기 도서</h2>
+    <h2>인기 도서</h2>
     <a href="/popular" class="more-button">더보기</a>
   </div>
 
@@ -48,14 +48,62 @@
   </script>
 </section>
 
+<% if (trendingBooks && trendingBooks.length > 0) { %>
+<!-- 대출 급상승 도서 -->
+<section class="section-box">
+  <div class="section-header">
+    <h2>대출 급상승 도서</h2>
+    <a href="/trending" class="more-button">더보기</a>
+  </div>
 
-  <!-- 추천 도서 -->
+  <div class="book-list" id="trending-book-list" style="display: flex; flex-wrap: wrap; gap: 16px;"></div>
+
+  <script>
+    const trendingBooks = <%- JSON.stringify(trendingBooks) %>;
+
+    const trendingContainer = document.getElementById('trending-book-list');
+
+    function renderTrendingBooks(count) {
+      trendingContainer.innerHTML = '';
+      trendingBooks.slice(0, count).forEach(book => {
+        const item = document.createElement('a');
+        item.href = `/book/${book.isbn13}`;
+        item.className = 'book-item';
+        item.innerHTML = `
+          <img src="${book.imageUrl}" alt="${book.title}">
+          <p><strong>${book.title}</strong></p>
+        `;
+        trendingContainer.appendChild(item);
+      });
+    }
+
+    function getTrendingDisplayCount() {
+      const width = window.innerWidth;
+      if (width >= 1600) return 8;
+      if (width >= 1400) return 7;
+      if (width >= 1200) return 6;
+      if (width >= 1050) return 5;
+      if (width >= 900) return 4;
+      if (width >= 750) return 3;
+      return 2;
+    }
+
+    function onTrendingResize() {
+      renderTrendingBooks(getTrendingDisplayCount());
+    }
+
+    window.addEventListener('resize', onTrendingResize);
+    window.addEventListener('DOMContentLoaded', onTrendingResize);
+  </script>
+</section>
+<% } else { %>
   <section class="section-box">
-    <h2>추천 도서</h2>
-    <div class="book-list recommended-books">
-      <!-- 추천 도서 자리 -->
+    <div class="section-header">
+      <h2>대출 급상승 도서</h2>
+      <p>데이터가 없습니다.</p>
     </div>
   </section>
+<% } %>
 
  <!-- 커뮤니티 -->
 <section class="section-box">
