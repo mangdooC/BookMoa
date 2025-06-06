@@ -18,7 +18,7 @@
       <a href="/mypage/signUp.html">회원가입</a>
     <% } else { %>
       <a href="/mypage/editInfo.html"><%= user.nickname %>님</a>
-      <form action="/logout" method="POST" style="display:inline;" onsubmit="localStorage.clear();">
+      <form action="/logout" method="POST" style="display:inline;">
         <button type="submit">로그아웃</button>
       </form>
     <% } %>
