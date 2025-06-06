@@ -18,7 +18,7 @@ function authMiddleware(req, res, next) {
     next();
   } catch (err) {
     console.error('JWT 검증 실패:', err.message);
-    return res.status(401).send('토큰 유효하지 않음');
+    return res.status(401).json({ error: '로그인 필요' });
   }
 }
 

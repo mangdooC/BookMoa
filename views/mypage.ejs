@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>마이 페이지</title>
+  <script src="https://t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
+  
+  <script src="/mypageJS/address.js"></script>
+  <script src="/mypageJS/menu.js"></script>
+  <script src="/mypageJS/editinfo.js"></script>
+  <script src="/mypageJS/favlib.js"></script>
+  <script src="/mypageJS/usercontent.js"></script>
+
+  <style>
+    .section { display: none; }
+    .section.active { display: block; }
+
+    /* 메뉴바 */
+    .main-menu {
+        display: flex;
+        justify-content: center;
+        gap: 8px;
+        background-color: transparent;
+        margin-bottom: 20px;
+        margin-right: 10px;
+    }
+
+    .main-menu a {
+        padding: 10px 20px;
+        border-radius: 12px;
+        background-color: #FFC1A9;
+        text-decoration: none;
+        color: black;
+        font-weight: 500;
+        font-size: 14px;
+        box-shadow: 1px 1px 3px rgba(0,0,0,0.1);
+    }
+
+    /* 사이드바 */
+    .sidebar {
+        float: left;
+        width: 250px;
+        height: 520px;
+        background: #fff;
+        border-right: 1px solid #ccc;
+        padding: 20px;
+        box-sizing: border-box;
+        margin-right: 8px;
+        margin-left: 25px;
+        border-radius: 10px;
+    }
+
+    .sidebar .profile {
+        text-align: center;
+        margin-bottom: 15px;
+    }
+
+    .sidebar .profile img {
+        width: 130px;
+        height: 130px;
+        object-fit: cover;
+        border-radius: 50%;
+        cursor: pointer;
+        margin-top: 30px;
+    }
+
+    .sidebar .profile #nicknameDisplay {
+        margin-top: 10px;
+        font-weight: 700;
+        font-size: 16px;
+    }
+
+    .sidebar .menu button {
+        width: 100%;
+        padding: 12px 10px;
+        margin-bottom: 10px;
+        font-weight: 700;
+        font-size: 16px;
+        border: none;
+        background: #FFC1A9;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+        white-space: nowrap;
+    }
+
+    .sidebar .menu button:hover {
+        background-color: #ffb088;
+    }
+
+    /* 메인 콘텐츠 */
+    .main {
+        overflow-y: auto; /* 세로 스크롤 */
+        max-height: 600px; /* 화면 높이 내에서 최대 높이 제한 */
+        max-width: 1100px;
+        background: #fff;
+        border-radius: 15px;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        padding: 20px 30px 70px 40px;
+        margin: 0 auto; /* 화면 가운데 정렬 */
+    }
+
+    .section {
+        display: none;
+    }
+
+    .section.active {
+        display: block;
+    }
+
+    h2 {
+        font-size: 32px;
+        font-weight: 700;
+        margin-bottom: 30px;
+    }
+
+    /* 폼 공통 스타일 */
+    .form-group {
+        margin-bottom: 25px;
+    }
+
+    .form-group label {
+        display: block;
+        font-weight: 700;
+        font-size: 18px;
+        margin-bottom: 8px;
+    }
+
+    .form-group input[type="text"],
+    .form-group input[type="password"] {
+        width: 100%;
+        height: 50px;
+        border: 1px solid #000;
+        border-radius: 20px;
+        padding: 0 20px;
+        font-size: 18px;
+        box-sizing: border-box;
+        box-shadow: 0 4px 4px rgba(0,0,0,0.25);
+    }
+
+    /* 주소 검색 */
+    .address-search-wrapper {
+        display: flex;
+        align-items: center;
+    }
+
+    .address-search-wrapper input[readonly] {
+        flex-grow: 1;
+        cursor: pointer;
+    }
+
+    .address-search-wrapper button {
+        margin-left: 15px;
+        padding: 10px 20px;
+        font-weight: 700;
+        font-size: 14px;
+        border: none;
+        background: #FFC1A9;
+        border-radius: 15px;
+        cursor: pointer;
+        box-shadow: 0 4px 4px rgba(0,0,0,0.25);
+        white-space: nowrap;
+    }
+
+    .address-search-wrapper button:hover {
+        background: #ff986f;
+        color: white;
+    }
+
+    .save-btn {
+        padding: 15px 30px;
+        font-weight: 700;
+        font-size: 15px;
+        background: #FFC1A9;
+        border: 1px solid #000;
+        border-radius: 15px;
+        cursor: pointer;
+        margin-top: 30px;
+        display: inline-block;
+        box-shadow: 0 4px 4px rgba(0,0,0,0.25);
+    }
+
+    /* 즐겨찾기 도서관 리스트 */
+    #favoritesList {
+        list-style: none;
+        padding-left: 0;
+        margin-bottom: 20px;
+    }
+
+    #favoritesList li {
+        padding: 10px 15px;
+        border: 1px solid #000;
+        border-radius: 10px;
+        margin-bottom: 8px;
+        background: #fff;
+        font-weight: 700;
+        font-size: 18px;
+    }
+
+    /* 즐겨찾기 추가 input + button */
+    .form-inline {
+        display: flex;
+        gap: 15px;
+        margin-top: 15px;
+    }
+
+    .form-inline input[type="text"] {
+        flex-grow: 1;
+        height: 45px;
+        border-radius: 15px;
+        padding: 0 15px;
+        border: 1px solid #ccc;
+    }
+
+    .form-inline button {
+        white-space: nowrap;
+        width: 70px;
+        height: 45px;
+        font-weight: 700;
+        border-radius: 15px;
+        background: #FFC1A9;
+        border: none;
+        cursor: pointer;
+        box-shadow: 0 4px 4px rgba(0,0,0,0.25);
+    }
+
+    .menu button.active {
+        background-color: #007bff;
+        color: white;
+    }
+  </style>
+</head>
+<body>
+  <div class="sidebar">
+    <div class="profile">
+      <input type="file" id="profileImage" name="profileImage" accept="image/*" style="display:none;" />
+      <img
+        id="profilePreview"
+        src="<%= user.profileImage || '/mypage/images/default.jpg' %>"
+        alt="프로필 이미지"
+        style="width: 130px; height: 130px; object-fit: cover; border-radius: 50%; cursor: pointer;"
+        title="클릭해서 프로필 이미지 선택"
+      />
+      <p id="nicknameDisplay" style="margin-top: 10px; font-weight: bold; font-size: 23px;">
+        <%= user.nickname || '닉네임 없음' %>
+      </p>
+    </div>
+
+    <div class="menu">
+      <button type="button" onclick="showSection('info')">내 정보 수정</button>
+      <button type="button" onclick="showSection('preferredAreaSection')">선호지역</button>
+      <button type="button" onclick="showSection('favorites')">즐겨찾는 도서관</button>
+      <button type="button" onclick="showSection('posts')">작성한 글/댓글</button>
+    </div>
+  </div>
+
+  <div class="main">
+    <!-- 내 정보 수정 -->
+    <section id="info" class="section active">
+      <h2>내 정보 수정</h2>
+
+      <div class="form-group">
+        <label for="password">비밀번호</label>
+        <input type="password" id="password" />
+      </div>
+
+      <div class="form-group">
+        <label for="nickname">닉네임</label>
+        <input type="text" id="nickname" value="<%= user.nickname || '' %>" />
+      </div>
+
+      <div class="form-group">
+        <label for="address">주소</label>
+        <div class="address-search-wrapper">
+          <input type="text" id="address" name="address" placeholder="주소를 입력하세요" value="<%= user.address || '' %>" />
+          <button type="button" onclick="searchMainAddress()" id="address-btn">주소 검색</button>
+        </div>
+      </div>
+
+      <button class="save-btn" id="saveInfoBtn" type="button">저장</button>
+    </section>
+
+    <!-- 선호지역 -->
+    <section id="preferredAreaSection" class="section">
+      <h2>선호지역</h2>
+
+      <% ['preferredAddress1', 'preferredAddress2', 'preferredAddress3'].forEach(function(addr, idx) { %>
+      <div class="form-group">
+        <label for="<%= addr %>">선호지역 <%= idx + 1 %></label>
+        <div class="address-search-wrapper">
+          <input type="text" id="<%= addr %>" name="<%= addr %>" placeholder="주소를 입력하세요" readonly value="<%= user[addr] || '' %>" />
+          <button type="button" onclick="searchPreferredAddress('<%= addr %>')">주소 검색</button>
+        </div>
+        <p id="selectedAddress_<%= addr %>"></p>
+      </div>
+      <% }); %>
+
+      <button class="save-btn" type="button" onclick="savePreferredAddresses()">저장</button>
+    </section>
+
+    <!-- 즐겨찾는 도서관 -->
+    <section id="favorites" class="section">
+      <h2>즐겨찾는 도서관</h2>
+      <ul id="favoritesList">
+        <% if(user.favorites && user.favorites.length > 0) { %>
+          <% user.favorites.forEach(function(lib) { %>
+            <li><%= lib %></li>
+          <% }); %>
+        <% } else { %>
+          <li>즐겨찾는 도서관이 없습니다.</li>
+        <% } %>
+      </ul>
+
+      <div class="form-group form-inline">
+        <input type="text" id="newFavoriteInput" placeholder="도서관 이름 입력" />
+        <button id="addFavoriteBtn" type="button">추가</button>
+      </div>
+    </section>
+
+    <!-- 작성한 글 -->
+    <section id="posts" class="section">
+      <h2>작성한 글</h2>
+
+      <div class="post-category">
+        <h3>📚 도서 리뷰</h3>
+        <ul id="bookReviewList">
+          <% if(user.bookReviews && user.bookReviews.length > 0) { %>
+            <% user.bookReviews.forEach(function(review) { %>
+              <li><a href="/bookReview/<%= review.id %>"><%= review.title %></a></li>
+            <% }); %>
+          <% } else { %>
+            <li>작성한 도서 리뷰가 없습니다.</li>
+          <% } %>
+        </ul>
+      </div>
+
+      <div class="post-category">
+        <h3>🏛️ 도서관 리뷰</h3>
+        <ul id="libraryReviewList">
+          <% if(user.libraryReviews && user.libraryReviews.length > 0) { %>
+            <% user.libraryReviews.forEach(function(review) { %>
+              <li><a href="/libraryReview/<%= review.id %>"><%= review.title %></a></li>
+            <% }); %>
+          <% } else { %>
+            <li>작성한 도서관 리뷰가 없습니다.</li>
+          <% } %>
+        </ul>
+      </div>
+
+      <div class="post-category">
+        <h3>🗣️ 커뮤니티 게시글</h3>
+        <ul id="communityPostList">
+          <% if(user.communityPosts && user.communityPosts.length > 0) { %>
+            <% user.communityPosts.forEach(function(post) { %>
+              <li><a href="/community/post/<%= post.id %>"><%= post.title %></a></li>
+            <% }); %>
+          <% } else { %>
+            <li>작성한 커뮤니티 게시글이 없습니다.</li>
+          <% } %>
+        </ul>
+      </div>
+
+      <div class="post-category">
+        <h3>💬 커뮤니티 댓글</h3>
+        <ul id="communityCommentList">
+          <% if(user.communityComments && user.communityComments.length > 0) { %>
+            <% user.communityComments.forEach(function(comment) { %>
+              <li><%= comment.content %></li>
+            <% }); %>
+          <% } else { %>
+            <li>작성한 댓글이 없습니다.</li>
+          <% } %>
+        </ul>
+      </div>
+    </section>
+  </div>
+</body>
+</html>
+

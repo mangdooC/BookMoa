@@ -28,6 +28,7 @@ const upload = multer({ storage: storage });
 
 // 정적 파일 제공
 app.use('/uploads/profile', express.static(path.join(__dirname, 'uploads/profile')));
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 app.use(express.static(path.join(__dirname, 'public')));
 
 // 뷰 엔진 세팅
@@ -89,71 +90,107 @@ app.post('/logout', (req, res) => {
 // 컨트롤러들 require
 const { getTopBooks } = require('./controllers/popularController');
 const { getLatestPosts } = require('./controllers/postsController');
+const { getTrendingBooks } = require('./controllers/trendingController');
 
 // 메인 페이지
 app.get('/', async (req, res) => {
-  try {
-    const popularBooks = await getTopBooks();
-    const latestPosts = await getLatestPosts();
+  let popularBooks = [];
+  let latestPosts = [];
+  let trendingBooks = [];
 
-    res.render('index', {
-      title: '책모아 메인 페이지',
-      user: req.session.user,
-      popularBooks,
-      latestPosts
-    });
+  try {
+    popularBooks = await getTopBooks();
   } catch (err) {
-    console.error('[메인 페이지 로딩 실패]', err);
-    res.render('index', {
-      title: '책모아 메인 페이지',
-      user: req.session.user,
-      popularBooks: [],
-      latestPosts: []
-    });
+    console.error('[인기 도서 로딩 실패]', err.message);
   }
+
+  try {
+    latestPosts = await getLatestPosts();
+  } catch (err) {
+    console.error('[최신 글 로딩 실패]', err.message);
+  }
+
+  try {
+    trendingBooks = await getTrendingBooks();
+  } catch (err) {
+    console.error('[트렌딩 로딩 실패]', err.message);
+  }
+
+  res.render('index', {
+    title: '책모아 메인 페이지',
+    user: req.session.user,
+    popularBooks,
+    latestPosts,
+    trendingBooks
+  });
 });
 
 // 기타 라우터 등록
 app.use('/posts', require('./routes/posts'));
 app.use('/comments', require('./routes/comments'));
-app.use('/book-reviews', require('./routes/bookReviews'));
 
-app.use('/api/auth', require('./routes/auth'));
-app.use('/api/checkId', require('./routes/checkId'));
-app.use('/api/user', require('./routes/user'));
-app.use('/api/user-contents', require('./routes/userContents'));
-app.use('/api/favorites', require('./routes/favoritelib'));
 
-//인기도서 
+//회원가입, 로그인
+const authRouter = require('./routes/auth');
+app.use('/auth', authRouter);
+
+// 마이페이지 라우터
+const mypageRouter = require('./routes/mypage');
+app.use('/mypage', mypageRouter);
+
+// 유저
+const userRouter = require('./routes/user');
+app.use('/user', userRouter);
+
+
+
+// 즐겨찾기
+const bookmarkRouter = require('./routes/bookmark');
+app.use('/bookmark', bookmarkRouter);
+
+//선호지역
+const preferredRouter = require('./routes/preferred');
+app.use('/preferred', preferredRouter);
+
+//커뮤니티
 const communityRouter = require('./routes/community');
 app.use('/community', communityRouter);
 
-//커뮤니티
+//커뮤니티(인기)
 const popularRoute = require('./routes/popularRoute');
 app.use('/', popularRoute);
 
-// 도서 상세
+// 도서상세
 const bookRouter = require('./routes/book');
 app.use('/book', bookRouter);
 
-//bookReviews 라우터
-const bookReviewsRouter = require('./routes/bookReviews');
-app.use('/book-reviews', bookReviewsRouter);
+// 도서후기 라우터
+const bookReviewRouter = require('./routes/bookReviewRouter');
+app.use('/bookReview', bookReviewRouter);
 
-//도서관 관련 라우터
-const favoritelibRouter = require('./routes/favoritelib');
-app.use('/api/favorites', favoritelibRouter);
 
-//책검색 라우터
+
+// 즐겨찾기 도서관 라우터
+const favlibRouter = require('./routes/favlib');
+app.use('/favlib', favlibRouter);
+
+// 도서 검색  라우터
+const trendingRoutes = require('./routes/trending');
+app.use('/', trendingRoutes);
+
+// 도서관 검색 라우터
+const libraryRouter = require('./routes/library');
+app.use('/library', libraryRouter);
+
+// 도서 검색 라우터
 const bookSearchRouter = require('./routes/book');
 app.use('/', bookSearchRouter);
 
-const apiRouter = require('./routes/api');
-app.use('/api', apiRouter);
+// api 라우터
+// const apiRouter = require('./routes/api');
+// app.use('/api', apiRouter);
 
-//도서관 검색 라우터
-const libraryRouter = require('./routes/library');
-app.use('/library', libraryRouter);
+
 
 // 에러 핸들링
 app.use((err, req, res, next) => {

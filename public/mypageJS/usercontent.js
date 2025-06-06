@@ -17,10 +17,11 @@ async function loadPostsList() {
     const bookReviewsRes = await fetch(`${base}/book-reviews`, {
       headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
     });
+    if (!bookReviewsRes.ok) throw new Error('도서 리뷰 조회 실패');
     const bookReviews = await bookReviewsRes.json();
     bookReviews.forEach(review => {
       const li = document.createElement('li');
-      
+
       const strong = document.createElement('strong');
       strong.textContent = review.book_title;
       li.appendChild(strong);
@@ -40,37 +41,39 @@ async function loadPostsList() {
       bookReviewList.appendChild(li);
     });
 
-    // // 도서관 리뷰 조회
-    // const libraryReviewsRes = await fetch(`${base}/library-reviews`, {
-    //   headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
-    // });
-    // const libraryReviews = await libraryReviewsRes.json();
-    // libraryReviews.forEach(review => {
-    //   const li = document.createElement('li');
+    // 도서관 리뷰 조회
+    const libraryReviewsRes = await fetch(`${base}/library-reviews`, {
+      headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+    });
+    if (!libraryReviewsRes.ok) throw new Error('도서관 리뷰 조회 실패');
+    const libraryReviews = await libraryReviewsRes.json();
+    libraryReviews.forEach(review => {
+      const li = document.createElement('li');
 
-    //   const strong = document.createElement('strong');
-    //   strong.textContent = review.library_name;
-    //   li.appendChild(strong);
+      const strong = document.createElement('strong');
+      strong.textContent = review.library_name;
+      li.appendChild(strong);
 
-    //   li.appendChild(document.createTextNode(` (${review.rating}점)\n${review.content}\n`));
+      li.appendChild(document.createTextNode(` (${review.rating}점)\n${review.content}\n`));
 
-    //   const editBtn = document.createElement('button');
-    //   editBtn.textContent = '수정';
-    //   editBtn.onclick = () => editLibraryReview(review.review_id, review.content, review.rating);
-    //   li.appendChild(editBtn);
+      const editBtn = document.createElement('button');
+      editBtn.textContent = '수정';
+      editBtn.onclick = () => editLibraryReview(review.review_id, review.content, review.rating);
+      li.appendChild(editBtn);
 
-    //   const deleteBtn = document.createElement('button');
-    //   deleteBtn.textContent = '삭제';
-    //   deleteBtn.onclick = () => deleteLibraryReview(review.review_id);
-    //   li.appendChild(deleteBtn);
+      const deleteBtn = document.createElement('button');
+      deleteBtn.textContent = '삭제';
+      deleteBtn.onclick = () => deleteLibraryReview(review.review_id);
+      li.appendChild(deleteBtn);
 
-    //   libraryReviewList.appendChild(li);
-    // });
+      libraryReviewList.appendChild(li);
+    });
 
     // 커뮤니티 글 조회
     const communityPostsRes = await fetch(`${base}/community-posts`, {
       headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
     });
+    if (!communityPostsRes.ok) throw new Error('커뮤니티 글 조회 실패');
     const communityPosts = await communityPostsRes.json();
     communityPosts.forEach(post => {
       const li = document.createElement('li');
@@ -98,6 +101,7 @@ async function loadPostsList() {
     const communityCommentsRes = await fetch(`${base}/community-comments`, {
       headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
     });
+    if (!communityCommentsRes.ok) throw new Error('커뮤니티 댓글 조회 실패');
     const communityComments = await communityCommentsRes.json();
     communityComments.forEach(comment => {
       const li = document.createElement('li');
@@ -133,6 +137,11 @@ async function editBookReview(reviewId, oldContent, oldRating) {
   const content = prompt('리뷰 내용을 수정하세요', oldContent);
   const rating = prompt('평점을 수정하세요 (1~5)', oldRating);
   if (content !== null && rating !== null) {
+    const ratingNum = Number(rating);
+    if (isNaN(ratingNum) || ratingNum < 1 || ratingNum > 5) {
+      alert('평점은 1~5 사이 숫자여야 합니다');
+      return;
+    }
     try {
       const res = await fetch(`/api/user-contents/book-reviews/${reviewId}`, {
         method: 'PATCH',
@@ -140,7 +149,7 @@ async function editBookReview(reviewId, oldContent, oldRating) {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${localStorage.getItem('token')}`
         },
-        body: JSON.stringify({ content, rating: Number(rating) })
+        body: JSON.stringify({ content, rating: ratingNum })
       });
       if (res.ok) {
         alert('도서 리뷰 수정 완료');
@@ -178,6 +187,11 @@ async function editLibraryReview(reviewId, oldContent, oldRating) {
   const content = prompt('리뷰 내용을 수정하세요', oldContent);
   const rating = prompt('평점을 수정하세요 (1~5)', oldRating);
   if (content !== null && rating !== null) {
+    const ratingNum = Number(rating);
+    if (isNaN(ratingNum) || ratingNum < 1 || ratingNum > 5) {
+      alert('평점은 1~5 사이 숫자여야 합니다');
+      return;
+    }
     try {
       const res = await fetch(`/api/user-contents/library-reviews/${reviewId}`, {
         method: 'PATCH',
@@ -185,7 +199,7 @@ async function editLibraryReview(reviewId, oldContent, oldRating) {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${localStorage.getItem('token')}`
         },
-        body: JSON.stringify({ content, rating: Number(rating) })
+        body: JSON.stringify({ content, rating: ratingNum })
       });
       if (res.ok) {
         alert('도서관 리뷰 수정 완료');
@@ -307,7 +321,3 @@ async function deleteCommunityComment(commentId) {
     alert('삭제 중 오류 발생');
   }
 }
-
-window.onload = () => {
-  loadPostsList();
-};
