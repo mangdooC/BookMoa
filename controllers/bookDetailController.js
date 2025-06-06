@@ -228,7 +228,8 @@ exports.reviewForm = async (req, res) => {
 
         res.render('bookReview', { 
             isbn13,
-            book_id
+            book_id,
+            user: req.session.user
         });
     } catch (error) {
         console.error('폼 렌더링 오류:', error);
@@ -237,7 +238,12 @@ exports.reviewForm = async (req, res) => {
 };
 exports.createReview = async (req, res) => {
     const isbn13 = req.params.isbn13;
-    const { user_id, content, rating } = req.body;
+    const { content, rating } = req.body;
+    const user_id = req.session?.user?.user_id;
+
+    if (!user_id) {
+        return res.status(401).send('로그인이 필요합니다.');
+    }
 
     try {
         // 1. book_id 조회
