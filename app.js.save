@@ -92,17 +92,15 @@ const { getTopBooks } = require('./controllers/popularController');
 const { getLatestPosts } = require('./controllers/postsController');
 const { getTrendingBooks } = require('./controllers/trendingController');
 const { getNearbyLibrariesByUser } = require('./controllers/libraryController');
-
 // 메인 페이지
 app.get('/', async (req, res) => {
   let popularBooks = [];
   let latestPosts = [];
   let trendingBooks = [];
-    let nearbyLibraries = [];
-    if (req.session.user) {
-      nearbyLibraries = await getNearbyLibrariesByUser(req.session.user.user_id);
-      console.log('[최종 nearbyLibraries]', nearbyLibraries);
-    }
+
+if (req.session.user) {
+  nearbyLibraries = await getNearbyLibrariesByUser(req.session.user.user_id);
+}
 
   try {
     popularBooks = await getTopBooks();
@@ -127,8 +125,7 @@ app.get('/', async (req, res) => {
     user: req.session.user,
     popularBooks,
     latestPosts,
-    trendingBooks,
-    nearbyLibraries
+    trendingBooks
   });
 });
 
