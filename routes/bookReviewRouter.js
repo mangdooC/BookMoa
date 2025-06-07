@@ -51,6 +51,7 @@ router.get('/post/:id', async (req, res) => {
     }
 
     const review = rows[0];
+    review.createdAt = new Date(review.created_at).toISOString();
     res.render('bookReview/bookReviewPost', { review });
   } catch (err) {
     console.error('리뷰 페이지 렌더링 실패:', err);
