@@ -1,6 +1,8 @@
 <div class="board-container" style="max-width: 900px; margin: 40px auto; padding: 30px; background-color: #fff9f3; border-radius: 12px;">
   <h1 style="text-align: center; font-size: 2rem; margin-bottom: 20px;">도서관 상세 정보</h1>
-
+<div style="text-align: right; margin-bottom: 20px;">
+  <input type="text" id="searchInput" placeholder="도서관 이름 또는 주소 검색" style="padding: 8px; width: 250px; border-radius: 4px; border: 1px solid #ccc;">
+  <button onclick="searchLibs(1)" style="padding: 8px 12px; background-color: #ff914d; color: white; border: none; border-radius: 4px;">검색</button>
 <table id="libraryTable">
   <thead>
     <tr>
@@ -27,36 +29,53 @@ const pageSize = 10;
 
 async function fetchLibs(page = 1) {
   try {
-    const res = await fetch('/library/api/list'); // ← 실제 API 엔드포인트
+    const keyword = document.getElementById('searchInput')?.value.trim();
+    const url = keyword
+      ? `/library/api/list?keyword=${encodeURIComponent(keyword)}`
+      : '/library/api/list';
+
+    const res = await fetch(url);
     const libraries = await res.json();
-
-    const tbody = document.getElementById('libraryBody');
-    tbody.innerHTML = ''; // 이전 내용 초기화
-
-    libraries.slice((page - 1) * pageSize, page * pageSize).forEach(lib => {
-      const tr = document.createElement('tr');
-
-      const homepageButton = lib.homepage
-        ? `<button onclick="window.open('${lib.homepage}', '_blank')">웹사이트 이동</button>`
-        : '-';
-
-      tr.innerHTML = `
-        <td style="padding: 12px; border-bottom: 1px solid #ccc;">
-          <a href="library_detail.html?name=${encodeURIComponent(lib.name)}">${lib.name}</a>
-        </td>
-        <td style="padding: 12px; border-bottom: 1px solid #ccc;">${lib.phone || '-'}</td>
-        <td style="padding: 12px; border-bottom: 1px solid #ccc;">${lib.address}</td>
-        <td style="padding: 12px; border-bottom: 1px solid #ccc;">${homepageButton}</td>
-      `;
-
-      tbody.appendChild(tr);
-    });
-
-    document.getElementById('pageInfo').textContent = `${page} 페이지`;
+    console.log('받은 데이터:', libraries);
+    renderPage(libraries, page);
   } catch (err) {
     console.error('도서관 목록 불러오기 실패:', err);
   }
 }
+
+function renderPage(data, page) {
+  const tbody = document.getElementById('libraryBody');
+  tbody.innerHTML = '';
+
+  const pageSize = 10;
+  const paginated = data.slice((page - 1) * pageSize, page * pageSize);
+
+  paginated.forEach(lib => {
+    const tr = document.createElement('tr');
+
+    const homepageButton = lib.homepage
+      ? `<button onclick="window.open('${lib.homepage}', '_blank')">웹사이트 이동</button>`
+      : '-';
+
+    tr.innerHTML = `
+      <td style="padding: 12px; border-bottom: 1px solid #ccc;">
+        <a href="library_detail.html?name=${encodeURIComponent(lib.name)}">${lib.name}</a>
+      </td>
+      <td style="padding: 12px; border-bottom: 1px solid #ccc;">${lib.phone || '-'}</td>
+      <td style="padding: 12px; border-bottom: 1px solid #ccc;">${lib.address}</td>
+      <td style="padding: 12px; border-bottom: 1px solid #ccc;">${homepageButton}</td>
+    `;
+
+    tbody.appendChild(tr);
+  });
+
+  document.getElementById('pageInfo').textContent = `${page} 페이지`;
+}
+
+window.searchLibs = function(page = 1) {
+  currentPage = page;
+    fetchLibs(currentPage);
+  }
 
 function nextPage() {
   currentPage++;
