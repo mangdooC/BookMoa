@@ -1,5 +1,17 @@
  <div class="board-container" style="max-width: 900px; margin: 40px auto; padding: 30px; background-color: #fff9f3; border-radius: 12px;">
-  <h1 style="text-align: center; font-size: 2rem; margin-bottom: 20px;">도서관 리뷰 보기</h1>
+  <h1 style="text-align: center; font-size: 2rem; margin-bottom: 20px;"><%= libraryName %></h1>
+  <div style="text-align: center; font-size: 0.95rem; margin-bottom: 20px;">
+  주소: <%= libInfo.address %><br>
+  전화번호: <%= libInfo.phone ?? '-' %><br>
+  웹사이트:<% if (libInfo.homepage) { %>
+    <button onclick="window.open('<%= libInfo.homepage %>', '_blank')">웹사이트 이동</button>
+  <% } else { %>
+    없음
+  <% } %>
+</div>
+
+
+  <h4 style="text-align: center; font-size: rem; margin-bottom: 10px;"> 리뷰 보기 </h4>
   <table class="lirw-table" style="width: 100%; border-collapse: collapse; font-size: 0.95rem;">
     <thead>
       <tr>

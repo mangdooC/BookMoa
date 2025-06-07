@@ -40,10 +40,17 @@ router.get('/api/list', async (req, res) => {
 
 router.get('/libraryReview', async (req, res) => {
   const libname = req.query.name;
+  const [libInfos] = await db.query(
+    `SELECT library.name, library.address, library.phone, library.homepage
+    from library
+    where library.name = ?`,[libname]
+  );
+  const libInfo = libInfos[0];
 
   try {
     res.render('library/libraryReview', {
-      libraryName: libname // libname 넘겨줘서 JS에서 쓸 수 있도록
+      libraryName: libname, // libname 넘겨줘서 JS에서 쓸 수 있도록
+      libInfo
     });
   } catch (err) {
     console.error(err);
