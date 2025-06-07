@@ -1,76 +1,78 @@
-// controllers/popularController.js
 const axios = require('axios');
 require('dotenv').config();
 
-const parseJson = async (data) => {
-  return JSON.parse(data); // 혹은 axios가 .data로 반환한 객체라면 생략 가능
-};
+// 필터 조건을 인자로 받도록 수정
+const getPopularBooks = async ({ gender, age, kdc, pageNo = 1, pageSize = 200 }) => {
+  const queryParams = new URLSearchParams({
+    authKey: process.env.DATA4LIBRARY_API_KEY,
+    startDt: '2025-05-01',
+    endDt: '2025-05-31',
+    format: 'json',
+    pageNo,
+    pageSize,
+  });
 
-// 도서관 정보나루 API 호출
-const getPopularBooks = async () => {
+  if (gender) queryParams.append('gender', gender);
+  if (age) queryParams.append('age', age);
+  if (kdc) queryParams.append('kdc', kdc);
 
-  const url =
-    `http://data4library.kr/api/loanItemSrch` +
-    `?authKey=${process.env.DATA4LIBRARY_API_KEY}` +
-    `&startDt=2025-05-01` +
-    `&endDt=2025-05-31` +
-    `&format=json` +
-    `&pageNo=1&pageSize=50`;
+  const url = `http://data4library.kr/api/loanItemSrch?${queryParams.toString()}`;
 
-
-  console.log('[API 키]', process.env.DATA4LIBRARY_API_KEY);
-  console.log('[요청 URL]', url); 
+  console.log('[요청 URL]', url);
 
   try {
-	   const response = await axios.get(url);
-    console.log('[API 응답 JSON]', response.data); 
-    
-    const docs = response.data?.response?.docs; // now docs is already an Array
+    const response = await axios.get(url);
+    const docs = response.data?.response?.docs;
 
     if (!docs || docs.length === 0) {
       console.warn('[경고] 인기 도서 결과 없음 또는 docs 미존재');
       return [];
     }
 
-    const books = docs.map(item => item.doc).map(book => ({
+    return docs.map(item => item.doc).map(book => ({
       title: book.bookname,
       imageUrl: book.bookImageURL,
       isbn13: book.isbn13,
       author: book.authors,
-      publisher: book.publisher
+      publisher: book.publisher,
+      loanCount: book.loan_count,
     }));
-
-    return books;
   } catch (err) {
     console.error('[API 호출 또는 파싱 실패]', err);
     return [];
   }
 };
 
-// 메인 페이지용 상위 4권만
+// 메인 페이지용 (상위 4권)
 exports.getTop4Books = async () => {
-  const books = await getPopularBooks();
+  const books = await getPopularBooks({}); // 필터 없이
   return books.slice(0, 4);
 };
 
+// 전체 목록 반환
 exports.getTopBooks = async () => {
-  return await getPopularBooks(); // 전체 목록
+  return await getPopularBooks({});
 };
 
 // /popular 페이지 렌더링
 exports.renderPopularPage = async (req, res) => {
   try {
+    const { gender, age, kdc } = req.query;
     const pageNo = parseInt(req.query.pageNo, 10) || 1;
     const pageSize = 10;
 
-    const allBooks = await getPopularBooks(); // 전체 도서 목록
+    // 필터 조건 반영
+    const allBooks = await getPopularBooks({ gender, age, kdc, pageNo: 1, pageSize: 200 });
     const totalPages = Math.ceil(allBooks.length / pageSize);
     const paginatedBooks = allBooks.slice((pageNo - 1) * pageSize, pageNo * pageSize);
 
     res.render('popular', {
       books: paginatedBooks,
       pageNo,
-      totalPages
+      totalPages,
+      gender,
+      age,
+      kdc,
     });
   } catch (err) {
     console.error('인기도서 페이지 오류:', err);

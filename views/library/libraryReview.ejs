@@ -1,0 +1,57 @@
+ <div class="board-container" style="max-width: 900px; margin: 40px auto; padding: 30px; background-color: #fff9f3; border-radius: 12px;">
+  <h1 style="text-align: center; font-size: 2rem; margin-bottom: 20px;"><%= libraryName %></h1>
+  <div style="text-align: center; font-size: 0.95rem; margin-bottom: 20px;">
+  주소: <%= libInfo.address %><br>
+  전화번호: <%= libInfo.phone ?? '-' %><br>
+  웹사이트:<% if (libInfo.homepage) { %>
+    <button onclick="window.open('<%= libInfo.homepage %>', '_blank')">웹사이트 이동</button>
+  <% } else { %>
+    없음
+  <% } %>
+</div>
+
+
+  <h4 style="text-align: center; font-size: rem; margin-bottom: 10px;"> 리뷰 보기 </h4>
+  <table class="lirw-table" style="width: 100%; border-collapse: collapse; font-size: 0.95rem;">
+    <thead>
+      <tr>
+        <th style="padding: 12px; border-bottom: 2px solid #333; background-color: #f5eee4; text-align: left;">제목</th>
+        <th style="padding: 12px; border-bottom: 2px solid #333; background-color: #f5eee4; text-align: left;">작성자</th>
+        <th style="padding: 12px; border-bottom: 2px solid #333; background-color: #f5eee4; text-align: left;">평점</th>
+      </tr>
+    </thead>
+    <tbody id="lirw-Body">
+    </tbody>
+  </table>
+</div>
+
+<script>
+  const libname = "<%= libraryName %>";
+  async function fetchLibReview() {
+    const res = await fetch(`/library/libraryReviews?name=${encodeURIComponent(libname)}`);
+    const reviews = await res.json();
+
+    const list = document.getElementById('lirw-Body');
+
+    if (reviews.length === 0) {
+      list.innerHTML = '<tr><td colspan="3" style="text-align:center; padding: 20px;">등록된 리뷰가 없습니다.</td></tr>';
+      return;
+    }
+
+    reviews.forEach(review => {
+      const tr = document.createElement('tr');
+      const stars = '⭐'.repeat(review.rating ?? 0);
+
+      tr.innerHTML = `
+        <td style="padding: 12px; border-bottom: 1px solid #ccc;">
+          <a href="/library/thisReview/${review.review_id}"><strong>${review.review_id}</strong></a>
+        </td>
+        <td style="padding: 12px; border-bottom: 1px solid #ccc;">${review.user_nickname ?? '알 수 없음'}</td>
+        <td style="padding: 12px; border-bottom: 1px solid #ccc;">${stars}</td>
+      `;
+      list.appendChild(tr);
+    });
+  }
+
+  fetchLibReview();
+</script>
