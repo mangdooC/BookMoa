@@ -1,153 +1,196 @@
-<% if (typeof error !== 'undefined') { %>
-  <div class="flash-message" style="color: red; margin-bottom: 10px;">
-    <%= error %>
-  </div>
-<% } %>
-<style>
-body {
-  background: #F6ECDD;
-  font-family: 'Inter', sans-serif;
-}
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <title><%= title || "회원가입" %></title>
+    <% if (typeof error !== 'undefined' && error) { %>
+      <script>
+        alert("<%= error %>");
+      </script>
+    <% } %>
+  <style>
+    body {
+      background: #F6ECDD;
+      font-family: 'Inter', sans-serif;
+    }
 
-.signup-wrapper {
-  position: relative;
-  width: 100%;
-  max-width: 700px;
-  margin: 0 auto;
-  padding: 20px;
-  background: white;
-  border-radius: 15px;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-}
+    #registerForm {
+      position: relative;
+      width: 100%;
+      max-width: 700px;
+      margin: 0 auto;
+      padding: 20px;
+      background: white;
+      border-radius: 15px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    }
 
+    h1 {
+      font-size: 32px;
+      margin-bottom: 30px;
+      margin-left: 20px;
+    }
 
-h1 {
-  font-size: 32px;
-  margin-bottom: 30px;
-  margin-left: 20px;
-}
+    .form-group {
+      margin-bottom: 20px;
+      margin-right: 10px;
+      margin-left: 80px;
+      margin-top: 10px;
+    }
 
-.form-group {
-  margin-bottom: 20px;
-  margin-right: 10px;
-  margin-left: 80px;
-}
+    .form-group label {
+      display: block;
+      font-weight: bold;
+      margin-bottom: 10px;
+    }
 
-.form-group label {
-  display: block;
-  font-weight: bold;
-  margin-bottom: 10px;
-}
+    .form-group input {
+      width: 80%;
+      padding: 15px;
+      border: 1px solid #000;
+      border-radius: 20px;
+      box-shadow: 0 4px 4px rgba(0, 0, 0, 0.25);
+    }
 
-.form-group input {
-  width: 80%;
-  padding: 15px;
-  border: 1px solid #000;
-  border-radius: 20px;
-  box-shadow: 0 4px 4px rgba(0, 0, 0, 0.25);
-}
+    .submit-btn {
+      display: block;
+      margin: 40px auto 0;
+      width: 100px;
+      height: 50px;
+      background: #FFC1A9;
+      border: 1px solid #000;
+      border-radius: 15px;
+      font-size: 15px;
+      font-weight: bold;
+    }
 
-.submit-btn {
-  display: block;
-  margin: 40px auto 0;
-  width: 100px;
-  height: 50px;
-  background: #FFC1A9;
-  border: 1px solid #000;
-  border-radius: 15px;
-  font-size: 15px;
-  font-weight: bold;
-}
+    .address-btn {
+      display: block;
+      margin: 0;
+      width: 70px;
+      height: 50px;
+      background: #FFC1A9;
+      border: 1px solid #000;
+      border-radius: 15px;
+      font-size: 13px;
+      font-weight: bold;
+      white-space: nowrap;
+    }
 
-.address-btn{
-  display: block;
-  margin: 40px auto 0;
-  width: 70px;
-  height: 30px;
-  background: #FFC1A9;
-  border: 1px solid #000;
-  border-radius: 15px;
-  font-size: 10px;
-  font-weight: bold;
-}
+    .address-wrapper {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      width: 85%;
+    }
 
-.address-wrapper {
-  display: flex;
-  gap: 10px; 
-  align-items: center;
-}
+    .address-wrapper input {
+      flex: 1;
+      padding: 15px;
+      border: 1px solid #000;
+      border-radius: 20px;
+      box-shadow: 0 4px 4px rgba(0, 0, 0, 0.25);
+    }
+  </style>
+</head>
+  <body>
+    <form id="registerForm" enctype="multipart/form-data" method="post" action="/auth/register">
+      <div class="form-group">
+        <label for="user_id">아이디</label>
+        <input
+          type="text"
+          id="user_id"
+          name="user_id"
+          placeholder="아이디 (영문, 숫자 4~12자)"
+          required
+          value="<%= typeof user_id !== 'undefined' ? user_id : '' %>"
+        />
+        <br />
+        <small id="user_id_error" style="color: red; display: none;">
+          한글 및 특수문자는 입력할 수 없습니다.
+        </small>
+      </div>
 
-.address-wrapper input {
-  flex: 1; 
-  padding: 15px;
-  border: 1px solid #000;
-  border-radius: 20px;
-  box-shadow: 0 4px 4px rgba(0, 0, 0, 0.25);
-}
+        <!-- 🔹 비밀번호 -->
+        <div class="form-group">
+          <label for="password">비밀번호</label>
+          <input
+            type="password"
+            id="password"
+            name="password"
+            placeholder="비밀번호"
+            required
+          />
+        </div>
 
-.address-wrapper{
-  width: 85%;
-}
+        <!-- 🔹 닉네임 -->
+        <div class="form-group">
+          <label for="nickname">닉네임</label>
+          <input
+            type="text"
+            id="nickname"
+            name="nickname"
+            placeholder="닉네임"
+            required
+          />
+        </div>
 
-.address-wrapper .address-btn {
-  margin: 0; 
-  width: 70px;
-  height: 50px;
-  background: #FFC1A9;
-  border: 1px solid #000;
-  border-radius: 15px;
-  font-size: 13px;
-  font-weight: bold;
-  white-space: nowrap;
-}
-</style>
-        <div class="signup-wrapper">
-        <h1>회원가입</h1>
-          <form id="registerForm" action="/auth/register" method="POST">
-            <div class="form-group">
-              <label for="user_id">아이디</label>
-              <input
-                type="text"
-                id="user_id"
-                name="user_id"
-                placeholder="아이디 (영어, 숫자만)"
-                required
-              />
-              <br />
-              <small id="user_id_error" style="color: red; display: none;">영어와 숫자만 입력 가능</small>
-            </div>
-            ...
-            <button type="submit" class="submit-btn">가입하기</button>
-          </form>
-    </div>
+        <!-- 🔹 주소 -->
+        <div class="form-group">
+          <label for="address">주소</label>
+          <div class="address-wrapper">
+            <input
+              type="text"
+              readonly
+              id="address"
+              name="address"
+              placeholder="주소를 입력하세요"
+            />
+            <button
+              type="button"
+              class="address-btn"
+              onclick="openAddressSearch()"
+            >
+              주소 검색
+            </button>
+          </div>
+        </div>
+
+        <!-- 🔹 가입 버튼 -->
+        <button type="submit" class="submit-btn">가입하기</button>
+      </form>
+    </body>
 
 <script src="https://t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
 
 <script>
-  function openAddressSearch() {
-    new daum.Postcode({
-      oncomplete: function (data) {
-        document.getElementById("address").value = data.roadAddress;
-      },
-    }).open();
-  }
+  const form = document.getElementById("registerForm");
 
-  const userIdInput = document.getElementById("user_id");
+  const userIdInput = form.user_id;
   const userIdError = document.getElementById("user_id_error");
+  const idRegex = /^[a-zA-Z0-9]{4,12}$/;
 
+  // 아이디 입력 시 한글 및 특수문자 자동 제거 및 에러메시지 토글
   userIdInput.addEventListener("input", () => {
-    const value = userIdInput.value;
-    const valid = /^[a-zA-Z0-9]*$/.test(value);
-
-    if (!valid) {
-      userIdError.style.display = "block";
-      userIdInput.value = value.replace(/[^a-zA-Z0-9]/g, "");
+    const rawValue = userIdInput.value;
+    const cleaned = rawValue.replace(/[^a-zA-Z0-9]/g, "");
+    if (rawValue !== cleaned) {
+      userIdInput.value = cleaned;
+      userIdError.style.display = "inline";
     } else {
       userIdError.style.display = "none";
     }
   });
 
-  const form = document.getElementById("registerForm");
+  function openAddressSearch() {
+    new daum.Postcode({
+      oncomplete: function(data) {
+        // 팝업에서 주소 선택하면 실행됨
+        const fullAddr = data.address; // 도로명 주소
+        document.getElementById('address').value = fullAddr;
+      }
+    }).open();
+  }
 
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
@@ -162,21 +205,32 @@ h1 {
       return;
     }
 
+    if (!idRegex.test(user_id)) {
+      alert("아이디는 영문 대소문자와 숫자만 포함하여 4~12자여야 합니다.");
+      return;
+    }
+
     try {
       const res = await fetch("/auth/register", {
-        method: "POST",
-        credentials: "include",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ user_id, password, nickname, address }),
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          user_id,
+          password,
+          nickname,
+          address
+        })
       });
 
-      const data = await res.json();
-
-      if (res.ok) {
-        alert(data.message || "회원가입 성공!");
-        window.location.href = "/";
+      if (res.redirected) {
+        window.location.href = res.url;
       } else {
-        alert("에러: " + (data.error || "알 수 없는 에러"));
+        const html = await res.text();
+        document.open();
+        document.write(html);
+        document.close();
       }
     } catch (err) {
       alert("서버 에러 발생");

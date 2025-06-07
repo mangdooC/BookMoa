@@ -2,7 +2,64 @@
 <html lang="ko">
 <head>
   <meta charset="UTF-8" />
-  <title><%= title || "책모아" %></title>
+  <title><%= title || "로그인" %></title>
+    <style>
+      .login-wrapper {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background: white;
+        border-radius: 15px;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        padding: 60px 80px;
+        width: 400px;
+        box-sizing: border-box;
+        text-align: center;
+        z-index: 1;
+        margin-top: 70px;
+      }
+
+      .login-wrapper h1 {
+        font-size: 32px;
+        margin-bottom: 40px;
+        font-weight: 700;
+      }
+
+      .login-wrapper form input {
+        width: 100%;
+        padding: 15px;
+        margin-bottom: 25px;
+        border: 1px solid #000;
+        border-radius: 20px;
+        box-shadow: 0 4px 4px rgba(0,0,0,0.25);
+        font-size: 16px;
+        font-weight: 600;
+        box-sizing: border-box;
+      }
+
+      .login-wrapper form button {
+        width: 100%;
+        padding: 15px 0;
+        background: #FFC1A9;
+        border: 1px solid #000;
+        border-radius: 15px;
+        font-size: 18px;
+        font-weight: 700;
+        cursor: pointer;
+        transition: background 0.3s;
+      }
+
+      .login-wrapper form button:hover {
+        background: #FFA07A;
+      }
+
+      .error-msg {
+        color: red;
+        margin-bottom: 15px;
+        font-weight: 700;
+      }
+    </style>
 </head>
 <body>
   <div class="login-wrapper">
@@ -38,8 +95,13 @@
     e.preventDefault();
 
     const formData = new FormData(loginForm);
-    const user_id = formData.get("user_id");
-    const password = formData.get("password");
+    const user_id = formData.get("user_id").trim();
+    const password = formData.get("password").trim();
+
+    if (!user_id || !password) {
+      alert("아이디랑 비번 둘 다 넣어라 ㅅ발");
+      return;
+    }
 
     try {
       const res = await fetch("/auth/login", {
@@ -51,84 +113,16 @@
         body: JSON.stringify({ user_id, password }),
       });
 
-      const text = await res.text();
-      let data;
-
-      try {
-        data = JSON.parse(text);
-      } catch {
-        console.error("응답이 JSON이 아님:", text);
-        alert("서버 에러 또는 응답 형식 오류");
-        return;
-      }
-
-      if (res.ok) {
-        alert(data.message);
-        window.location.href = "/";
+      if (res.redirected) {
+        // 서버가 리다이렉트 시킨 URL로 이동
+        window.location.href = res.url;
       } else {
-        alert("로그인 실패: " + (data.error || "에러"));
+        // 실패 시엔 ejs 렌더링한 로그인 페이지가 오니까 텍스트로 읽어도 의미없음
+        alert("로그인 실패: 아이디/비번 확인해라 ㅅ발");
       }
     } catch (err) {
       console.error("로그인 중 에러:", err);
-      alert("서버 통신 에러");
+      alert("서버 통신 에러 발생");
     }
   });
 </script>
-
-<style>
-  .login-wrapper {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    background: white;
-    border-radius: 15px;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-    padding: 60px 80px;
-    width: 400px;
-    box-sizing: border-box;
-    text-align: center;
-    z-index: 1;
-    margin-top: 70px;
-  }
-
-  .login-wrapper h1 {
-    font-size: 32px;
-    margin-bottom: 40px;
-    font-weight: 700;
-  }
-
-  .login-wrapper form input {
-    width: 100%;
-    padding: 15px;
-    margin-bottom: 25px;
-    border: 1px solid #000;
-    border-radius: 20px;
-    box-shadow: 0 4px 4px rgba(0,0,0,0.25);
-    font-size: 16px;
-    font-weight: 600;
-    box-sizing: border-box;
-  }
-
-  .login-wrapper form button {
-    width: 100%;
-    padding: 15px 0;
-    background: #FFC1A9;
-    border: 1px solid #000;
-    border-radius: 15px;
-    font-size: 18px;
-    font-weight: 700;
-    cursor: pointer;
-    transition: background 0.3s;
-  }
-
-  .login-wrapper form button:hover {
-    background: #FFA07A;
-  }
-
-  .error-msg {
-    color: red;
-    margin-bottom: 15px;
-    font-weight: 700;
-  }
-</style>

@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const db = require('../db');
 
-// 마이페이지에서 내 도서 리뷰 목록 보여주기
+// 마이페이지에서 내 도서관 리뷰 목록 보여주기
 router.get('/mypage/:user_id', async (req, res) => {
   const user_id = req.params.user_id;
 
@@ -11,16 +11,16 @@ router.get('/mypage/:user_id', async (req, res) => {
     const [userRows] = await db.query('SELECT user_id, nickname FROM user WHERE user_id = ?', [user_id]);
     if (userRows.length === 0) return res.status(404).send('유저없음');
 
-    const [bookReviews] = await db.query(`
-      SELECT br.review_id, br.rating, br.content, b.isbn13, b.title
-      FROM book_review br
-      JOIN book b ON br.book_id = b.book_id
-      WHERE br.user_id = ?
-      ORDER BY br.created_at DESC
+    const [libraryReviews] = await db.query(`
+      SELECT lr.review_id, lr.rating, lr.content, l.library_name
+      FROM library_review lr
+      JOIN library l ON lr.library_id = l.library_id
+      WHERE lr.user_id = ?
+      ORDER BY lr.created_at DESC
     `, [user_id]);
 
     const user = userRows[0];
-    user.bookReviews = bookReviews;
+    user.libraryReviews = libraryReviews;
 
     res.render('mypage', { user }); 
   } catch (err) {
@@ -30,21 +30,21 @@ router.get('/mypage/:user_id', async (req, res) => {
 });
 
 // 리뷰 상세보기
-router.get('/bookReview/post/:review_id', async (req, res) => {
+router.get('/libraryReview/post/:review_id', async (req, res) => {
   const review_id = req.params.review_id;
 
   try {
     const [rows] = await db.query(`
-      SELECT br.*, b.title AS book_title, u.nickname AS user_nickname
-      FROM book_review br
-      JOIN book b ON br.book_id = b.book_id
-      JOIN user u ON br.user_id = u.user_id
-      WHERE br.review_id = ?
+      SELECT lr.*, l.library_name, u.nickname AS user_nickname
+      FROM library_review lr
+      JOIN library l ON lr.library_id = l.library_id
+      JOIN user u ON lr.user_id = u.user_id
+      WHERE lr.review_id = ?
     `, [review_id]);
 
     if (rows.length === 0) return res.status(404).send('리뷰 없음');
 
-    res.render('bookReviewDetail', { review: rows[0] });
+    res.render('libraryReviewDetail', { review: rows[0] });
   } catch (err) {
     console.error(err);
     res.status(500).send('DB 에러');
@@ -52,11 +52,11 @@ router.get('/bookReview/post/:review_id', async (req, res) => {
 });
 
 // 리뷰 삭제 (마이페이지에서)
-router.post('/userBookReview/:review_id/delete', async (req, res) => {
+router.post('/userLibraryReview/:review_id/delete', async (req, res) => {
   const review_id = req.params.review_id;
 
   try {
-    await db.query('DELETE FROM book_review WHERE review_id = ?', [review_id]);
+    await db.query('DELETE FROM library_review WHERE review_id = ?', [review_id]);
     res.redirect('back');
   } catch (err) {
     console.error(err);

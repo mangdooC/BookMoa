@@ -1,7 +1,5 @@
-// public/js/userCommunity.js
-
 document.addEventListener('DOMContentLoaded', () => {
-  const postList = document.getElementById('communityPostList');
+  const postList = document.getElementById('bookReviewList');
 
   if (!postList) return;
 

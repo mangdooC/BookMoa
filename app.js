@@ -12,6 +12,9 @@ dotenv.config();
 
 const app = express();
 
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
 const JWT_SECRET = process.env.JWT_SECRET;
 
 // multer 설정 추가
@@ -28,7 +31,6 @@ const upload = multer({ storage: storage });
 
 // 정적 파일 제공
 app.use('/uploads/profile', express.static(path.join(__dirname, 'uploads/profile')));
-app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 app.use(express.static(path.join(__dirname, 'public')));
 
 // 뷰 엔진 세팅
@@ -129,34 +131,55 @@ app.get('/', async (req, res) => {
 app.use('/posts', require('./routes/posts'));
 app.use('/comments', require('./routes/comments'));
 
+app.get('/register', (req, res) => {
+  res.render('register'); // views/register.ejs
+});
 
-//회원가입, 로그인
+app.get('/login', (req, res) => {
+  res.render('login'); // views/login.ejs
+});
+
+// 회원가입, 로그인
 const authRouter = require('./routes/auth');
 app.use('/auth', authRouter);
 
-// 마이페이지 라우터
-const mypageRouter = require('./routes/mypage');
+// 마이페이지
+const mypageRouter = require('./routes/user');
 app.use('/mypage', mypageRouter);
 
-// 유저
+// 유저 관련 (프로필, 정보 수정 등)
 const userRouter = require('./routes/user');
 app.use('/user', userRouter);
 
+// 유저가 작성한 도서 리뷰
+const userBookReviewRouter = require('./routes/userBookReview');
+app.use('/userBookReview', userBookReviewRouter);
 
+// 유저 도서관 리뷰
+const userLibraryReviewRouter = require('./routes/userLibraryReview');
+app.use('/userLibraryReview', userLibraryReviewRouter);
 
-// 즐겨찾기
-const bookmarkRouter = require('./routes/bookmark');
-app.use('/bookmark', bookmarkRouter);
+// 유저 커뮤니티 글 + 댓글
+const userCommunityRouter = require('./routes/userCommunity');
+app.use('/userCommunity', userCommunityRouter);
 
-//선호지역
+// 선호지역
 const preferredRouter = require('./routes/preferred');
 app.use('/preferred', preferredRouter);
 
-//커뮤니티
+// 즐겨찾는 도서관
+const favoriteRouter = require('./routes/favorite');
+app.use('/favorite', favoriteRouter);
+
+// // 즐겨찾기
+// const bookmarkRouter = require('./routes/bookmark');
+// app.use('/bookmark', bookmarkRouter);
+
+// 커뮤니티
 const communityRouter = require('./routes/community');
 app.use('/community', communityRouter);
 
-//커뮤니티(인기)
+// 커뮤니티(인기)
 const popularRoute = require('./routes/popularRoute');
 app.use('/', popularRoute);
 
@@ -164,17 +187,7 @@ app.use('/', popularRoute);
 const bookRouter = require('./routes/book');
 app.use('/book', bookRouter);
 
-// 도서후기 라우터
-const bookReviewRouter = require('./routes/bookReviewRouter');
-app.use('/bookReview', bookReviewRouter);
-
-
-
-// 즐겨찾기 도서관 라우터
-const favlibRouter = require('./routes/favlib');
-app.use('/favlib', favlibRouter);
-
-// 도서 검색  라우터
+// 도서 검색 라우터
 const trendingRoutes = require('./routes/trending');
 app.use('/', trendingRoutes);
 
@@ -189,8 +202,6 @@ app.use('/', bookSearchRouter);
 // api 라우터
 // const apiRouter = require('./routes/api');
 // app.use('/api', apiRouter);
-
-
 
 // 에러 핸들링
 app.use((err, req, res, next) => {

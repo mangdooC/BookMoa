@@ -1,68 +1,98 @@
-// routes/userCommunity.js
 const express = require('express');
 const router = express.Router();
 const db = require('../db');
 
-// 마이페이지에서 내가 쓴 커뮤니티 글 목록 조회 + 수정, 삭제 가능하도록 렌더링
-router.get('/', async (req, res) => {
-  const userId = req.session.user?.user_id;
-  if (!userId) return res.status(401).send('로그인이 필요합니다.');
+// 마이페이지에서 내 커뮤니티 글 목록 보여주기기
+router.get('/mypage/communityList/:user_id', async (req, res) => {
+  const user_id = req.params.user_id;
 
   try {
-    const [posts] = await db.query(`
-      SELECT post_id, title, content, created_at
+    // 유저 기본정보 + 커뮤니티 글 목록 같이 가져오기
+    const [userRows] = await db.query('SELECT user_id, nickname FROM user WHERE user_id = ?', [user_id]);
+    if (userRows.length === 0) return res.status(404).send('유저없음');
+
+    const [communityPosts] = await db.query(`
+      SELECT post_id AS id, title, content, created_at
       FROM community_post
       WHERE user_id = ?
       ORDER BY created_at DESC
-    `, [userId]);
+    `, [user_id]);
 
-    res.render('mypage/userCommunity', {
-      title: '내 커뮤니티 글',
-      user: req.session.user,
-      communityPosts: posts
-    });
+    const [communityComments] = await db.query(`
+      SELECT comment_id AS id, content, created_at
+      FROM community_comment
+      WHERE user_id = ?
+      ORDER BY created_at DESC
+    `, [user_id]);
+
+    const user = userRows[0];
+    user.communityPosts = communityPosts;
+    user.communityComments = communityComments;
+
+    res.render('mypage', { user });
   } catch (err) {
-    console.error('내 커뮤니티 글 조회 실패:', err);
-    res.status(500).send('내 커뮤니티 글 조회 실패');
+    console.error(err);
+    res.status(500).send('DB 에러');
   }
 });
 
-// 글 수정 처리 (마이페이지 내에서 AJAX 등으로 호출 가능)
-router.post('/edit/:postId', async (req, res) => {
-  const userId = req.session.user?.user_id;
-  const postId = Number(req.params.postId);
-  const { title, content } = req.body;
-  if (!userId) return res.status(401).json({ error: '로그인이 필요합니다.' });
+// 커뮤니티 글 상세보기 + 댓글 목록
+router.get('/community/communityList/post/:post_id', async (req, res) => {
+  const post_id = req.params.post_id;
 
   try {
-    const [rows] = await db.query('SELECT user_id FROM community_post WHERE post_id = ?', [postId]);
-    if (rows.length === 0) return res.status(404).json({ error: '게시글을 찾을 수 없습니다.' });
-    if (rows[0].user_id !== userId) return res.status(403).json({ error: '수정 권한이 없습니다.' });
+    const [posts] = await db.query(`
+      SELECT cp.*, u.nickname AS user_nickname
+      FROM community_post cp
+      JOIN user u ON cp.user_id = u.user_id
+      WHERE cp.post_id = ?
+    `, [post_id]);
 
-    await db.query('UPDATE community_post SET title = ?, content = ? WHERE post_id = ?', [title, content, postId]);
-    res.json({ success: true });
+    if (posts.length === 0) return res.status(404).send('글 없음');
+
+    const post = posts[0];
+
+    const [comments] = await db.query(`
+      SELECT cc.comment_id, cc.content, cc.created_at, u.nickname AS user_nickname
+      FROM community_comment cc
+      JOIN user u ON cc.user_id = u.user_id
+      WHERE cc.post_id = ?
+      ORDER BY cc.created_at ASC
+    `, [post_id]);
+
+    res.render('communityDetail', { post, comments });
   } catch (err) {
-    console.error('글 수정 실패:', err);
-    res.status(500).json({ error: '글 수정 실패' });
+    console.error(err);
+    res.status(500).send('DB 에러');
   }
 });
 
-// 글 삭제 처리 (마이페이지 내에서 AJAX 등으로 호출 가능)
-router.post('/delete/:postId', async (req, res) => {
-  const userId = req.session.user?.user_id;
-  const postId = Number(req.params.postId);
-  if (!userId) return res.status(401).json({ error: '로그인이 필요합니다.' });
+// 커뮤니티 글 삭제 (마이페이지에서)
+router.post('/community/communityList/post/:post_id/delete', async (req, res) => {
+  const post_id = req.params.post_id;
 
   try {
-    const [rows] = await db.query('SELECT user_id FROM community_post WHERE post_id = ?', [postId]);
-    if (rows.length === 0) return res.status(404).json({ error: '게시글을 찾을 수 없습니다.' });
-    if (rows[0].user_id !== userId) return res.status(403).json({ error: '삭제 권한이 없습니다.' });
+    // 댓글 먼저 삭제, 외래키 CASCADE 없으면 필수
+    await db.query('DELETE FROM community_comment WHERE post_id = ?', [post_id]);
+    await db.query('DELETE FROM community_post WHERE post_id = ?', [post_id]);
 
-    await db.query('DELETE FROM community_post WHERE post_id = ?', [postId]);
-    res.json({ success: true });
+    res.redirect('back');
   } catch (err) {
-    console.error('글 삭제 실패:', err);
-    res.status(500).json({ error: '글 삭제 실패' });
+    console.error(err);
+    res.status(500).send('삭제 실패');
+  }
+});
+
+// 댓글 삭제 (마이페이지에서)
+router.post('/community/communityList/comment/:comment_id/delete', async (req, res) => {
+  const comment_id = req.params.comment_id;
+
+  try {
+    await db.query('DELETE FROM community_comment WHERE comment_id = ?', [comment_id]);
+    res.redirect('back');
+  } catch (err) {
+    console.error(err);
+    res.status(500).send('댓글 삭제 실패');
   }
 });
 

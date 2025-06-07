@@ -6,11 +6,13 @@
   <title>마이 페이지</title>
   <script src="https://t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
   
-  <script src="/mypageJS/address.js"></script>
-  <script src="/mypageJS/menu.js"></script>
-  <script src="/mypageJS/editinfo.js"></script>
-  <script src="/mypageJS/favlib.js"></script>
-  <script src="/mypageJS/usercontent.js"></script>
+  <script src="/mypagejs/menu.js"></script>
+  <script src="/mypagejs/userinfo.js"></script>
+  <script src="/mypagejs/favorite.js"></script>
+  <script src="/mypagejs/userbookreview.js"></script>
+  <script src="/mypagejs/userLibrary.js"></script>
+  <script src="/mypagejs/usercommunity.js"></script>
+  <script src="/mypagejs/preferred.js"></script>
 
   <style>
     .section { display: none; }
@@ -85,8 +87,9 @@
         white-space: nowrap;
     }
 
-    .sidebar .menu button:hover {
-        background-color: #ffb088;
+    .sidebar .menu button.active {
+    background-color: #ff986f;
+    color: white;
     }
 
     /* 메인 콘텐츠 */
@@ -226,153 +229,182 @@
     }
 
     .menu button.active {
-        background-color: #007bff;
+        background-color: #ff986f;
         color: white;
     }
   </style>
 </head>
 <body>
-  <div class="sidebar">
-    <div class="profile">
-      <input type="file" id="profileImage" name="profileImage" accept="image/*" style="display:none;" />
-      <img
+<div class="sidebar">
+  <div class="profile">
+    <form id="profileForm" action="/mypage/upload-profile-image" method="POST" enctype="multipart/form-data">
+    <input type="file" id="profileImage" name="profileImage" accept="image/*" style="display:none;" />
+    <img
         id="profilePreview"
         src="<%= user.profileImage || '/mypage/images/default.jpg' %>"
         alt="프로필 이미지"
         style="width: 130px; height: 130px; object-fit: cover; border-radius: 50%; cursor: pointer;"
         title="클릭해서 프로필 이미지 선택"
-      />
-      <p id="nicknameDisplay" style="margin-top: 10px; font-weight: bold; font-size: 23px;">
-        <%= user.nickname || '닉네임 없음' %>
-      </p>
-    </div>
+    />
+    </form>
+    <p id="nicknameDisplay" style="margin-top: 10px; font-weight: bold; font-size: 23px;">
+      <%= user.nickname || '닉네임 없음' %>
+    </p>
+  </div>
 
     <div class="menu">
-      <button type="button" onclick="showSection('info')">내 정보 수정</button>
-      <button type="button" onclick="showSection('preferredAreaSection')">선호지역</button>
-      <button type="button" onclick="showSection('favorites')">즐겨찾는 도서관</button>
-      <button type="button" onclick="showSection('posts')">작성한 글/댓글</button>
+        <button type="button" onclick="showSection('info')">내 정보 수정</button>
+        <button type="button" onclick="showSection('preferredAreaSection')">선호지역</button>
+        <button type="button" onclick="showSection('favorites')">즐겨찾는 도서관</button>
+        <button type="button" onclick="showSection('posts')">작성한 글/댓글</button>
     </div>
-  </div>
+</div>
 
   <div class="main">
     <!-- 내 정보 수정 -->
-    <section id="info" class="section active">
-      <h2>내 정보 수정</h2>
-
-      <div class="form-group">
-        <label for="password">비밀번호</label>
-        <input type="password" id="password" />
-      </div>
-
-      <div class="form-group">
-        <label for="nickname">닉네임</label>
-        <input type="text" id="nickname" value="<%= user.nickname || '' %>" />
-      </div>
-
-      <div class="form-group">
-        <label for="address">주소</label>
-        <div class="address-search-wrapper">
-          <input type="text" id="address" name="address" placeholder="주소를 입력하세요" value="<%= user.address || '' %>" />
-          <button type="button" onclick="searchMainAddress()" id="address-btn">주소 검색</button>
+    <div id="info" class="section">
+        <form id="updateForm">
+            <div>
+            <label for="password">비밀번호 변경</label>
+            <input type="password" id="password" name="password" />
+            </div>
+            <div>
+            <label for="nickname">닉네임</label>
+            <input type="text" id="nickname" name="nickname" value="<%= user.nickname %>" />
+            </div>
+            <div>
+            <label for="address">주소</label>
+            <input type="text" id="address" name="address" value="<%= user.address %>" />
+            </div>
+            <button type="submit" id="saveInfoBtn">저장</button>
+        </form>
         </div>
-      </div>
-
-      <button class="save-btn" id="saveInfoBtn" type="button">저장</button>
-    </section>
 
     <!-- 선호지역 -->
     <section id="preferredAreaSection" class="section">
-      <h2>선호지역</h2>
+    <h2>선호지역</h2>
 
-      <% ['preferredAddress1', 'preferredAddress2', 'preferredAddress3'].forEach(function(addr, idx) { %>
-      <div class="form-group">
+    <% ['region_level1', 'region_level2', 'region_level3'].forEach(function(addr, idx) { %>
+    <div class="form-group">
         <label for="<%= addr %>">선호지역 <%= idx + 1 %></label>
         <div class="address-search-wrapper">
-          <input type="text" id="<%= addr %>" name="<%= addr %>" placeholder="주소를 입력하세요" readonly value="<%= user[addr] || '' %>" />
-          <button type="button" onclick="searchPreferredAddress('<%= addr %>')">주소 검색</button>
+        <input
+            type="text"
+            id="<%= addr %>"
+            name="<%= addr %>"
+            placeholder="주소를 입력하세요"
+            readonly
+            value="<%= preferred_areas[idx] ? preferred_areas[idx].region_name : '' %>"
+        />
+        <button type="button" onclick="searchPreferredAddress('<%= addr %>')">주소 검색</button>
         </div>
-        <p id="selectedAddress_<%= addr %>"></p>
-      </div>
-      <% }); %>
+    </div>
+    <% }); %>
+
+    <button class="save-btn" type="button" onclick="savePreferredAddresses()">저장</button>
+    </section>
 
       <button class="save-btn" type="button" onclick="savePreferredAddresses()">저장</button>
     </section>
 
     <!-- 즐겨찾는 도서관 -->
     <section id="favorites" class="section">
-      <h2>즐겨찾는 도서관</h2>
-      <ul id="favoritesList">
-        <% if(user.favorites && user.favorites.length > 0) { %>
-          <% user.favorites.forEach(function(lib) { %>
-            <li><%= lib %></li>
-          <% }); %>
+    <h2>즐겨찾는 도서관</h2>
+    <ul id="favoritesList">
+        <% if (favorites && favorites.length > 0) { %>
+        <% favorites.forEach(function(lib) { %>
+            <li data-library-id="<%= lib.library_id %>">
+            <%= lib.name %> - <%= lib.address %>
+            <button class="removeFavoriteBtn" data-library-id="<%= lib.library_id %>">삭제</button>
+            </li>
+        <% }); %>
         <% } else { %>
-          <li>즐겨찾는 도서관이 없습니다.</li>
+        <li>즐겨찾는 도서관이 없습니다.</li>
         <% } %>
-      </ul>
+    </ul>
 
-      <div class="form-group form-inline">
+    <div class="form-group form-inline">
         <input type="text" id="newFavoriteInput" placeholder="도서관 이름 입력" />
         <button id="addFavoriteBtn" type="button">추가</button>
-      </div>
+    </div>
     </section>
 
     <!-- 작성한 글 -->
     <section id="posts" class="section">
       <h2>작성한 글</h2>
 
-      <div class="post-category">
+    <div class="post-category">
         <h3>📚 도서 리뷰</h3>
         <ul id="bookReviewList">
-          <% if(user.bookReviews && user.bookReviews.length > 0) { %>
+            <% if(user.bookReviews && user.bookReviews.length > 0) { %>
             <% user.bookReviews.forEach(function(review) { %>
-              <li><a href="/bookReview/<%= review.id %>"><%= review.title %></a></li>
+                <li>
+                <a href="/bookReview/post/<%= review.review_id %>"><%= review.title %></a>
+                - 평점: <%= review.rating %>점
+                <form action="/userBookReview/<%= review.review_id %>/delete" method="POST" style="display:inline;">
+                    <button type="submit" onclick="return confirm('정말 삭제할까요?');">삭제</button>
+                </form>
+                </li>
             <% }); %>
-          <% } else { %>
+            <% } else { %>
             <li>작성한 도서 리뷰가 없습니다.</li>
-          <% } %>
+            <% } %>
         </ul>
-      </div>
+    </div>
 
-      <div class="post-category">
+
+    <div class="post-category">
         <h3>🏛️ 도서관 리뷰</h3>
         <ul id="libraryReviewList">
-          <% if(user.libraryReviews && user.libraryReviews.length > 0) { %>
+            <% if(user.libraryReviews && user.libraryReviews.length > 0) { %>
             <% user.libraryReviews.forEach(function(review) { %>
-              <li><a href="/libraryReview/<%= review.id %>"><%= review.title %></a></li>
+                <li>
+                <a href="/libraryReview/<%= review.review_id %>">
+                    <%= review.library_name %> 후기
+                </a>
+                </li>
             <% }); %>
-          <% } else { %>
+            <% } else { %>
             <li>작성한 도서관 리뷰가 없습니다.</li>
-          <% } %>
+            <% } %>
         </ul>
-      </div>
+    </div>
 
-      <div class="post-category">
+
+    <div class="post-category">
         <h3>🗣️ 커뮤니티 게시글</h3>
         <ul id="communityPostList">
-          <% if(user.communityPosts && user.communityPosts.length > 0) { %>
-            <% user.communityPosts.forEach(function(post) { %>
-              <li><a href="/community/post/<%= post.id %>"><%= post.title %></a></li>
-            <% }); %>
-          <% } else { %>
-            <li>작성한 커뮤니티 게시글이 없습니다.</li>
-          <% } %>
+            <% if (user.communityPosts && user.communityPosts.length > 0) { %>
+            <% user.communityPosts.forEach(post => { %>
+            <li>
+                <a href="/community/communityList/post/<%= post.id %>" class="post-title"><%= post.title %></a><br />
+                <small><%= new Date(post.created_at).toLocaleString() %></small><br />
+                <form method="POST" action="/community/communityList/post/<%= post.id %>/delete" style="display:inline;">
+                <button type="submit" onclick="return confirm('글을 삭제합니까?');">삭제</button>
+                </form>
+                <a href="/community/post/<%= post.id %>/edit"><button>수정</button></a>
+            </li>
+            <% }) %>
         </ul>
-      </div>
+    </div>
 
-      <div class="post-category">
+    <div class="post-category">
         <h3>💬 커뮤니티 댓글</h3>
         <ul id="communityCommentList">
-          <% if(user.communityComments && user.communityComments.length > 0) { %>
-            <% user.communityComments.forEach(function(comment) { %>
-              <li><%= comment.content %></li>
-            <% }); %>
-          <% } else { %>
+            <% if (user.communityComments && user.communityComments.length > 0) { %>
+            <% user.communityComments.forEach(comment => { %>
+                <li>
+                <p><%= comment.content %></p>
+                <small><%= new Date(comment.created_at).toLocaleString() %></small><br />
+                <button class="delete-comment-btn" data-comment-id="<%= comment.id %>">[삭제]</button>
+                <a href="/community/communityList/comment/<%= comment.id %>/edit"><button>[수정]</button></a>
+                </li>
+            <% }) %>
+            <% } else { %>
             <li>작성한 댓글이 없습니다.</li>
-          <% } %>
+            <% } %>
         </ul>
-      </div>
+    </div>
     </section>
   </div>
 </body>
