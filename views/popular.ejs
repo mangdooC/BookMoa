@@ -70,6 +70,43 @@
 <body>
   <div class="book-section-box">
     <h2 class="popular-title"> 이달의 인기 대출 도서</h2>
+<form method="GET" action="/popular" style="margin-bottom: 20px;">
+  <label for="gender">성별:</label>
+  <select name="gender" id="gender">
+    <option value="">전체</option>
+    <option value="1" <%= gender === '1' ? 'selected' : '' %>>남성</option>
+    <option value="2" <%= gender === '2' ? 'selected' : '' %>>여성</option>
+  </select>
+
+  <label for="age">연령:</label>
+  <select name="age" id="age">
+    <option value="">전체</option>
+    <option value="10" <%= age === '10' ? 'selected' : '' %>>10대</option>
+    <option value="20" <%= age === '20' ? 'selected' : '' %>>20대</option>
+    <option value="30" <%= age === '30' ? 'selected' : '' %>>30대</option>
+    <option value="40" <%= age === '40' ? 'selected' : '' %>>40대</option>
+    <option value="50" <%= age === '50' ? 'selected' : '' %>>50대</option>
+  </select>
+
+  <label for="kdc">장르:</label>
+  <select name="kdc" id="kdc">
+    <option value="">전체</option>
+    <option value="0" <%= kdc === '0' ? 'selected' : '' %>>총류</option>
+    <option value="1" <%= kdc === '1' ? 'selected' : '' %>>철학</option>
+    <option value="2" <%= kdc === '2' ? 'selected' : '' %>>종교</option>
+    <option value="3" <%= kdc === '3' ? 'selected' : '' %>>사회과학</option>
+    <option value="4" <%= kdc === '4' ? 'selected' : '' %>>자연과학</option>
+    <option value="5" <%= kdc === '5' ? 'selected' : '' %>>기술과학</option>
+    <option value="6" <%= kdc === '6' ? 'selected' : '' %>>예술</option>
+    <option value="7" <%= kdc === '7' ? 'selected' : '' %>>언어</option>
+    <option value="8" <%= kdc === '8' ? 'selected' : '' %>>문학</option>
+    <option value="9" <%= kdc === '9' ? 'selected' : '' %>>역사</option>
+  </select>
+
+  <button type="submit">조회</button>
+</form>
+
+
 
     <% if (books.length === 0) { %>
       <p>인기 도서 데이터가 없습니다.</p>
@@ -90,20 +127,35 @@
         <% }) %>
       </ul>
 
-      <!-- 페이지네이션 -->
-      <div class="pagination">
-        <% 
-          const startPage = Math.max(1, pageNo - 2);
-          const endPage = Math.min(totalPages, startPage + 4);
-          for (let i = startPage; i <= endPage; i++) {
-        %>
-          <% if (i === pageNo) { %>
-            <strong><%= i %></strong>
-          <% } else { %>
-            <a href="/popular?pageNo=<%= i %>"><%= i %></a>
-          <% } %>
-        <% } %>
-      </div>
+<div class="pagination">
+  <% 
+    const maxPagesToShow = 5;
+    const half = Math.floor(maxPagesToShow / 2);
+    let startPage = Math.max(1, pageNo - half);
+    let endPage = Math.min(totalPages, startPage + maxPagesToShow - 1);
+    if (endPage - startPage < maxPagesToShow - 1) {
+      startPage = Math.max(1, endPage - maxPagesToShow + 1);
+    }
+  %>
+
+  <% if (pageNo > 1) { %>
+    <a href="/popular?pageNo=<%= pageNo - 1 %>&gender=<%= gender || '' %>&age=<%= age || '' %>&kdc=<%= kdc || '' %>">이전</a>
+  <% } %>
+
+  <% for (let i = startPage; i <= endPage; i++) { %>
+    <% if (i === pageNo) { %>
+      <strong><%= i %></strong>
+    <% } else { %>
+      <a href="/popular?pageNo=<%= i %>&gender=<%= gender || '' %>&age=<%= age || '' %>&kdc=<%= kdc || '' %>"><%= i %></a>
+    <% } %>
+  <% } %>
+
+  <% if (pageNo < totalPages) { %>
+    <a href="/popular?pageNo=<%= pageNo + 1 %>&gender=<%= gender || '' %>&age=<%= age || '' %>&kdc=<%= kdc || '' %>">다음</a>
+  <% } %>
+</div>
+
+
     <% } %>
   </div>
 </body>
