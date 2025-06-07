@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <title>책 리뷰 상세보기</title>
+  <style>
+    body {
+      background-color: #faeee3;
+      font-family: 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif;
+    }
+
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+      background-color: #fff;
+      padding: 40px;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    }
+
+    .title {
+      font-size: 30px;
+      font-weight: 700;
+      margin-bottom: 0px;
+      border-bottom: 2px solid #eee;
+      padding-bottom: 10px;
+    }
+
+    .meta {
+      font-size: 14px;
+      color: #666;
+      margin-bottom: 30px;
+    }
+
+    .meta span {
+      margin-right: 16px;
+    }
+
+    .content {
+      font-size: 16px;
+      line-height: 1.75;
+      color: #333;
+      white-space: pre-wrap;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="title"><%= review.title %></div>
+    <div class="meta">
+      <span>작성자: <%= review.author %></span>
+      <span>평점: <%= '⭐'.repeat(review.rating) %></span>
+      <span>작성일: <%= new Date(review.createdAt).toLocaleDateString() %></span>
+    </div>
+    <div class="content">
+      <%= review.content %>
+    </div>
+  </div>
+</body>
+</html>

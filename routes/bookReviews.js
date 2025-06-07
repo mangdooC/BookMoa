@@ -24,27 +24,28 @@ router.get('/', async (req, res) => {
   }
 });
 
-// 개별 책 리뷰 조회 API (review_id 기준)
-router.get('/review', async (req, res) => {
-  const { id } = req.query;
+
+router.get('/post/:id', async (req, res) => {
+  const reviewId = req.params.id;
   try {
     const [rows] = await pool.query(`
       SELECT br.review_id, br.content, br.rating, br.created_at,
-             b.title AS book_title, b.isbn, u.nickname AS author
+             b.title AS title, b.isbn, u.nickname AS author
       FROM book_review br
       JOIN user u ON br.user_id = u.user_id
       JOIN book b ON br.book_id = b.book_id
       WHERE br.review_id = ?
-    `, [id]);
+    `, [reviewId]);
 
     if (rows.length === 0) {
-      return res.status(404).json({ message: '리뷰를 찾을 수 없습니다.' });
+      return res.status(404).send('리뷰를 찾을 수 없습니다.');
     }
 
-    res.json(rows[0]);
+    const review = rows[0];
+    res.render('bookReview/bookReviewPost', { review });
   } catch (err) {
-    console.error('리뷰 상세 조회 실패:', err);
-    res.status(500).json({ message: '리뷰 상세 조회 중 오류 발생' });
+    console.error('리뷰 페이지 렌더링 실패:', err);
+    res.status(500).send('리뷰 페이지 불러오기 중 오류 발생');
   }
 });
 
