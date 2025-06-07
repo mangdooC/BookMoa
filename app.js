@@ -171,11 +171,13 @@ app.use('/', bookSearchRouter);
 const apiRouter = require('./routes/api');
 app.use('/api', apiRouter);
 
-
-
 //도서관 검색 라우터
 const libraryRouter = require('./routes/library');
 app.use('/library', libraryRouter);
+
+//도서관 후기 라우터
+const libraryReviewRouter = require('./routes/libraryReview');
+app.use('/library', libraryReviewRouter); // 요청 경로는 '/library/libraryReviews'
 
 // 에러 핸들링
 app.use((err, req, res, next) => {

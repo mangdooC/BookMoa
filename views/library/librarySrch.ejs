@@ -59,7 +59,7 @@ function renderPage(data, page) {
 
     tr.innerHTML = `
       <td style="padding: 12px; border-bottom: 1px solid #ccc;">
-        <a href="library_detail.html?name=${encodeURIComponent(lib.name)}">${lib.name}</a>
+        <a href="libraryReview?name=${encodeURIComponent(lib.name)}">${lib.name}</a>
       </td>
       <td style="padding: 12px; border-bottom: 1px solid #ccc;">${lib.phone || '-'}</td>
       <td style="padding: 12px; border-bottom: 1px solid #ccc;">${lib.address}</td>
@@ -78,8 +78,11 @@ window.searchLibs = function(page = 1) {
   }
 
 function nextPage() {
-  currentPage++;
-  fetchLibs(currentPage);
+  const maxPage = Math.ceil(libraries.length / pageSize);
+  if (currentPage < maxPage) {
+    currentPage++;
+    renderPage(libraries, currentPage);
+  }
 }
 
 function prevPage() {
