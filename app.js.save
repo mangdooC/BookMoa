@@ -92,17 +92,15 @@ const { getTopBooks } = require('./controllers/popularController');
 const { getLatestPosts } = require('./controllers/postsController');
 const { getTrendingBooks } = require('./controllers/trendingController');
 const { getNearbyLibrariesByUser } = require('./controllers/libraryController');
-
 // 메인 페이지
 app.get('/', async (req, res) => {
   let popularBooks = [];
   let latestPosts = [];
   let trendingBooks = [];
-    let nearbyLibraries = [];
-    if (req.session.user) {
-      nearbyLibraries = await getNearbyLibrariesByUser(req.session.user.user_id);
-      console.log('[최종 nearbyLibraries]', nearbyLibraries);
-    }
+
+if (req.session.user) {
+  nearbyLibraries = await getNearbyLibrariesByUser(req.session.user.user_id);
+}
 
   try {
     popularBooks = await getTopBooks();
@@ -127,8 +125,7 @@ app.get('/', async (req, res) => {
     user: req.session.user,
     popularBooks,
     latestPosts,
-    trendingBooks,
-    nearbyLibraries
+    trendingBooks
   });
 });
 
@@ -178,13 +175,11 @@ app.use('/', bookSearchRouter);
 const apiRouter = require('./routes/api');
 app.use('/api', apiRouter);
 
+
+
 //도서관 검색 라우터
 const libraryRouter = require('./routes/library');
 app.use('/library', libraryRouter);
-
-//도서관 후기 라우터
-const libraryReviewRouter = require('./routes/libraryReview');
-app.use('/library', libraryReviewRouter); // 요청 경로는 '/library/libraryReviews'
 
 // 에러 핸들링
 app.use((err, req, res, next) => {

@@ -103,7 +103,7 @@ body {
 }
 
 .section-box {
-  background-color: #fff6ef;
+  background-color: white;
   border-radius: 12px;
   padding: 16px;
   box-shadow: 0 0 4px rgba(0,0,0,0.1);
@@ -160,7 +160,7 @@ body {
 
 .review-box {
   flex: 1 1 45%;
-  background-color: white;
+  background-color: #fff9f3;
   padding: 12px 16px;
   border-radius: 10px;
   box-shadow: 1px 1px 6px rgba(0, 0, 0, 0.08);
@@ -208,6 +208,39 @@ body {
   flex: 1 1 45%;
 }
 
+/*선호지역 도서관*/
+.library-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.library-box {
+  flex: 1 1 45%;
+  background-color: #fff9f3;
+  padding: 12px 16px;
+  border-radius: 10px;
+  box-shadow: 0 1px 6px rgba(0, 0, 0, 0.08);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  transition: transform 0.2s ease;
+}
+
+.library-box:hover {
+  transform: translateY(-3px);
+}
+
+.library-box p {
+  font-size: 14px;
+  color: #444;
+  margin: 4px 0;
+}
+
+.library-box a {
+  color: #0077cc;
+  text-decoration: underline;
+}
 
 
 /*더보기 버튼 */
@@ -292,3 +325,4 @@ body {
   color: #666;
   font-size: 14px;
 }
+

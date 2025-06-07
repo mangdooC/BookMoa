@@ -131,10 +131,25 @@
   </div>
 </section>
 
+<div class="section-box">
+  <h2> 내 선호 지역 근처 도서관</h2>
+  <% if (nearbyLibraries.length === 0) { %>
+    <p>추천 도서관이 없습니다. 마이페이지에서 선호지역을 등록해주세요.</p>
+  <% } else { %>
+    <div class="library-list">
+      <% nearbyLibraries.forEach(lib => { %>
+        <div class="library-box">
+          <strong><%= lib.name %></strong>
+          <p>주소: <%= lib.address %></p>
+          <p>전화: <%= lib.phone %></p>
+          <% if (lib.homepage) { %>
+            <p>홈페이지: <a href="<%= lib.homepage %>" target="_blank"><%= lib.homepage %></a></p>
+          <% } %>
+        </div>
+      <% }) %>
+    </div>
+  <% } %>
+</div>
 
-  <!-- 주변 도서관 정보 -->
-  <section class="section-box">
-    <h2>가까운 도서관</h2>
-  </section>
 
 </section>
