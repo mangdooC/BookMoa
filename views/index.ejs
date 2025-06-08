@@ -138,14 +138,16 @@
   <% } else { %>
     <div class="library-list">
       <% nearbyLibraries.forEach(lib => { %>
-        <div class="library-box">
-          <strong><%= lib.name %></strong>
-          <p>주소: <%= lib.address %></p>
-          <p>전화: <%= lib.phone %></p>
-          <% if (lib.homepage) { %>
-            <p>홈페이지: <a href="<%= lib.homepage %>" target="_blank"><%= lib.homepage %></a></p>
-          <% } %>
-        </div>
+                <a href="/library/libraryReview?name=<%= encodeURIComponent(lib.name) %>" class="library-box-link">
+          <div class="library-box">
+            <strong><%= lib.name %></strong>
+            <p>주소: <%= lib.address %></p>
+            <p>전화: <%= lib.phone %></p>
+            <% if (lib.homepage) { %>
+              <p>홈페이지: <%= lib.homepage %></p>
+            <% } %>
+          </div>
+        </a>
       <% }) %>
     </div>
   <% } %>

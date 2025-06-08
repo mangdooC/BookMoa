@@ -12,22 +12,9 @@
   <div class="logo">
     <a href="/">📖 책모아</a>
   </div>
-  <div class="auth-buttons">
-    <% if (!user) { %>
-      <a href="/mypage/login.html">로그인</a>
-      <a href="/mypage/signUp.html">회원가입</a>
-    <% } else { %>
-      <a href="/mypage/editInfo.html"><%= user.nickname %>님</a>
-      <form action="/logout" method="POST" style="display:inline;" onsubmit="localStorage.clear();">
-        <button type="submit">로그아웃</button>
-      </form>
-    <% } %>
-  </div>
-</header>
 
 <!-- 🔹 검색창 --> 
-<section class="search-section">
-  <form action="/book/search/results" method="GET" style="display: flex; gap: 10px; align-items: center;">
+  <form action="/book/search/results" method="GET" class="search-bar">
     <input type="text" name="keyword" placeholder="검색어 입력" required />
 
     <label for="searchTarget">검색 대상:</label>
@@ -48,20 +35,31 @@
     <input type="hidden" name="pageNo" value="1" />
     <button type="submit" class="search-btn" >🔍</button>
   </form>
-</section>
 
+  <div class="auth-buttons">
+    <% if (!user) { %>
+      <a href="/mypage/login.html">로그인</a>
+      <a href="/mypage/signUp.html">회원가입</a>
+    <% } else { %>
+      <a href="/mypage/editInfo.html"><%= user.nickname %>님</a>
+      <form action="/logout" method="POST" style="display:inline;" onsubmit="localStorage.clear();">
+        <button type="submit">로그아웃</button>
+      </form>
+    <% } %>
+  </div>
+</header>
 
-<!-- 🔹 메뉴바 -->
-<nav class="main-menu">
-  <a href="/community/communityList">커뮤니티</a>
-  <a href="/bookReview">도서 리뷰</a>
-  <a href="/library/librarySrch">도서관 리뷰</a>
-  <a href="/library/librarySrch">도서관 찾기</a>
-</nav>
+  <nav class="main-menu">
+    <a href="/popular">인기 도서</a>
+    <a href="/trending">대출 급상승 도서</a>
+    <a href="/community/communityList">커뮤니티</a>
+    <a href="/bookReview">도서 후기</a>
+    <a href="/library/librarySrch">도서관 찾기</a>
+  </nav>
 
   <!-- 🔹 본문 콘텐츠 -->
   <main class="content">
     <%- body %>
-  </main>
+  </main
 </body>
 </html>

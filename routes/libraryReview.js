@@ -6,6 +6,16 @@ router.get('/libraryReview', async (req, res) => {
   const libname = req.query.name;
 
   try {
+    //  도서관 기본 정보 가져오기
+    const [libInfoRows] = await db.query(
+      `SELECT * FROM library WHERE name = ?`, [libname]
+    );
+
+    if (libInfoRows.length === 0) {
+      return res.status(404).send('해당 도서관 정보를 찾을 수 없습니다.');
+    }
+
+    const libInfo = libInfoRows[0];
     // 리뷰 조회
     const [libraryReviews] = await db.query(
       `SELECT lr.review_id, lr.rating, library.name, u.nickname AS user_nickname
@@ -17,6 +27,8 @@ router.get('/libraryReview', async (req, res) => {
   
 
     res.render('library/libraryReview', {
+      libraryName: libInfo.name,
+      libInfo,
       libraryReviews
     });
   } catch (err) {
