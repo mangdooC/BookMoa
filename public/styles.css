@@ -37,12 +37,14 @@ body {
   gap: 12px;
   background-color: transparent;
   margin-bottom: 20px;
+  margin-top: 20px;
 }
 .auth-buttons {
   display: flex;
   gap: 10px;
   justify-self: end;
   align-items: center;
+  margin-right: -740px;
 }
 
 .main-menu a,
