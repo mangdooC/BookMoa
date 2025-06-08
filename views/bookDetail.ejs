@@ -305,7 +305,7 @@
   <form method="get" action="/book/<%= book.isbn13 %>" class="sort-form">
     <select name="sort" onchange="this.form.submit()">
       <option value="recent" <%= sort === 'recent' ? 'selected' : '' %>>최신순</option>
-      <option value="popular" <%= sort === 'popular' ? 'selected' : '' %>>인기순</option>
+      <option value="popular" <%= sort === 'popular' ? 'selected' : '' %>>별점순</option>
     </select>
     <input type="hidden" name="page" value="<%= page %>">
   </form>
