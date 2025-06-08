@@ -48,19 +48,6 @@
     <button type="submit" class="search-btn" >🔍</button>
   </form>
 
-  <div class="auth-buttons">
-    <% if (!user) { %>
-      <a href="/mypage/login.html">로그인</a>
-      <a href="/mypage/signUp.html">회원가입</a>
-    <% } else { %>
-      <a href="/mypage/editInfo.html"><%= user.nickname %>님</a>
-      <form action="/logout" method="POST" style="display:inline;" onsubmit="localStorage.clear();">
-        <button type="submit">로그아웃</button>
-      </form>
-    <% } %>
-  </div>
-</header>
-
   <nav class="main-menu">
     <a href="/popular">인기 도서</a>
     <a href="/trending">대출 급상승 도서</a>
