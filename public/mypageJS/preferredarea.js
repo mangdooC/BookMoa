@@ -38,9 +38,38 @@ async function savePreferredAddresses() {
     }
 
     alert('선호지역이 성공적으로 저장되었습니다.');
-    location.reload();
+    window.location.href = '/mypage?tab=preferred';
 
   } catch (err) {
     alert('서버 오류 발생: ' + err.message);
   }
 }
+
+document.getElementById('resetFavoriteBtn').addEventListener('click', async () => {
+  if (!confirm('선호지역을 초기화하시겠습니까?')) return;
+
+  try {
+    const res = await fetch('/preferred-area/reset', {
+      method: 'DELETE',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+
+    const data = await res.json();
+
+    if (res.ok) {
+      alert(data.message);
+      // 초기화 성공하면 화면 갱신하거나 input 비워주기
+      document.getElementById('region_level1').value = '';
+      document.getElementById('region_level2').value = '';
+      document.getElementById('region_level3').value = '';
+    } else {
+      alert('초기화 실패: ' + data.error);
+    }
+  } catch (err) {
+    alert('서버 통신 실패');
+    console.error(err);
+  }
+});
+

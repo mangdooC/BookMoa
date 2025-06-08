@@ -17,7 +17,6 @@ const storage = multer.diskStorage({
   },
   filename(req, file, cb) {
     const ext = path.extname(file.originalname).toLowerCase();
-    // 유저 아이디 + 현재 타임스탬프로 중복 방지 + 확장자
     cb(null, req.user.user_id + '_' + Date.now() + ext);
   }
 });
@@ -90,6 +89,24 @@ router.put('/update-info', authMiddleware, async (req, res) => {
 
     if (!nickname) return res.status(400).json({ error: '닉네임은 필수입니다.' });
 
+    // 현재 비번 해시 가져오기
+    const [userRows] = await pool.query(
+      `SELECT password FROM user WHERE user_id = ? AND is_deleted = 0`,
+      [user_id]
+    );
+
+    if (userRows.length === 0) return res.status(404).json({ error: '유저를 찾을 수 없습니다.' });
+
+    const currentHashedPassword = userRows[0].password;
+
+    // 비밀번호 바꾸려면
+    if (password) {
+      const isSame = await bcrypt.compare(password, currentHashedPassword);
+      if (isSame) {
+        return res.status(400).json({ error: '현재 사용 중인 비밀번호와 같습니다.' });
+      }
+    }
+
     let query = `UPDATE user SET nickname = ?, address = ?`;
     const params = [nickname, address];
 
@@ -130,6 +147,53 @@ router.get('/profile', authMiddleware, async (req, res) => {
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: '프로필 불러오기 실패' });
+  }
+});
+
+// 유저 정보 초기화 (닉네임, 주소, 프로필 이미지 등 기본값으로 리셋)
+router.delete('/reset', authMiddleware, async (req, res) => {
+  try {
+    const userId = req.user.user_id;
+
+    // users 테이블 정보 초기화
+    await pool.query(
+      `UPDATE user SET nickname = 'USER', address = NULL WHERE user_id = ?`,
+      [userId]
+    );
+
+    // image 테이블에서 프로필 이미지 삭제 혹은 상태 업데이트
+    await pool.query(
+      `DELETE FROM image WHERE user_id = ? AND image_type = 'profile'`,
+      [userId]
+    );
+
+    return res.json({ message: '유저 정보가 초기화되었습니다.' });
+  } catch (error) {
+    console.error('resetUserInfo 에러:', error);
+    return res.status(500).json({ error: '서버 오류 발생' });
+  }
+});
+
+// 닉네임 중복 체크 API
+router.post('/check-nickname', authMiddleware, async (req, res) => {
+  try {
+    const { nickname } = req.body;
+    if (!nickname) return res.status(400).json({ error: '닉네임을 입력하세요.' });
+
+    const [rows] = await pool.query(
+      `SELECT user_id FROM user WHERE nickname = ? AND is_deleted = 0`,
+      [nickname]
+    );
+
+    // 자기 닉네임이면 중복 아님 처리
+    if (rows.length === 0 || (rows.length === 1 && rows[0].user_id === req.user.user_id)) {
+      return res.json({ available: true, message: '사용 가능한 닉네임입니다.' });
+    }
+
+    res.json({ available: false, message: '이미 사용 중인 닉네임입니다.' });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: '닉네임 중복 검사 실패' });
   }
 });
 

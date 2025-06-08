@@ -5,7 +5,7 @@ const authMiddleware = require('../middlewares/authMiddleware');
 
 router.use(authMiddleware);
 
-// 선호지역 조회
+// 선호지역 조회 API (json으로 응답)
 router.get('/', async (req, res) => {
   try {
     const userId = req.user.user_id;
@@ -39,22 +39,14 @@ router.get('/', async (req, res) => {
     if (region_level2) preferred_areas.push({ region_name: region_level2, region_level: 2 });
     if (region_level3) preferred_areas.push({ region_name: region_level3, region_level: 3 });
 
-    return res.render('mypage', {
-      preferred_areas,
-      message: null,
-      error: null
-    });
+    return res.json({ preferred_areas });
   } catch (error) {
     console.error('getPreferredAreas 에러:', error);
-    return res.status(500).render('mypage', {
-      preferred_areas: [],
-      message: null,
-      error: '서버 오류 발생'
-    });
+    return res.status(500).json({ error: '서버 오류 발생' });
   }
 });
 
-// 선호지역 수정
+// 선호지역 수정 API (json or redirect)
 router.post('/update', async (req, res) => {
   try {
     const userId = req.user.user_id;
@@ -65,11 +57,7 @@ router.post('/update', async (req, res) => {
     region_level3 = region_level3?.trim().substring(0, 20) || null;
 
     if (![region_level1, region_level2, region_level3].some(Boolean)) {
-      return res.status(400).render('mypage', {
-        preferred_areas: [],
-        message: null,
-        error: '최소 한 개 이상의 선호지역을 입력하세요.'
-      });
+      return res.status(400).json({ error: '최소 한 개 이상의 선호지역을 입력하세요.' });
     }
 
     const [rows] = await pool.query(
@@ -89,23 +77,24 @@ router.post('/update', async (req, res) => {
       );
     }
 
-    const preferred_areas = [];
-    if (region_level1) preferred_areas.push({ region_name: region_level1, region_level: 1 });
-    if (region_level2) preferred_areas.push({ region_name: region_level2, region_level: 2 });
-    if (region_level3) preferred_areas.push({ region_name: region_level3, region_level: 3 });
-
-    return res.render('mypage', {
-      preferred_areas,
-      message: '선호지역이 성공적으로 업데이트 되었습니다.',
-      error: null
-    });
+    return res.json({ message: '선호지역이 성공적으로 업데이트되었습니다.' });
   } catch (error) {
     console.error('updatePreferredArea 에러:', error);
-    return res.status(500).render('mypage', {
-      preferred_areas: [],
-      message: null,
-      error: '서버 오류 발생'
-    });
+    return res.status(500).json({ error: '서버 오류 발생' });
+  }
+});
+
+// 선호지역 초기화 API
+router.delete('/reset', async (req, res) => {
+  try {
+    const userId = req.user.user_id;
+
+    await pool.query('DELETE FROM preferred_region WHERE user_id = ?', [userId]);
+
+    return res.json({ message: '선호지역이 초기화되었습니다.' });
+  } catch (error) {
+    console.error('resetPreferredArea 에러:', error);
+    return res.status(500).json({ error: '서버 오류 발생' });
   }
 });
 

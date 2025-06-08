@@ -3,20 +3,55 @@ const router = express.Router();
 const authMiddleware = require('../middlewares/authMiddleware');
 const pool = require('../db');
 
-router.delete('/delete', authMiddleware, async (req, res) => {
+router.delete('/delete/:type/:id', authMiddleware, async (req, res) => {
   try {
     const user_id = req.user.user_id;
+    const { type, id } = req.params;
 
-    // 내가 작성한 댓글 먼저 삭제
-    await pool.query('DELETE FROM comment WHERE user_id = ?', [user_id]);
+    if (!['post', 'comment'].includes(type)) {
+      return res.status(400).json({ error: '유효하지 않은 삭제 타입입니다' });
+    }
 
-    // 내가 작성한 글 삭제
-    await pool.query('DELETE FROM post WHERE user_id = ?', [user_id]);
+    if (type === 'post') {
+      // 게시글에 댓글이 있는지 확인
+      const [comments] = await pool.query(
+        'SELECT 1 FROM community_comment WHERE post_id = ? LIMIT 1',
+        [id]
+      );
 
-    res.status(200).send('작성한 글/댓글 삭제 완료');
+      if (comments.length > 0) {
+        return res.status(400).json({ error: '댓글이 있는 글은 삭제할 수 없습니다.' });
+      }
+
+      // 댓글 없으면 게시글 삭제 시도
+      const [result] = await pool.query(
+        'DELETE FROM community_post WHERE post_id = ? AND user_id = ?',
+        [id, user_id]
+      );
+
+      if (result.affectedRows === 0) {
+        return res.status(404).json({ error: '삭제할 항목이 없거나 권한이 없습니다' });
+      }
+
+      return res.status(200).json({ message: 'post 삭제 완료' });
+
+    } else if (type === 'comment') {
+      // 댓글 삭제
+      const [result] = await pool.query(
+        'DELETE FROM community_comment WHERE comment_id = ? AND user_id = ?',
+        [id, user_id]
+      );
+
+      if (result.affectedRows === 0) {
+        return res.status(404).json({ error: '삭제할 항목이 없거나 권한이 없습니다' });
+      }
+
+      return res.status(200).json({ message: 'comment 삭제 완료' });
+    }
+
   } catch (err) {
     console.error(err);
-    res.status(500).send('서버 오류');
+    return res.status(500).json({ error: '서버 오류' });
   }
 });
 

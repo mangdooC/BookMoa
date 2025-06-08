@@ -31,6 +31,7 @@ const upload = multer({ storage: storage });
 
 // 정적 파일 제공
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+app.use('/mypage/images', express.static(path.join(__dirname, 'public/mypage/images')));
 app.use(express.static(path.join(__dirname, 'public')));
 
 // 뷰 엔진 세팅
@@ -167,12 +168,12 @@ const favoritesRouter = require('./routes/favorites');
 app.use('/mypage/favorites', favoritesRouter);
 
 // 마이페이지에서 내가 작성한 글/댓글/리뷰 조회
-const userContentRouter = require('./routes/mypageGet');
-app.use('/mypage/content', userContentRouter);
+const mypageGetRouter = require('./routes/mypageGet');
+app.use('/mypage', mypageGetRouter);
 
-// 내가 작성한 글/댓글 삭제
-const userDeleteRouter = require('./routes/mypageDelete');
-app.use('/mypage/delete', userDeleteRouter);
+// 마이페이지에서 내가 작성한 글/댓글 삭제
+const mypageDelRouter = require('./routes/mypageDelete');
+app.use('/mypage', mypageDelRouter);
 
 
 
@@ -183,6 +184,10 @@ app.use('/mypage/delete', userDeleteRouter);
 // 커뮤니티
 const communityRouter = require('./routes/community');
 app.use('/community', communityRouter);
+
+// 커뮤니티 댓글
+const commentsRouter = require('./routes/comments');
+app.use('/comments', commentsRouter);
 
 // 커뮤니티(인기)
 const popularRoute = require('./routes/popularRoute');

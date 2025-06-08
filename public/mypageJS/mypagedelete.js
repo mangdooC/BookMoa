@@ -1,28 +1,21 @@
 document.addEventListener('DOMContentLoaded', () => {
-  // 삭제 버튼들만 선택 (data-delete-btn 붙은 것만)
+  // data-delete-btn 붙은 삭제 버튼들만 선택
   const deleteButtons = document.querySelectorAll('button[data-delete-btn]');
 
   deleteButtons.forEach(button => {
     button.addEventListener('click', async (e) => {
       e.preventDefault();
 
-      if (!confirm('정말 삭제할까요?')) return;
+      if (!confirm('삭제 하시겠습니까?')) return;
 
       const form = button.closest('form');
       const action = form.action;
-      const method = form.method.toUpperCase();
-
-      const fetchOptions = {
-        method,
-        headers: { 'Content-Type': 'application/json' }
-      };
-
-      if (method === 'POST' || method === 'PUT' || method === 'PATCH') {
-        fetchOptions.body = JSON.stringify({});
-      }
 
       try {
-        const res = await fetch(action, fetchOptions);
+        const res = await fetch(action, {
+          method: 'DELETE', // 무조건 DELETE로 고정
+          headers: { 'Content-Type': 'application/json' }
+        });
 
         if (!res.ok) {
           const data = await res.json().catch(() => ({}));
@@ -30,7 +23,7 @@ document.addEventListener('DOMContentLoaded', () => {
           return;
         }
 
-        // 성공 시 해당 li 삭제
+        // 성공하면 해당 li 태그 제거
         const li = form.closest('li');
         if (li) li.remove();
 

@@ -1,15 +1,15 @@
 const jwt = require('jsonwebtoken');
 
 function authMiddleware(req, res, next) {
-  const token = req.cookies?.token || req.headers.authorization?.split(' ')[1];
+  const token = req.cookies?.token;
 
   if (!token) {
-    return res.status(401).send('로그인 필요');
+    return res.status(401).json({ error: '토큰 없음' });
   }
 
   if (!process.env.JWT_SECRET) {
     console.error('JWT_SECRET 설정 안됨');
-    return res.status(500).send('서버 설정 오류');
+    return res.status(500).json({ error: '서버 설정 오류' });
   }
 
   try {
@@ -18,7 +18,7 @@ function authMiddleware(req, res, next) {
     next();
   } catch (err) {
     console.error('JWT 검증 실패:', err.message);
-    return res.status(401).json({ error: '로그인 필요' });
+    return res.status(401).json({ error: '유효하지 않은 토큰' });
   }
 }
 
