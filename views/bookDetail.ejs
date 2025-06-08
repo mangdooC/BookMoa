@@ -134,10 +134,12 @@
       list-style: none;
       padding: 0;
       margin: 20px 0;
+      display: block;
     }
 
     .library-item {
       background-color: #fff6ef;
+      width: 100;
       padding: 16px;
       margin-bottom: 12px;
       border-radius: 12px;
@@ -305,7 +307,7 @@
   <form method="get" action="/book/<%= book.isbn13 %>" class="sort-form">
     <select name="sort" onchange="this.form.submit()">
       <option value="recent" <%= sort === 'recent' ? 'selected' : '' %>>최신순</option>
-      <option value="popular" <%= sort === 'popular' ? 'selected' : '' %>>인기순</option>
+      <option value="popular" <%= sort === 'popular' ? 'selected' : '' %>>별점순</option>
     </select>
     <input type="hidden" name="page" value="<%= page %>">
   </form>
