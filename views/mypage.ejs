@@ -566,23 +566,24 @@
 
     <!-- 커뮤니티 댓글 -->
     <div class="post-category">
-      <h3>💬 커뮤니티 댓글</h3>
-      <ul id="communityCommentList">
-        <% if(comments && comments.length > 0) { %>
-          <% comments.forEach(comment => { %>
-            <li>
-              <p><%= comment.content %></p>
-              <small><%= new Date(comment.created_at).toLocaleString() %></small><br />
-              <a href="/post/<%= comment.post_id %>">▶ 해당 글로 이동 (<%= comment.post_title %>)</a><br />
-              <form action="/mypage/delete/comment/<%= comment.comment_id %>" method="POST" style="display:inline;">
+    <h3>💬 커뮤니티 댓글</h3>
+    <ul id="communityCommentList">
+        <% if (comments && comments.length > 0) { %>
+        <% comments.forEach(comment => { %>
+            <li style="margin-bottom: 15px;">
+            <p><%= comment.content %></p>
+            <small><%= new Date(comment.created_at).toLocaleString() %></small><br />
+            <a href="/community/post/<%= comment.post_id %>" style="color:blue; text-decoration:underline;">
+                ▶ 해당 글로 이동 </a><br />
+            <form action="/mypage/delete/comment/<%= comment.comment_id %>" method="POST" style="display:inline;">
                 <button type="submit" data-delete-btn>삭제</button>
-              </form>
+            </form>
             </li>
-          <% }) %>
+        <% }) %>
         <% } else { %>
-          <li>작성한 댓글이 없습니다.</li>
+        <li>작성한 댓글이 없습니다.</li>
         <% } %>
-      </ul>
+    </ul>
     </div>
   </section>
 </div>
