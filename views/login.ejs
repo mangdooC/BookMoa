@@ -3,70 +3,68 @@
 <head>
   <meta charset="UTF-8" />
   <title><%= title || "로그인" %></title>
-    <style>
-      .login-wrapper {
-        position: absolute;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        background: white;
-        border-radius: 15px;
-        box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-        padding: 60px 80px;
-        width: 400px;
-        box-sizing: border-box;
-        text-align: center;
-        z-index: 1;
-        margin-top: 70px;
-      }
+  <style>
+    .login-wrapper {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: white;
+      border-radius: 15px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+      padding: 60px 80px;
+      width: 400px;
+      box-sizing: border-box;
+      text-align: center;
+      z-index: 1;
+      margin-top: 70px;
+    }
 
-      .login-wrapper h1 {
-        font-size: 32px;
-        margin-bottom: 40px;
-        font-weight: 700;
-      }
+    .login-wrapper h1 {
+      font-size: 32px;
+      margin-bottom: 40px;
+      font-weight: 700;
+    }
 
-      .login-wrapper form input {
-        width: 100%;
-        padding: 15px;
-        margin-bottom: 25px;
-        border: 1px solid #000;
-        border-radius: 20px;
-        box-shadow: 0 4px 4px rgba(0,0,0,0.25);
-        font-size: 16px;
-        font-weight: 600;
-        box-sizing: border-box;
-      }
+    .login-wrapper form input {
+      width: 100%;
+      padding: 15px;
+      margin-bottom: 25px;
+      border: 1px solid #000;
+      border-radius: 20px;
+      box-shadow: 0 4px 4px rgba(0,0,0,0.25);
+      font-size: 16px;
+      font-weight: 600;
+      box-sizing: border-box;
+    }
 
-      .login-wrapper form button {
-        width: 100%;
-        padding: 15px 0;
-        background: #FFC1A9;
-        border: 1px solid #000;
-        border-radius: 15px;
-        font-size: 18px;
-        font-weight: 700;
-        cursor: pointer;
-        transition: background 0.3s;
-      }
+    .login-wrapper form button {
+      width: 100%;
+      padding: 15px 0;
+      background: #FFC1A9;
+      border: 1px solid #000;
+      border-radius: 15px;
+      font-size: 18px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
 
-      .login-wrapper form button:hover {
-        background: #FFA07A;
-      }
+    .login-wrapper form button:hover {
+      background: #FFA07A;
+    }
 
-      .error-msg {
-        color: red;
-        margin-bottom: 15px;
-        font-weight: 700;
-      }
-    </style>
+    .error-msg {
+      color: red;
+      margin-bottom: 15px;
+      font-weight: 700;
+    }
+  </style>
 </head>
 <body>
   <div class="login-wrapper">
     <h1>로그인</h1>
-    <% if (typeof errorMsg !== 'undefined' && errorMsg) { %>
-      <div class="error-msg"><%= errorMsg %></div>
-    <% } %>
+
     <form id="loginForm" action="/auth/login" method="POST">
       <input
         type="text"
@@ -81,48 +79,64 @@
         name="password"
         placeholder="비밀번호"
         required
+        id="password"
       />
+
+      <!-- 에러 메시지 위치: 비번 input 바로 아래 -->
+      <div id="errorMsg" class="error-msg" style="display: none;"></div>
+
       <button type="submit">로그인</button>
     </form>
   </div>
-</body>
-</html>
 
-<script>
-  const loginForm = document.getElementById("loginForm");
+  <script>
+    const loginForm = document.getElementById("loginForm");
+    const errorDiv = document.getElementById("errorMsg");
 
-  loginForm.addEventListener("submit", async (e) => {
-    e.preventDefault();
-
-    const formData = new FormData(loginForm);
-    const user_id = formData.get("user_id").trim();
-    const password = formData.get("password").trim();
-
-    if (!user_id || !password) {
-      alert("아이디/비번을 확인하세요. ");
-      return;
+    function showError(message) {
+      errorDiv.innerText = message;
+      errorDiv.style.display = "block";
     }
 
-    try {
-      const res = await fetch("/auth/login", {
-        method: "POST",
-        credentials: "include",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ user_id, password }),
-      });
+    loginForm.addEventListener("submit", async (e) => {
+      e.preventDefault();
+
+      const formData = new FormData(loginForm);
+      const user_id = formData.get("user_id").trim();
+      const password = formData.get("password").trim();
+
+      if (!user_id || !password) {
+        showError("아이디/비번을 확인하세요.");
+        return;
+      }
+
+      try {
+        const res = await fetch("/auth/login", {
+          method: "POST",
+          credentials: "include",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ user_id, password }),
+        });
 
       if (res.redirected) {
-        // 서버가 리다이렉트 시킨 URL로 이동
         window.location.href = res.url;
       } else {
-        // 실패 시엔 ejs 렌더링한 로그인 페이지가 오니까 텍스트로 읽어도 의미없음
-        alert("로그인 실패: 아이디/비번을 확인하세요.");
+        const data = await res.json().catch(() => null);
+        if (data && data.success && data.redirectUrl) {
+          window.location.href = data.redirectUrl;
+        } else if (data && data.error) {
+          showError(`로그인 실패: ${data.error}`);
+        } else {
+          showError("로그인 실패: 아이디/비번을 확인하세요.");
+        }
       }
-    } catch (err) {
-      console.error("로그인 중 에러:", err);
-      alert("서버 통신 에러 발생");
-    }
-  });
-</script>
+      } catch (err) {
+        console.error("로그인 중 에러:", err);
+        showError("서버 통신 에러 발생");
+      }
+    });
+  </script>
+</body>
+</html>

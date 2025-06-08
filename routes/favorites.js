@@ -1,34 +1,13 @@
 const express = require('express');
 const router = express.Router();
-const pool = require('../db'); // mysql2 pool
+const pool = require('../db');
 
-// 즐겨찾기 목록 조회 (마이페이지에서 렌더링할 때 사용)
-router.get('/', async (req, res) => {
-  try {
-    const userId = req.session.userId;
-    if (!userId) return res.redirect('/login');
-
-    const [favorite] = await pool.query(
-      `SELECT l.library_id, l.name, l.address, l.website
-       FROM favorite_library fl
-       JOIN library l ON fl.library_id = l.library_id
-       WHERE fl.user_id = ?`,
-      [userId]
-    );
-
-    res.render('mypage', { favorite }); 
-  } catch (err) {
-    console.error(err);
-    res.status(500).send('서버 에러');
-  }
-});
-
-// 즐겨찾기 도서관 추가 (도서관 이름으로 검색해서 추가)
+// POST /mypage/favorites/add 즐겨찾기 도서관 추가
 router.post('/add', async (req, res) => {
   try {
     const userId = req.session.userId;
     const { libraryName } = req.body;
-    if (!userId) return res.status(401).json({ error: '로그인 필요합니다.' });
+    if (!userId) return res.status(401).json({ error: '로그인이 필요합니다.' });
     if (!libraryName) return res.status(400).json({ error: '도서관 이름을 입력하세요.' });
 
     // 이름으로 도서관 정보 찾기
@@ -53,7 +32,6 @@ router.post('/add', async (req, res) => {
       [userId, library.library_id]
     );
 
-    // 추가한 도서관 정보 넘겨줌
     res.json({ success: true, library });
   } catch (err) {
     console.error(err);
@@ -61,12 +39,12 @@ router.post('/add', async (req, res) => {
   }
 });
 
-// 즐겨찾기 도서관 삭제 (libraryId로 삭제)
+// DELETE /mypage/favorites/remove 즐겨찾기 도서관 삭제
 router.delete('/remove', async (req, res) => {
   try {
     const userId = req.session.userId;
     const { libraryId } = req.body;
-    if (!userId) return res.status(401).json({ error: '로그인 필요합니다.' });
+    if (!userId) return res.status(401).json({ error: '로그인이 필요합니다.' });
     if (!libraryId) return res.status(400).json({ error: '도서관 ID를 입력하세요.' });
 
     await pool.query(

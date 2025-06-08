@@ -5,7 +5,7 @@
   `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   `is_deleted` tinyint(1) DEFAULT '0',
-  `address` varchar(255) NULL,
+  `address` varchar(255) DEFAULT NULL,
   PRIMARY KEY (`user_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
@@ -22,14 +22,14 @@ CREATE TABLE `book` (
 ) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 CREATE TABLE `library` (
-  `library_id` int NOT NULL AUTO_INCREMENT,
-  `name` varchar(50) NOT NULL,
-  `address` varchar(100) NOT NULL,
-  `latitude` decimal(10,7) DEFAULT NULL,
-  `longitude` decimal(10,7) DEFAULT NULL,
-  `website` varchar(255) DEFAULT NULL,
-  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
-  PRIMARY KEY (`library_id`)
+  `name` varchar(255) DEFAULT NULL,
+  `address` text,
+  `phone` varchar(50) DEFAULT NULL,
+  `latitude` double DEFAULT NULL,
+  `longitude` double DEFAULT NULL, 
+  `homepage` varchar(255) DEFAULT NULL,
+  `lib_code` int NOT NULL,
+  PRIMARY KEY (`lib_code`)
 ) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 CREATE TABLE `community_post` (
@@ -68,8 +68,7 @@ CREATE TABLE `library_book_inventory` (
   PRIMARY KEY (`inventory_id`),
   KEY `book_id` (`book_id`),
   KEY `library_id` (`library_id`),
-  CONSTRAINT `library_book_inventory_ibfk_1` FOREIGN KEY (`book_id`) REFERENCES `book` (`book_id`),
-  CONSTRAINT `library_book_inventory_ibfk_2` FOREIGN KEY (`library_id`) REFERENCES `library` (`library_id`)
+  CONSTRAINT `library_book_inventory_ibfk_1` FOREIGN KEY (`book_id`) REFERENCES `book` (`book_id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 CREATE TABLE `library_review` (
@@ -83,7 +82,6 @@ CREATE TABLE `library_review` (
   KEY `user_id` (`user_id`),
   KEY `library_id` (`library_id`),
   CONSTRAINT `library_review_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `user` (`user_id`),
-  CONSTRAINT `library_review_ibfk_2` FOREIGN KEY (`library_id`) REFERENCES `library` (`library_id`),
   CONSTRAINT `library_review_chk_1` CHECK ((`rating` between 0 and 5))
 ) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
@@ -92,8 +90,7 @@ CREATE TABLE `favorite_library` (
   `library_id` int NOT NULL,
   PRIMARY KEY (`user_id`,`library_id`),
   KEY `library_id` (`library_id`),
-  CONSTRAINT `favorite_library_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `user` (`user_id`),
-  CONSTRAINT `favorite_library_ibfk_2` FOREIGN KEY (`library_id`) REFERENCES `library` (`library_id`)
+  CONSTRAINT `favorite_library_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `user` (`user_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 CREATE TABLE `preferred_region` (
@@ -121,11 +118,11 @@ CREATE TABLE `community_comment` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 CREATE TABLE `image` (
-  `image_id` INT NOT NULL AUTO_INCREMENT,
-  `post_id` INT DEFAULT NULL,
-  `user_id` VARCHAR(20) DEFAULT NULL,
-  `image_url` VARCHAR(255) NOT NULL,
-  `image_type` ENUM('post', 'profile') NOT NULL DEFAULT 'post',
+  `image_id` int NOT NULL AUTO_INCREMENT,
+  `post_id` int DEFAULT NULL,
+  `user_id` varchar(20) DEFAULT NULL,
+  `image_url` varchar(255) NOT NULL,
+  `image_type` enum('post','profile') NOT NULL DEFAULT 'post',
   PRIMARY KEY (`image_id`),
   KEY `post_id` (`post_id`),
   KEY `user_id` (`user_id`),

@@ -1,252 +1,124 @@
 const express = require('express');
-const router = express.Router();
 const multer = require('multer');
 const path = require('path');
-const fs = require('fs');
-const fsPromises = require('fs').promises;
 const bcrypt = require('bcrypt');
+const fs = require('fs');
+const router = express.Router();
 const pool = require('../db');
+const getUserProfile = require('./utils/getUserProfile');
 const authMiddleware = require('../middlewares/authMiddleware');
 
-const IMAGE_MIMES = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
-const uploadDir = path.join(__dirname, '..', 'uploads', 'profile');
-if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir, { recursive: true });
-
+// 업로드 저장 경로랑 파일명 지정
 const storage = multer.diskStorage({
-  destination: (req, file, cb) => cb(null, uploadDir),
-  filename: (req, file, cb) => {
-    const ext = path.extname(file.originalname).toLowerCase();
-    const uniqueName = `profile_${Date.now()}_${Math.round(Math.random() * 1e9)}${ext}`;
-    cb(null, uniqueName);
+  destination(req, file, cb) {
+    const uploadPath = path.join(__dirname, '../uploads/profile');
+    if (!fs.existsSync(uploadPath)) {
+      fs.mkdirSync(uploadPath, { recursive: true });
+    }
+    cb(null, uploadPath);
   },
+  filename(req, file, cb) {
+    const ext = path.extname(file.originalname);
+    cb(null, req.user.user_id + ext);
+  }
 });
 
-const fileFilter = (req, file, cb) => {
-  if (IMAGE_MIMES.includes(file.mimetype)) cb(null, true);
-  else cb(new Error('지원하지 않는 파일 형식입니다.'), false);
-};
-
-const upload = multer({ storage, fileFilter, limits: { fileSize: 5 * 1024 * 1024 } });
-
-const defaultProfileImage = '/mypage/images/default.jpg';
-
-async function getUserProfileData(userId) {
-  const [userRows] = await pool.query(
-    'SELECT nickname, address FROM user WHERE user_id = ? AND is_deleted = 0',
-    [userId]
-  );
-  if (userRows.length === 0) return null;
-
-  const [imageRows] = await pool.query(
-    "SELECT image_url FROM image WHERE user_id = ? AND image_type = 'profile' ORDER BY image_id DESC LIMIT 1",
-    [userId]
-  );
-
-  let profileImage;
-  if (imageRows.length > 0) {
-    const imgPath = path.join(__dirname, '..', imageRows[0].image_url.replace(/^\//, ''));
-    try {
-      await fsPromises.access(imgPath);
-      profileImage = imageRows[0].image_url;
-    } catch {
-      profileImage = defaultProfileImage;
+const upload = multer({
+  storage,
+  fileFilter(req, file, cb) {
+    const ext = path.extname(file.originalname).toLowerCase();
+    if (!['.jpg', '.jpeg', '.png', '.gif'].includes(ext)) {
+      return cb(new Error('이미지 파일만 업로드 가능합니다.'));
     }
-  } else {
-    profileImage = defaultProfileImage;
-  }
+    cb(null, true);
+  },
+  limits: { fileSize: 5 * 1024 * 1024 },
+});
 
-  return {
-    nickname: userRows[0].nickname,
-    address: userRows[0].address,
-    profileImage,
-  };
-}
-
-// 마이페이지 GET
-router.get('/', authMiddleware, async (req, res) => {
+// 👉 프로필 이미지 업로드
+router.post('/user/upload-profile-image', authMiddleware, upload.single('profileImage'), async (req, res) => {
   try {
-    const userId = req.user.user_id;
-    const userData = await getUserProfileData(userId);
-    if (!userData) return res.redirect('/login');
+    if (!req.file) return res.status(400).json({ error: '파일이 없습니다.' });
 
-    res.render('mypage', {
-      error: null,
-      nickname: userData.nickname,
-      address: userData.address,
-      profileImage: userData.profileImage,
-      inputValues: {},
-    });
+    const user_id = req.user.user_id;
+
+    // 기존 이미지 경로 가져오기
+    const [oldImageRows] = await pool.query(
+      `SELECT image_url FROM image WHERE user_id = ? AND image_type = 'profile' ORDER BY created_at DESC LIMIT 1`,
+      [user_id]
+    );
+
+    // 기존 이미지 삭제
+    if (oldImageRows.length && oldImageRows[0].image_url !== '/mypage/images/default.jpg') {
+      const oldPath = path.join(__dirname, '../', oldImageRows[0].image_url);
+      if (fs.existsSync(oldPath)) fs.unlinkSync(oldPath);
+    }
+
+    // 새 이미지 경로 저장
+    const profileImagePath = `/uploads/profile/${req.file.filename}`;
+    await pool.query(
+      `INSERT INTO image (user_id, image_url, image_type, created_at)
+       VALUES (?, ?, 'profile', NOW())`,
+      [user_id, profileImagePath]
+    );
+
+    res.json({ message: '프로필 이미지가 변경되었습니다.', profileImage: profileImagePath });
   } catch (err) {
-    console.error('mypage GET 에러:', err);
-    res.status(500).send('서버 에러');
+    console.error(err);
+    res.status(500).json({ error: '서버 오류 발생' });
   }
 });
 
-// 마이페이지 정보 수정 POST
-router.post('/update', authMiddleware, async (req, res) => {
+// 👉 내 정보 수정
+router.put('/user/update-info', authMiddleware, async (req, res) => {
   try {
-    const userId = req.user.user_id;
-    let { password, nickname, address } = req.body;
+    const { password, nickname, address } = req.body;
+    const user_id = req.user.user_id;
 
-    password = password?.trim();
-    nickname = nickname?.trim();
-    address = address?.trim();
+    if (!nickname) return res.status(400).json({ error: '닉네임은 필수입니다.' });
 
-    const fields = [];
-    const values = [];
+    let query = `UPDATE user SET nickname = ?, address = ?`;
+    const params = [nickname, address];
 
-    // 비밀번호 유효성 검사 및 해시화
     if (password) {
-      // 특수문자 & 이스케이프 처리함
-      const pwRegex = /^[a-zA-Z0-9!@#$%^&*]{4,12}$/;
-      if (!pwRegex.test(password)) {
-        const userData = await getUserProfileData(userId);
-        return res.render('mypage', {
-          error: '비밀번호 형식이 잘못됨',
-          nickname: userData.nickname,
-          address: userData.address,
-          profileImage: userData.profileImage,
-          inputValues: { nickname, address },
-        });
-      }
-      const hashedPassword = await bcrypt.hash(password, 10);
-      fields.push('password = ?');
-      values.push(hashedPassword);
+      const salt = await bcrypt.genSalt(10);
+      const hashed = await bcrypt.hash(password, salt);
+      query += `, password = ?`;
+      params.push(hashed);
     }
 
-    // 닉네임 중복 확인
-    if (nickname) {
-      const [exist] = await pool.query(
-        'SELECT user_id FROM user WHERE LOWER(nickname) = LOWER(?) AND user_id != ? AND is_deleted = 0',
-        [nickname.toLowerCase(), userId]
-      );
-      if (exist.length) {
-        const userData = await getUserProfileData(userId);
-        return res.render('mypage', {
-          error: '닉네임 중복',
-          nickname: userData.nickname,
-          address: userData.address,
-          profileImage: userData.profileImage,
-          inputValues: { nickname, address },
-        });
-      }
-      fields.push('nickname = ?');
-      values.push(nickname);
-    }
+    query += ` WHERE user_id = ? AND is_deleted = 0`;
+    params.push(user_id);
 
-    if (address !== undefined) {
-      fields.push('address = ?');
-      values.push(address);
-    }
+    await pool.query(query, params);
 
-    if (fields.length > 0) {
-      values.push(userId);
-      const sql = `UPDATE user SET ${fields.join(', ')} WHERE user_id = ?`;
-      await pool.query(sql, values);
-    }
-
-    res.redirect('/mypage');
+    res.json({ message: '정보가 성공적으로 수정되었습니다.' });
   } catch (err) {
-    console.error('mypage update 에러:', err);
-    res.status(500).send('서버 에러');
+    console.error(err);
+    res.status(500).json({ error: '정보 수정 중 서버 오류 발생' });
   }
 });
 
-// 프로필 이미지 업로드
-router.post('/upload-image', authMiddleware, (req, res, next) => {
-  upload.single('profileImage')(req, res, async (err) => {
-    if (err) {
-      console.error('multer 업로드 에러:', err);
-      const userId = req.user.user_id;
-      try {
-        const userData = await getUserProfileData(userId);
-        return res.render('mypage', {
-          error: err.message || '파일 업로드 에러',
-          nickname: userData.nickname,
-          address: userData.address,
-          profileImage: userData.profileImage,
-          inputValues: {},
-        });
-      } catch (error) {
-        console.error(error);
-        return res.status(500).send('서버 에러');
-      }
-    }
-    next();
-  });
-}, async (req, res) => {
-  const conn = await pool.getConnection();
+// 👉 프로필 이미지 + 닉네임 + 주소 반환
+router.get('/user/profile', authMiddleware, async (req, res) => {
   try {
-    const userId = req.user.user_id;
-    if (!req.file) return res.redirect('/mypage');
+    const user_id = req.user.user_id;
 
-    const imageUrl = `/uploads/profile/${req.file.filename}`;
-
-    await conn.beginTransaction();
-
-    const [oldImages] = await conn.query(
-      "SELECT image_url FROM image WHERE user_id = ? AND image_type = 'profile'",
-      [userId]
+    // 기본 정보 가져오기
+    const [rows] = await pool.query(
+      `SELECT nickname, address FROM user WHERE user_id = ? AND is_deleted = 0`,
+      [user_id]
     );
 
-    for (const img of oldImages) {
-      const imgPath = path.join(__dirname, '..', img.image_url.replace(/^\//, ''));
-      try {
-        await fsPromises.unlink(imgPath);
-      } catch (err) {
-        if (err.code !== 'ENOENT') console.warn('이미지 삭제 실패:', imgPath);
-      }
-    }
+    if (rows.length === 0) return res.status(404).json({ error: '유저를 찾을 수 없습니다.' });
 
-    await conn.query("DELETE FROM image WHERE user_id = ? AND image_type = 'profile'", [userId]);
+    const { nickname, address } = rows[0];
+    const { profileImage } = await getUserProfile(user_id);
 
-    await conn.query(
-      "INSERT INTO image (user_id, image_url, image_type) VALUES (?, ?, ?)",
-      [userId, imageUrl, 'profile']
-    );
-
-    await conn.commit();
-    res.redirect('/mypage');
+    res.json({ nickname, address, profileImage });
   } catch (err) {
-    await conn.rollback();
-    console.error('프로필 이미지 업로드 에러:', err);
-    res.status(500).send('서버 에러');
-  } finally {
-    conn.release();
-  }
-});
-
-// 프로필 이미지 삭제
-router.post('/delete-image', authMiddleware, async (req, res) => {
-  const conn = await pool.getConnection();
-  try {
-    const userId = req.user.user_id;
-    await conn.beginTransaction();
-
-    const [imageRows] = await conn.query(
-      "SELECT image_url FROM image WHERE user_id = ? AND image_type = 'profile'",
-      [userId]
-    );
-
-    for (const img of imageRows) {
-      const imgPath = path.join(__dirname, '..', img.image_url.replace(/^\//, ''));
-      try {
-        await fsPromises.unlink(imgPath);
-      } catch (err) {
-        if (err.code !== 'ENOENT') console.warn('이미지 삭제 실패:', imgPath);
-      }
-    }
-
-    await conn.query("DELETE FROM image WHERE user_id = ? AND image_type = 'profile'", [userId]);
-
-    await conn.commit();
-    res.redirect('/mypage');
-  } catch (err) {
-    await conn.rollback();
-    console.error('프로필 이미지 삭제 에러:', err);
-    res.status(500).send('서버 에러');
-  } finally {
-    conn.release();
+    console.error(err);
+    res.status(500).json({ error: '프로필 불러오기 실패' });
   }
 });
 

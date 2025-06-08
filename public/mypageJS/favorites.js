@@ -11,7 +11,7 @@ document.addEventListener('DOMContentLoaded', () => {
       return;
     }
 
-    fetch('/favorites/add', {
+    fetch('/mypage/favorites/add', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ libraryName })
@@ -21,7 +21,7 @@ document.addEventListener('DOMContentLoaded', () => {
       if (data.success) {
         // 새 즐겨찾기 항목 추가
         const li = document.createElement('li');
-        li.dataset.libraryId = data.library.library_id; // 백엔드에서 새로 추가된 도서관 ID 보내준다고 가정
+        li.dataset.libraryId = data.library.library_id;
         li.innerHTML = `
           ${data.library.name} - ${data.library.address}
           <button class="removeFavoriteBtn" data-library-id="${data.library.library_id}">삭제</button>
@@ -43,7 +43,7 @@ document.addEventListener('DOMContentLoaded', () => {
   favoritesList.addEventListener('click', e => {
     if (e.target.classList.contains('removeFavoriteBtn')) {
       const libraryId = e.target.dataset.libraryId;
-      fetch('/favorites/remove', {
+      fetch('/mypage/favorites/remove', {
         method: 'DELETE',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ libraryId })
@@ -51,10 +51,8 @@ document.addEventListener('DOMContentLoaded', () => {
       .then(res => res.json())
       .then(data => {
         if (data.success) {
-          // 삭제 성공 시 li 제거
           const li = e.target.closest('li');
           li.remove();
-          // 즐겨찾기 목록 비었으면 안내 문구 표시
           if (favoritesList.children.length === 0) {
             favoritesList.innerHTML = '<li>즐겨찾는 도서관이 없습니다.</li>';
           }

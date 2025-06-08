@@ -1,0 +1,111 @@
+const express = require('express');
+const router = express.Router();
+const pool = require('../db');
+const authMiddleware = require('../middlewares/authMiddleware');
+
+const getPreferredAreas = async (req, res) => {
+  try {
+    const userId = req.user.user_id;
+
+    const [prefRows] = await pool.query(
+      'SELECT region_level1, region_level2, region_level3 FROM preferred_region WHERE user_id = ?',
+      [userId]
+    );
+
+    let region_level1 = null;
+    let region_level2 = null;
+    let region_level3 = null;
+
+    if (prefRows.length > 0) {
+      region_level1 = prefRows[0].region_level1;
+      region_level2 = prefRows[0].region_level2;
+      region_level3 = prefRows[0].region_level3;
+    }
+
+    if (!region_level1) {
+      const [userRows] = await pool.query('SELECT address FROM user WHERE user_id = ?', [userId]);
+      if (userRows.length > 0) {
+        const address = userRows[0].address || '';
+        const firstWord = address.trim().split(' ')[0] || null;
+        region_level1 = firstWord;
+      }
+    }
+
+    let preferred_areas = [];
+    if (region_level1) preferred_areas.push({ region_name: region_level1, region_level: 1 });
+    if (region_level2) preferred_areas.push({ region_name: region_level2, region_level: 2 });
+    if (region_level3) preferred_areas.push({ region_name: region_level3, region_level: 3 });
+
+    return res.render('preferred-area', {
+      preferred_areas,
+      message: null,
+      error: null
+    });
+  } catch (error) {
+    console.error('getPreferredAreas 에러:', error);
+    return res.status(500).render('preferred-area', {
+      preferred_areas: [],
+      error: '서버 오류 발생',
+      message: null
+    });
+  }
+};
+
+const updatePreferredArea = async (req, res) => {
+  try {
+    const userId = req.user.user_id;
+    let { region_level1, region_level2, region_level3 } = req.body;
+
+    region_level1 = region_level1?.trim() || null;
+    region_level2 = region_level2?.trim() || null;
+    region_level3 = region_level3?.trim() || null;
+
+    if (![region_level1, region_level2, region_level3].some(Boolean)) {
+      return res.status(400).render('preferred-area', { preferred_areas: [], error: '최소 한 개 이상의 선호지역을 입력하세요.', message: null });
+    }
+
+    const [rows] = await pool.query('SELECT region_id FROM preferred_region WHERE user_id = ?', [userId]);
+
+    if (rows.length > 0) {
+      await pool.query(
+        'UPDATE preferred_region SET region_level1 = ?, region_level2 = ?, region_level3 = ? WHERE user_id = ?',
+        [region_level1, region_level2, region_level3, userId]
+      );
+    } else {
+      await pool.query(
+        'INSERT INTO preferred_region (user_id, region_level1, region_level2, region_level3) VALUES (?, ?, ?, ?)',
+        [userId, region_level1, region_level2, region_level3]
+      );
+    }
+
+    const [prefRows] = await pool.query('SELECT region_level1, region_level2, region_level3 FROM preferred_region WHERE user_id = ?', [userId]);
+
+    let preferred_areas = [];
+    if (prefRows.length > 0) {
+      const row = prefRows[0];
+      if (row.region_level1) preferred_areas.push({ region_name: row.region_level1, region_level: 1 });
+      if (row.region_level2) preferred_areas.push({ region_name: row.region_level2, region_level: 2 });
+      if (row.region_level3) preferred_areas.push({ region_name: row.region_level3, region_level: 3 });
+    }
+
+    return res.render('preferred-area', {
+      preferred_areas,
+      userAddress: region_level1,
+      message: '선호지역이 성공적으로 업데이트 되었습니다.',
+      error: null
+    });
+
+  } catch (error) {
+    console.error('updatePreferredArea 에러:', error);
+    return res.status(500).render('preferred-area', {
+      preferred_areas: [],
+      error: '서버 오류 발생',
+      message: null
+    });
+  }
+};
+
+router.get('/', authMiddleware, getPreferredAreas);
+router.post('/update', authMiddleware, updatePreferredArea);
+
+module.exports = router;

@@ -150,37 +150,15 @@ app.get('/login', (req, res) => {
 const authRouter = require('./routes/auth');
 app.use('/auth', authRouter);
 
-// 마이페이지
-const mypageRouter = require('./routes/user');
+// 마이페이지 메인 (전체 정보 조회 + 메뉴들 작동)
+const mypageRouter = require('./routes/mypage'); 
 app.use('/mypage', mypageRouter);
 
-// 유저 관련 (프로필, 정보 수정 등)
-const userRouter = require('./routes/user');
-app.use('/user', userRouter);
 
-// 유저가 작성한 도서 리뷰
-const userBookReviewRouter = require('./routes/userBookReview');
-app.use('/userBookReview', userBookReviewRouter);
 
-// 유저 도서관 리뷰
-const userLibraryReviewRouter = require('./routes/userLibraryReview');
-app.use('/userLibraryReview', userLibraryReviewRouter);
-
-// 유저 커뮤니티 글 + 댓글
-const userCommunityRouter = require('./routes/userCommunity');
-app.use('/userCommunity', userCommunityRouter);
-
-// 선호지역
-const preferredRouter = require('./routes/preferred');
-app.use('/preferred', preferredRouter);
-
-// 즐겨찾는 도서관
-const favoriteRouter = require('./routes/favorite');
-app.use('/favorite', favoriteRouter);
-
-// // 즐겨찾기
-// const bookmarkRouter = require('./routes/bookmark');
-// app.use('/bookmark', bookmarkRouter);
+// 즐겨찾기
+const bookmarkRouter = require('./routes/bookmark');
+app.use('/bookmark', bookmarkRouter);
 
 // 커뮤니티
 const communityRouter = require('./routes/community');
@@ -207,8 +185,8 @@ const bookSearchRouter = require('./routes/book');
 app.use('/', bookSearchRouter);
 
 // api 라우터
-// const apiRouter = require('./routes/api');
-// app.use('/api', apiRouter);
+const apiRouter = require('./routes/api');
+app.use('/api', apiRouter);
 
 // 에러 핸들링
 app.use((err, req, res, next) => {

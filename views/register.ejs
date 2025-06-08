@@ -3,11 +3,12 @@
 <head>
   <meta charset="UTF-8" />
   <title><%= title || "회원가입" %></title>
-    <% if (typeof error !== 'undefined' && error) { %>
-      <script>
-        alert("<%= error %>");
-      </script>
-    <% } %>
+  <script src="https://t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
+  <% if (typeof error !== 'undefined' && error) { %>
+    <script>
+      alert("<%= error %>");
+    </script>
+  <% } %>
   <style>
     body {
       background: #F6ECDD;
@@ -93,148 +94,132 @@
     }
   </style>
 </head>
-  <body>
-    <form id="registerForm" enctype="multipart/form-data" method="post" action="/auth/register">
-      <div class="form-group">
-        <label for="user_id">아이디</label>
+<body>
+  <form id="registerForm" method="POST" action="/auth/register">
+    <div class="form-group">
+      <label for="user_id">아이디</label>
+      <input
+        type="text"
+        id="user_id"
+        name="user_id"
+        placeholder="아이디 (영문, 숫자 4~12자)"
+        required
+        value="<%= typeof user_id !== 'undefined' ? user_id : '' %>"
+      />
+      <br />
+      <small id="user_id_error" style="color: red; display: none;">
+        아이디는 소문자+숫자 4~12자만 입력 가능합니다.
+      </small>
+    </div>
+
+    <div class="form-group">
+      <label for="password">비밀번호</label>
+      <input
+        type="password"
+        id="password"
+        name="password"
+        placeholder="비밀번호"
+        required
+      />
+    </div>
+
+    <div class="form-group">
+      <label for="nickname">닉네임</label>
+      <input
+        type="text"
+        id="nickname"
+        name="nickname"
+        placeholder="닉네임"
+        required
+        value="<%= typeof nickname !== 'undefined' ? nickname : '' %>"
+      />
+    </div>
+
+    <div class="form-group">
+      <label for="address">주소</label>
+      <div class="address-wrapper">
         <input
           type="text"
-          id="user_id"
-          name="user_id"
-          placeholder="아이디 (영문, 숫자 4~12자)"
+          readonly
+          id="address"
+          name="address"
+          placeholder="주소를 입력하세요"
+          value="<%= typeof address !== 'undefined' ? address : '' %>"
           required
-          value="<%= typeof user_id !== 'undefined' ? user_id : '' %>"
         />
-        <br />
-        <small id="user_id_error" style="color: red; display: none;">
-          한글 및 특수문자는 입력할 수 없습니다.
-        </small>
+        <button
+          type="button"
+          class="address-btn"
+          onclick="openAddressSearch()"
+        >
+          주소 검색
+        </button>
       </div>
+    </div>
 
-        <!-- 🔹 비밀번호 -->
-        <div class="form-group">
-          <label for="password">비밀번호</label>
-          <input
-            type="password"
-            id="password"
-            name="password"
-            placeholder="비밀번호"
-            required
-          />
-        </div>
-
-        <!-- 🔹 닉네임 -->
-        <div class="form-group">
-          <label for="nickname">닉네임</label>
-          <input
-            type="text"
-            id="nickname"
-            name="nickname"
-            placeholder="닉네임"
-            required
-          />
-        </div>
-
-        <!-- 🔹 주소 -->
-        <div class="form-group">
-          <label for="address">주소</label>
-          <div class="address-wrapper">
-            <input
-              type="text"
-              readonly
-              id="address"
-              name="address"
-              placeholder="주소를 입력하세요"
-            />
-            <button
-              type="button"
-              class="address-btn"
-              onclick="openAddressSearch()"
-            >
-              주소 검색
-            </button>
-          </div>
-        </div>
-
-        <!-- 🔹 가입 버튼 -->
-        <button type="submit" class="submit-btn">가입하기</button>
-      </form>
-    </body>
-
-<script src="https://t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
+    <button type="submit" class="submit-btn">가입하기</button>
+  </form>
 
 <script>
-  const form = document.getElementById("registerForm");
+  document.addEventListener('DOMContentLoaded', function () {
+    const form = document.querySelector('form');
+    const userIdInput = document.getElementById("user_id");
+    const passwordInput = document.querySelector('input[name="password"]');
+    const nicknameInput = document.querySelector('input[name="nickname"]');
+    const addressInput = document.querySelector('input[name="address"]');
+    const errorEl = document.getElementById("user_id_error");
 
-  const userIdInput = form.user_id;
-  const userIdError = document.getElementById("user_id_error");
-  const idRegex = /^[a-zA-Z0-9]{4,12}$/;
+    const idRegex = /^[a-z0-9]{4,12}$/;
+    const passwordRegex = /^[a-zA-Z0-9!@#$%^&*]{4,12}$/;
 
-  // 아이디 입력 시 한글 및 특수문자 자동 제거 및 에러메시지 토글
-  userIdInput.addEventListener("input", () => {
-    const rawValue = userIdInput.value;
-    const cleaned = rawValue.replace(/[^a-zA-Z0-9]/g, "");
-    if (rawValue !== cleaned) {
-      userIdInput.value = cleaned;
-      userIdError.style.display = "inline";
-    } else {
-      userIdError.style.display = "none";
-    }
+    userIdInput.addEventListener("input", function () {
+      const input = this.value;
+      const partialRegex = /^[a-z0-9]{0,12}$/;
+
+      if (!partialRegex.test(input) || input.length < 4) {
+        errorEl.style.display = "block";
+        input = value.replace(/[^a-zA-Z0-9]/g, "");
+        errorEl.textContent = "아이디는 소문자+숫자 4~12자만 가능";
+        this.style.borderColor = "red";
+      } else {
+        errorEl.style.display = "none";
+        this.style.borderColor = "#000";
+      }
+    });
+
+    form.addEventListener('submit', function (e) {
+      const user_id = userIdInput.value.trim();
+      const password = passwordInput.value.trim();
+      const nickname = nicknameInput.value.trim();
+      const address = addressInput.value.trim();
+
+      if (!user_id || !password || !nickname || !address) {
+        alert('아이디, 비번, 닉네임, 주소는 필수입니다.');
+        e.preventDefault();
+        return;
+      }
+
+      if (!idRegex.test(user_id)) {
+        alert('아이디는 소문자+숫자 4~12자여야 합니다.');
+        e.preventDefault();
+        return;
+      }
+
+      if (!passwordRegex.test(password)) {
+        alert('비밀번호는 영문, 숫자, 특수문자(!@#$%^&*) 포함 4~12자여야 합니다.');
+        e.preventDefault();
+        return;
+      }
+    });
   });
 
   function openAddressSearch() {
     new daum.Postcode({
       oncomplete: function(data) {
-        // 팝업에서 주소 선택하면 실행됨
-        const fullAddr = data.address; // 도로명 주소
-        document.getElementById('address').value = fullAddr;
+        document.getElementById('address').value = data.address;
       }
     }).open();
   }
-
-  form.addEventListener("submit", async (e) => {
-    e.preventDefault();
-
-    const user_id = form.user_id.value.trim();
-    const password = form.password.value.trim();
-    const nickname = form.nickname.value.trim();
-    const address = form.address.value.trim();
-
-    if (!user_id || !password || !nickname || !address) {
-      alert("필수 입력란을 모두 채워주세요");
-      return;
-    }
-
-    if (!idRegex.test(user_id)) {
-      alert("아이디는 영문 대소문자와 숫자만 포함하여 4~12자여야 합니다.");
-      return;
-    }
-
-    try {
-      const res = await fetch("/auth/register", {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          user_id,
-          password,
-          nickname,
-          address
-        })
-      });
-
-      if (res.redirected) {
-        window.location.href = res.url;
-      } else {
-        const html = await res.text();
-        document.open();
-        document.write(html);
-        document.close();
-      }
-    } catch (err) {
-      alert("서버 에러 발생");
-      console.error(err);
-    }
-  });
 </script>
+</body>
+</html>
