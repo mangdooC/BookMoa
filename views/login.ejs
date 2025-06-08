@@ -99,7 +99,7 @@
     const password = formData.get("password").trim();
 
     if (!user_id || !password) {
-      alert("아이디랑 비번 둘 다 넣어라 ㅅ발");
+      alert("아이디/비번을 확인하세요. ");
       return;
     }
 
@@ -118,7 +118,7 @@
         window.location.href = res.url;
       } else {
         // 실패 시엔 ejs 렌더링한 로그인 페이지가 오니까 텍스트로 읽어도 의미없음
-        alert("로그인 실패: 아이디/비번 확인해라 ㅅ발");
+        alert("로그인 실패: 아이디/비번을 확인하세요.");
       }
     } catch (err) {
       console.error("로그인 중 에러:", err);
