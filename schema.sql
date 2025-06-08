@@ -28,7 +28,6 @@ CREATE TABLE `library` (
   `latitude` double DEFAULT NULL,
   `longitude` double DEFAULT NULL, 
   `homepage` varchar(255) DEFAULT NULL,
-  `lib_code` int NOT NULL,
   PRIMARY KEY (`lib_code`)
 ) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
@@ -87,10 +86,11 @@ CREATE TABLE `library_review` (
 
 CREATE TABLE `favorite_library` (
   `user_id` varchar(20) NOT NULL,
-  `library_id` int NOT NULL,
-  PRIMARY KEY (`user_id`,`library_id`),
-  KEY `library_id` (`library_id`),
-  CONSTRAINT `favorite_library_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `user` (`user_id`)
+  `lib_code` int NOT NULL,
+  PRIMARY KEY (`user_id`,`lib_code`),
+  KEY `lib_code` (`lib_code`),
+  CONSTRAINT `favorite_library_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `user` (`user_id`),
+  CONSTRAINT `favorite_library_ibfk_2` FOREIGN KEY (`lib_code`) REFERENCES `library` (`lib_code`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 CREATE TABLE `preferred_region` (

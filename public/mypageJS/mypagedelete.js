@@ -1,6 +1,6 @@
 document.addEventListener('DOMContentLoaded', () => {
-  // 삭제 버튼들 선택 (form 내 button)
-  const deleteButtons = document.querySelectorAll('form button[type="submit"]');
+  // 삭제 버튼들만 선택 (data-delete-btn 붙은 것만)
+  const deleteButtons = document.querySelectorAll('button[data-delete-btn]');
 
   deleteButtons.forEach(button => {
     button.addEventListener('click', async (e) => {
@@ -12,15 +12,17 @@ document.addEventListener('DOMContentLoaded', () => {
       const action = form.action;
       const method = form.method.toUpperCase();
 
+      const fetchOptions = {
+        method,
+        headers: { 'Content-Type': 'application/json' }
+      };
+
+      if (method === 'POST' || method === 'PUT' || method === 'PATCH') {
+        fetchOptions.body = JSON.stringify({});
+      }
+
       try {
-        const res = await fetch(action, {
-          method: method,
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          // POST 폼 데이터 있을 수도 있으니 빈 바디 처리
-          body: JSON.stringify({})
-        });
+        const res = await fetch(action, fetchOptions);
 
         if (!res.ok) {
           const data = await res.json().catch(() => ({}));
@@ -28,7 +30,7 @@ document.addEventListener('DOMContentLoaded', () => {
           return;
         }
 
-        // 삭제 성공하면 해당 li 태그 삭제
+        // 성공 시 해당 li 삭제
         const li = form.closest('li');
         if (li) li.remove();
 

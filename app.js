@@ -30,7 +30,7 @@ const storage = multer.diskStorage({
 const upload = multer({ storage: storage });
 
 // 정적 파일 제공
-app.use('/uploads/profile', express.static(path.join(__dirname, 'uploads/profile')));
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 app.use(express.static(path.join(__dirname, 'public')));
 
 // 뷰 엔진 세팅
@@ -150,15 +150,35 @@ app.get('/login', (req, res) => {
 const authRouter = require('./routes/auth');
 app.use('/auth', authRouter);
 
-// 마이페이지 메인 (전체 정보 조회 + 메뉴들 작동)
+// 마이페이지 메인 (마이페이지 불러오기 + 메뉴들 작동)
 const mypageRouter = require('./routes/mypage'); 
 app.use('/mypage', mypageRouter);
 
+// 유저 수정 정보
+const userRouter = require('./routes/user');
+app.use('/user', userRouter);
+
+// 선호지역 
+const preferredAreaRouter = require('./routes/preferredArea');
+app.use('/preferred-area', preferredAreaRouter);
+
+// 즐겨찾는 도서관
+const favoritesRouter = require('./routes/favorites');
+app.use('/mypage/favorites', favoritesRouter);
+
+// 마이페이지에서 내가 작성한 글/댓글/리뷰 조회
+const userContentRouter = require('./routes/mypageGet');
+app.use('/mypage/content', userContentRouter);
+
+// 내가 작성한 글/댓글 삭제
+const userDeleteRouter = require('./routes/mypageDelete');
+app.use('/mypage/delete', userDeleteRouter);
 
 
-// 즐겨찾기
-const bookmarkRouter = require('./routes/bookmark');
-app.use('/bookmark', bookmarkRouter);
+
+// // 즐겨찾기
+// const bookmarkRouter = require('./routes/bookmark');
+// app.use('/bookmark', bookmarkRouter);
 
 // 커뮤니티
 const communityRouter = require('./routes/community');
