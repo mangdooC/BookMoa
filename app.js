@@ -177,10 +177,6 @@ app.use('/mypage/delete', mypageDeleteRouter);
 
 
 
-// // 즐겨찾기
-// const bookmarkRouter = require('./routes/bookmark');
-// app.use('/bookmark', bookmarkRouter);
-
 // 커뮤니티
 const communityRouter = require('./routes/community');
 app.use('/community', communityRouter);
