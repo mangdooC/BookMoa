@@ -1,36 +1,31 @@
 <div class="board-container" style="max-width: 900px; margin: 40px auto; padding: 30px; background-color: #fff9f3; border-radius: 12px;">
   <h1 style="text-align: center; font-size: 2rem; margin-bottom: 20px;">도서관 상세 정보</h1>
-
-  <div style="text-align: right; margin-bottom: 20px;">
-    <input type="text" id="searchInput" placeholder="도서관 이름 또는 주소 검색" style="padding: 8px; width: 250px; border-radius: 4px; border: 1px solid #ccc;">
-    <button onclick="searchLibs(1)" style="padding: 8px 12px; background-color: #ff914d; color: white; border: none; border-radius: 4px;">검색</button>
-  </div>
-
-  <table id="libraryTable">
-    <thead>
-      <tr>
+<div style="text-align: right; margin-bottom: 20px;">
+  <input type="text" id="searchInput" placeholder="도서관 이름 또는 주소 검색" style="padding: 8px; width: 250px; border-radius: 4px; border: 1px solid #ccc;">
+  <button onclick="searchLibs(1)" style="padding: 8px 12px; background-color: #ff914d; color: white; border: none; border-radius: 4px;">검색</button>
+<table id="libraryTable">
+  <thead>
+    <tr>
         <th style="padding: 12px; border-bottom: 2px solid #333; background-color: #f5eee4; text-align: left;">도서관</th>
         <th style="padding: 12px; border-bottom: 2px solid #333; background-color: #f5eee4; text-align: left;">전화번호</th>
         <th style="padding: 12px; border-bottom: 2px solid #333; background-color: #f5eee4; text-align: left;">도서관 주소</th>
         <th style="padding: 12px; border-bottom: 2px solid #333; background-color: #f5eee4; text-align: left;">웹사이트 링크</th>
       </tr>
-    </thead>
-    <tbody id="libraryBody">
-      <!-- 도서관 목록 -->
-    </tbody>
-  </table>
+  </thead>
+  <tbody id="libraryBody">
+    <!-- 도서관 목록 -->
+  </tbody>
+</table>
 
-  <div class="pagination" style="text-align: center; margin-top: 20px;">
-    <button onclick="prevPage()" style="padding: 6px 10px;">이전</button>
-    <span id="pageInfo" style="margin: 0 10px;">1 페이지</span>
-    <button onclick="nextPage()" style="padding: 6px 10px;">다음</button>
-  </div>
+<div class="pagination">
+  <button onclick="prevPage()">이전</button>
+  <span id="pageInfo">1 페이지</span>
+  <button onclick="nextPage()">다음</button>
 </div>
 
 <script>
 let currentPage = 1;
 const pageSize = 10;
-let libraries = []; // 전역에 데이터 저장
 
 async function fetchLibs(page = 1) {
   try {
@@ -40,7 +35,7 @@ async function fetchLibs(page = 1) {
       : '/library/api/list';
 
     const res = await fetch(url);
-    libraries = await res.json(); // 전역에 저장
+    const libraries = await res.json();
     console.log('받은 데이터:', libraries);
     renderPage(libraries, page);
   } catch (err) {
@@ -52,6 +47,7 @@ function renderPage(data, page) {
   const tbody = document.getElementById('libraryBody');
   tbody.innerHTML = '';
 
+  const pageSize = 10;
   const paginated = data.slice((page - 1) * pageSize, page * pageSize);
 
   paginated.forEach(lib => {
@@ -78,8 +74,8 @@ function renderPage(data, page) {
 
 window.searchLibs = function(page = 1) {
   currentPage = page;
-  fetchLibs(currentPage);
-}
+    fetchLibs(currentPage);
+  }
 
 function nextPage() {
   const maxPage = Math.ceil(libraries.length / pageSize);
@@ -92,10 +88,9 @@ function nextPage() {
 function prevPage() {
   if (currentPage > 1) {
     currentPage--;
-    renderPage(libraries, currentPage);
+    fetchLibs(currentPage);
   }
 }
 
-// 초기 로딩
 fetchLibs(currentPage);
 </script>
