@@ -16,8 +16,9 @@ const passwordRegex = /^[a-zA-Z0-9!@#$%^&*]{4,12}$/;
 // 회원가입 처리 (POST /register)
 router.post('/register', async (req, res) => {
   let { user_id, password, nickname, address } = req.body;
+  const trimmedAddress = (address || '').trim();
 
-  if (!user_id || !password || !nickname || !address) {
+  if (!user_id || !password || !nickname || !trimmedAddress) {
     return res.render('register', { error: '아이디, 비번, 닉네임, 주소 필수' });
   }
 
