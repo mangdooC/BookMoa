@@ -274,10 +274,10 @@
             <span>☎ <%= lib.tel || '-' %></span>
             <span class="address"><%= lib.address %></span>
           </div>
-          <div class="library-actions">
-            <a href="<%= lib.url || '#' %>" target="_blank" class="action-button">웹사이트</a>
-            <button onclick="alert('즐겨찾기 기능은 추후 구현!')" class="action-button favorite">★ 즐겨찾기</button>
-          </div>
+            <div class="library-actions">
+              <a href="<%= lib.url || '#' %>" target="_blank" class="action-button">웹사이트</a>
+              <button onclick="addFavorite('<%= lib.libCode %>')" class="action-button favorite">★ 즐겨찾기</button>
+            </div>
         </div>
       </li>
     <% }) %>
@@ -339,6 +339,8 @@
     <% } %>
   </div>
 </div>
+
+<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
 <script>
   var map = null;
   var markers = [];
@@ -479,6 +481,23 @@
         console.error('위치 에러:', error);
         alert('위치 정보 제공을 허용해주세요');
       });
+    }
+  }
+  
+  // 즐겨찾기 추가
+  async function addFavorite(libCode) {
+    try {
+      const res = await fetch('/mypage/favorites/add', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ libCode }),
+      });
+      const data = await res.json();
+      if (!res.ok) return alert(data.error || '즐겨찾기 추가 실패');
+      alert('즐겨찾기에 추가되었습니다.');
+    } catch (err) {
+      console.error(err);
+      alert('서버 에러');
     }
   }
 

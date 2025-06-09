@@ -27,21 +27,28 @@ router.get('/', authMiddleware, async (req, res) => {
 router.post('/add', authMiddleware, async (req, res) => {
   try {
     const userId = req.user.user_id;
-    const { libraryName } = req.body;
+    const { libCode, libraryName } = req.body;
 
-    if (!libraryName) return res.status(400).json({ error: '도서관 이름을 입력하세요.' });
+    let library;
 
-    // 도서관 이름으로 검색 (부분일치)
-    const [libs] = await pool.query(
-      `SELECT lib_code, name, address FROM library WHERE name LIKE ? LIMIT 1`,
-      [`%${libraryName}%`]
-    );
+    if (libCode) {
+      const [libs] = await pool.query(
+        `SELECT lib_code, name, address FROM library WHERE lib_code = ? LIMIT 1`,
+        [libCode]
+      );
+      if (libs.length === 0) return res.status(404).json({ error: '해당 도서관을 찾을 수 없습니다.' });
+      library = libs[0];
+    } else if (libraryName) {
+      const [libs] = await pool.query(
+        `SELECT lib_code, name, address FROM library WHERE name LIKE ? LIMIT 1`,
+        [`%${libraryName}%`]
+      );
+      if (libs.length === 0) return res.status(404).json({ error: '해당 도서관을 찾을 수 없습니다.' });
+      library = libs[0];
+    } else {
+      return res.status(400).json({ error: '도서관 정보를 입력하세요.' });
+    }
 
-    if (libs.length === 0) return res.status(404).json({ error: '해당 도서관을 찾을 수 없습니다.' });
-
-    const library = libs[0];
-
-    // 이미 즐겨찾기 등록 여부 체크
     const [exists] = await pool.query(
       `SELECT * FROM favorite_library WHERE user_id = ? AND lib_code = ?`,
       [userId, library.lib_code]
