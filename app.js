@@ -198,7 +198,7 @@ const bookRouter = require('./routes/book');
 app.use('/book', bookRouter);
 
 // 도서 리뷰
-const bookReviewRouter = require('./routes/bookReviews');
+const bookReviewRouter = require('./routes/bookReviewRouter');
 app.use('/bookReview', bookReviewRouter);
 
 // 도서 검색 라우터
