@@ -30,7 +30,7 @@ router.get('/', async (req, res) => {
       const [userRows] = await pool.query('SELECT address FROM user WHERE user_id = ?', [userId]);
       if (userRows.length > 0) {
         const address = userRows[0].address || '';
-        region_level1 = address.trim().substring(0, 20) || null;
+         region_level1 = address.trim() || null;
       }
     }
 

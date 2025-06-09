@@ -416,7 +416,7 @@
 
   <div class="menu">
     <button type="button" onclick="showSection('info')">내 정보 수정</button>
-    <button type="button" onclick="showSection('preferredAreaSection')">선호지역</button>
+    <button type="button" onclick="showSection('preferredArea')">선호지역</button>
     <button type="button" onclick="showSection('favorites')">즐겨찾는 도서관</button>
     <button type="button" onclick="showSection('posts')">작성한 글/댓글</button>
   </div>
@@ -456,7 +456,7 @@
 
   <!-- 선호지역 -->
   <form id="preferredForm" action="/user/preferred?user_id=<%= user.id %>" method="POST" onsubmit="savePreferredAddresses(); return false;">
-    <section id="preferredAreaSection" class="section">
+    <section id="preferredArea" class="section">
       <h2>선호지역</h2>
 
       <% for (let i = 1; i <= 3; i++) { %>
