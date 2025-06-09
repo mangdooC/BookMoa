@@ -1,5 +1,4 @@
 document.addEventListener('DOMContentLoaded', () => {
-  // data-delete-btn 붙은 삭제 버튼들만 선택
   const deleteButtons = document.querySelectorAll('button[data-delete-btn]');
 
   deleteButtons.forEach(button => {
@@ -8,12 +7,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
       if (!confirm('삭제 하시겠습니까?')) return;
 
-      const form = button.closest('form');
-      const action = form.action;
+      const action = button.getAttribute('data-action');
+      if (!action) {
+        alert('삭제 경로가 없습니다.');
+        return;
+      }
 
       try {
         const res = await fetch(action, {
-          method: 'DELETE', // 무조건 DELETE로 고정
+          method: 'DELETE',
           headers: { 'Content-Type': 'application/json' }
         });
 
@@ -23,8 +25,8 @@ document.addEventListener('DOMContentLoaded', () => {
           return;
         }
 
-        // 성공하면 해당 li 태그 제거
-        const li = form.closest('li');
+        // 삭제 성공하면 해당 li 요소 제거
+        const li = button.closest('li');
         if (li) li.remove();
 
       } catch (err) {

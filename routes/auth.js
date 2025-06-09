@@ -41,15 +41,12 @@ router.post('/register', async (req, res) => {
 
     const hashed = await bcrypt.hash(password, 10);
 
-    // 주소 20자 이내로 자르기
-    const trimmedAddress = address.trim().substring(0, 20);
-
     await pool.query(
       'INSERT INTO user (user_id, password, nickname, address) VALUES (?, ?, ?, ?)',
       [user_id, hashed, nickname, trimmedAddress]
     );
 
-    // preferred_region에 region_level1만 저장 (20자 이내)
+    // preferred_region에 region_level1만 저장
     await pool.query(
       'INSERT INTO preferred_region (user_id, region_level1) VALUES (?, ?)',
       [user_id, trimmedAddress]

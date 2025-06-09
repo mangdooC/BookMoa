@@ -38,7 +38,6 @@ async function savePreferredAddresses() {
     }
 
     alert('선호지역이 성공적으로 저장되었습니다.');
-    window.location.href = '/mypage?tab=preferred';
 
   } catch (err) {
     alert('서버 오류 발생: ' + err.message);

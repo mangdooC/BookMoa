@@ -81,11 +81,11 @@ router.get('/', authMiddleware, async (req, res) => {
     );
 
     const [comments] = await pool.query(
-      `SELECT c.comment_id, c.content, c.created_at, p.title AS post_title
-         FROM community_comment c
-         JOIN community_post p ON c.post_id = p.post_id
+      `SELECT c.comment_id, c.content, c.created_at, c.post_id, p.title AS post_title
+        FROM community_comment c
+        JOIN community_post p ON c.post_id = p.post_id
         WHERE c.user_id = ?
-     ORDER BY c.created_at DESC`,
+    ORDER BY c.created_at DESC`,
       [userId]
     );
 
