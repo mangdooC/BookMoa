@@ -169,11 +169,11 @@ app.use('/mypage/favorites', favoritesRouter);
 
 // 마이페이지에서 내가 작성한 글/댓글/리뷰 조회
 const mypageGetRouter = require('./routes/mypageGet');
-app.use('/mypage', mypageGetRouter);
+app.use('/mypage/get', mypageGetRouter);
 
 // 마이페이지에서 내가 작성한 글/댓글 삭제
-const mypageDelRouter = require('./routes/mypageDelete');
-app.use('/mypage', mypageDelRouter);
+const mypageDeleteRouter = require('./routes/mypageDelete');  
+app.use('/mypage/delete', mypageDeleteRouter);
 
 
 
@@ -196,6 +196,10 @@ app.use('/', popularRoute);
 // 도서상세
 const bookRouter = require('./routes/book');
 app.use('/book', bookRouter);
+
+// 도서 리뷰
+const bookReviewRouter = require('./routes/bookReviews');
+app.use('/bookReview', bookReviewRouter);
 
 // 도서 검색 라우터
 const trendingRoutes = require('./routes/trending');

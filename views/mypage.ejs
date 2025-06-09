@@ -505,87 +505,89 @@
     </section>
 
   <!-- 작성한 글/댓글 -->
-  <section id="posts" class="section">
+<section id="posts" class="section">
     <!-- 도서 리뷰 -->
     <div class="post-category">
       <h3>📚 도서 리뷰</h3>
-      <ul id="bookReviewList">
-        <% if(bookReviews && bookReviews.length > 0) { %>
-          <% bookReviews.forEach(review => { %>
-            <li>
-              <a href="/bookReview/post/<%= review.review_id %>"><%= review.title %></a> - 평점: <%= review.rating %>점
-              <form action="/mypage/delete/post/<%= review.review_id %>" method="POST" style="display:inline;">
-                <button type="submit" data-delete-btn>삭제</button>
-              </form>
-            </li>
-          <% }) %>
-        <% } else { %>
-          <li>작성한 도서 리뷰가 없습니다.</li>
-        <% } %>
-      </ul>
+        <ul id="bookReviewList">
+          <% if(bookReviews && bookReviews.length > 0) { %>
+            <% bookReviews.forEach(review => { %>
+              <li>
+                <a href="/bookReview/post/<%= review.review_id %>"><%= review.book_title %></a> - 평점: <%= review.rating %>점
+                <button 
+                  data-delete-btn 
+                  data-action="/mypage/delete/bookReview/<%= review.review_id %>"
+                >삭제</button>
+              </li>
+            <% }) %>
+          <% } else { %>
+            <li>작성한 도서 리뷰가 없습니다.</li>
+          <% } %>
+        </ul>
     </div>
 
-    <!-- 도서관 리뷰 -->
+  <!-- 도서관 리뷰 -->
     <div class="post-category">
       <h3>🏛️ 도서관 리뷰</h3>
-      <ul id="libraryReviewList">
-        <% if(library_reviews && library_reviews.length > 0) { %>
-          <% library_reviews.forEach(review => { %>
-            <li>
-              <a href="/libraryReview/<%= review.review_id %>"><%= review.library_name %> 후기</a>
-              <form action="/mypage/delete/post/<%= review.review_id %>" method="POST" style="display:inline;">
-                <button type="submit" data-delete-btn>삭제</button>
-              </form>
-            </li>
-          <% }) %>
-        <% } else { %>
-          <li>작성한 도서관 리뷰가 없습니다.</li>
-        <% } %>
-      </ul>
+        <ul id="libraryReviewList">
+          <% if(library_reviews && library_reviews.length > 0) { %>
+            <% library_reviews.forEach(review => { %>
+              <li style="margin-bottom: 15px;">
+                <a href="/libraryReview/<%= review.review_id %>"><%= review.library_name %> 후기</a>
+                <button 
+                  type="button" 
+                  data-delete-btn 
+                  data-action="/mypage/delete/libraryReview/<%= review.review_id %>"
+                  style="margin-left: 10px;"
+                >삭제</button>
+              </li>
+            <% }) %>
+          <% } else { %>
+            <li>작성한 도서관 리뷰가 없습니다.</li>
+          <% } %>
+        </ul>
     </div>
 
-    <!-- 커뮤니티 글 -->
+  <!-- 커뮤니티 글 -->
     <div class="post-category">
       <h3>🗣️ 커뮤니티 게시글</h3>
-      <ul id="communityPostList">
-        <% if(posts && posts.length > 0) { %>
-          <% posts.forEach(post => { %>
-            <li>
-              <a href="/community/post/<%= post.post_id %>"><%= post.title %></a><br />
-              <small><%= new Date(post.created_at).toLocaleString() %></small><br />
-              <form action="/mypage/delete/post/<%= post.post_id %>" method="POST" style="display:inline;">
-                <button type="submit" data-delete-btn>삭제</button>
-              </form>
-            </li>
-          <% }) %>
-        <% } else { %>
-          <li>작성한 글이 없습니다.</li>
-        <% } %>
-      </ul>
+        <ul id="communityPostList">
+          <% if(posts && posts.length > 0) { %>
+            <% posts.forEach(post => { %>
+              <li>
+                <a href="/community/post/<%= post.post_id %>"><%= post.title %></a><br />
+                <small><%= new Date(post.created_at).toLocaleString() %></small><br />
+                <button 
+                  data-delete-btn 
+                  data-action="/mypage/delete/post/<%= post.post_id %>"
+                >삭제</button>
+              </li>
+            <% }) %>
+          <% } else { %>
+            <li>작성한 글이 없습니다.</li>
+          <% } %>
+        </ul>
     </div>
 
-    <!-- 커뮤니티 댓글 -->
+  <!-- 커뮤니티 댓글 -->
     <div class="post-category">
-    <h3>💬 커뮤니티 댓글</h3>
-    <ul id="communityCommentList">
-        <% if (comments && comments.length > 0) { %>
-        <% comments.forEach(comment => { %>
-            <li style="margin-bottom: 15px;">
-            <p><%= comment.content %></p>
-            <small><%= new Date(comment.created_at).toLocaleString() %></small><br />
-            <a href="/community/post/<%= comment.post_id %>" style="color:blue; text-decoration:underline;">
-                ▶ 해당 글로 이동 </a><br />
-            <form action="/mypage/delete/comment/<%= comment.comment_id %>" method="POST" style="display:inline;">
-                <button type="submit" data-delete-btn>삭제</button>
-            </form>
-            </li>
-        <% }) %>
-        <% } else { %>
-        <li>작성한 댓글이 없습니다.</li>
-        <% } %>
-    </ul>
+      <h3>💬 커뮤니티 댓글</h3>
+        <ul id="communityCommentList">
+          <% if (comments && comments.length > 0) { %>
+            <% comments.forEach(comment => { %>
+              <li>
+                <p><%= comment.content %></p>
+                <small><%= new Date(comment.created_at).toLocaleString() %></small><br />
+                <a href="/community/post/<%= comment.post_id %>">▶ 해당 글로 이동</a><br />
+                <button data-delete-btn data-action="/mypage/delete/comment/<%= comment.comment_id %>">삭제</button>
+              </li>
+            <% }) %>
+          <% } else { %>
+            <li>작성한 댓글이 없습니다.</li>
+          <% } %>
+        </ul>
     </div>
-  </section>
+</section>
 </div>
 
 <script src="/mypagejs/favorites.js"></script>
