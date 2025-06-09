@@ -1,8 +1,14 @@
 const jwt = require('jsonwebtoken');
 
 function authMiddleware(req, res, next) {
-  const token = req.cookies?.token;
+  // 세션 유저 있으면 바로 통과
+  if (req.session && req.session.user) {
+    req.user = req.session.user;
+    return next();
+  }
 
+  // 세션 없으면 토큰 검사
+  const token = req.cookies?.token;
   if (!token) {
     return res.status(401).json({ error: '토큰 없음' });
   }
