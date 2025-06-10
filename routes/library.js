@@ -1,6 +1,8 @@
 const express = require('express');
 const router = express.Router();
 const db = require('../db');
+const authMiddleware = require('../middlewares/authMiddleware');
+const libraryReviewController = require('../controllers/libraryReviewController')
 
 // EJS 템플릿 페이지
 router.get('/librarySrch', async (req, res) => {
@@ -59,25 +61,12 @@ router.get('/libraryReview', async (req, res) => {
 });
 
 
-router.get('/libraryReviews', async (req, res) => {
-  const libname = req.query.name;
+router.get('/libraryReviews', libraryReviewController.getLibReview);
 
-  try {
-    const [libraryReviews] = await db.query(
-      `SELECT lr.review_id, lr.rating, library.name, u.nickname AS user_nickname
-       FROM library_review lr
-       JOIN library ON library.lib_code = lr.library_id
-       JOIN user u ON lr.user_id = u.user_id
-       WHERE library.name = ?
-       ORDER BY lr.created_at DESC`,
-      [libname]
-    );
-
-    res.json(libraryReviews);
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: '도서관 리뷰 조회 실패' });
-  }
+router.get('/writeReview', (req, res) => {
+  const libraryName = req.query.name;
+  res.render('library/writeReview', { libraryName });
 });
 
+router.post('/writeReview', authMiddleware, libraryReviewController.createLibReview);
 module.exports = router;
