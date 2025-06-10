@@ -1,6 +1,6 @@
  <div class="board-container" style="max-width: 900px; margin: 40px auto; padding: 30px; background-color: #fff9f3; border-radius: 12px;">
   <h1 style="text-align: center; font-size: 2rem; margin-bottom: 20px;"><%= libraryName %></h1>
-  <div style="text-align: center; font-size: 0.95rem; margin-bottom: 20px;">
+  <div style="text-align: center; font-size: 1.3rem; margin-bottom: 20px;">
   주소: <%= libInfo.address %><br>
   전화번호: <%= libInfo.phone ?? '-' %><br>
   웹사이트:<% if (libInfo.homepage) { %>
@@ -10,14 +10,19 @@
   <% } %>
 </div>
 
+  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+  <h4 style="font-size: 1.1rem; margin: 0;">리뷰 보기</h4>
+  <a href="/library/writeReview?name=<%= encodeURIComponent(libraryName) %>">
+  <button>작성하기</button>
+</a>
+</div>
 
-  <h4 style="text-align: center; font-size: rem; margin-bottom: 10px;"> 리뷰 보기 </h4>
   <table class="lirw-table" style="width: 100%; border-collapse: collapse; font-size: 0.95rem;">
     <thead>
       <tr>
-        <th style="padding: 12px; border-bottom: 2px solid #333; background-color: #f5eee4; text-align: left;">제목</th>
-        <th style="padding: 12px; border-bottom: 2px solid #333; background-color: #f5eee4; text-align: left;">작성자</th>
         <th style="padding: 12px; border-bottom: 2px solid #333; background-color: #f5eee4; text-align: left;">평점</th>
+        <th style="padding: 12px; border-bottom: 2px solid #333; background-color: #f5eee4; text-align: left;">내용</th>
+        <th style="padding: 12px; border-bottom: 2px solid #333; background-color: #f5eee4; text-align: left;">작성자</th>
       </tr>
     </thead>
     <tbody id="lirw-Body">
@@ -43,11 +48,10 @@
       const stars = '⭐'.repeat(review.rating ?? 0);
 
       tr.innerHTML = `
-        <td style="padding: 12px; border-bottom: 1px solid #ccc;">
-          <a href="/library/thisReview/${review.review_id}"><strong>${review.review_id}</strong></a>
-        </td>
-        <td style="padding: 12px; border-bottom: 1px solid #ccc;">${review.user_nickname ?? '알 수 없음'}</td>
         <td style="padding: 12px; border-bottom: 1px solid #ccc;">${stars}</td>
+        <td style="padding: 12px; border-bottom: 1px solid #ccc;">${review.content}</td>
+        <td style="padding: 12px; border-bottom: 1px solid #ccc;">${review.user_nickname ?? '알 수 없음'}</td>
+        
       `;
       list.appendChild(tr);
     });
