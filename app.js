@@ -12,11 +12,10 @@ dotenv.config();
 
 const app = express();
 
-const JWT_SECRET = process.env.JWT_SECRET;
-
-// 요청 바디 피싱 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+const JWT_SECRET = process.env.JWT_SECRET;
 
 // multer 설정 추가
 const storage = multer.diskStorage({
@@ -40,6 +39,10 @@ app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
 app.set('layout', 'layout');
 app.use(ejsLayouts);
+
+// 요청 바디 파싱
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
 // 쿠키 파서
 app.use(cookieParser());
@@ -198,17 +201,13 @@ app.use('/bookReview', bookReviewRouter);
 const trendingRoutes = require('./routes/trending');
 app.use('/', trendingRoutes);
 
-// 도서 검색 라우터
-const bookSearchRouter = require('./routes/book');
-app.use('/', bookSearchRouter);
-
-//도서관 검색 라우터
+// 도서관 검색 라우터
 const libraryRouter = require('./routes/library');
 app.use('/library', libraryRouter);
 
-//도서관 후기 라우터
-const libraryReviewRouter = require('./routes/libraryReview');
-app.use('/library', libraryReviewRouter);
+// 도서 검색 라우터
+const bookSearchRouter = require('./routes/book');
+app.use('/', bookSearchRouter);
 
 // api 라우터
 const apiRouter = require('./routes/api');
