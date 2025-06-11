@@ -2,6 +2,27 @@ const fs = require('fs');
 const db = require('../db');
 const path = require('path');
 
+// libraryController.js
+exports.SrchLibrary = async function (req, res) {
+  try {
+    const keyword = req.query.keyword;
+
+    let query = `SELECT name, phone, address, homepage FROM library`;
+    const params = [];
+
+    if (keyword) {
+      query += ` WHERE name LIKE ? OR address LIKE ?`;
+      const likeKeyword = `%${keyword}%`;
+      params.push(likeKeyword, likeKeyword);
+    }
+
+    const [libraries] = await db.query(query, params);
+    res.json(libraries);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: '도서관 목록 조회 실패' });
+  }
+};
 exports.getLibReview = async (req, res) => {
     const libname = req.query.name;
   try {
