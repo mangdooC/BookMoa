@@ -42,7 +42,7 @@ document.getElementById('saveInfoBtn').addEventListener('click', async (e) => {
 
     if (res.ok) {
       alert(data.message || '정보 수정 완료');
-      // 새로고침 말고 바로 닉네임 UI 업데이트
+      window.location.reload();
       document.getElementById('nicknameDisplay').textContent = nickname;
       document.getElementById('password').value = '';
     } else {

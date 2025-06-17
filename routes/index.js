@@ -8,7 +8,7 @@ router.get('/', async (req, res) => {
     console.log('[popularBooks]', popularBooks);
     res.render('index', {
       title: '책모아 메인 페이지',
-      user: req.session.user,  // 세션 유저 정보 넘기기
+      user: req.session.user || req.user,  // 세션 유저 정보 넘기기
       popularBooks
     });
   } catch (err) {

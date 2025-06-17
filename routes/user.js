@@ -71,6 +71,11 @@ router.post('/upload-profile-image', authMiddleware, upload.single('profileImage
 
     await connection.commit();
 
+    // 세션 즉시 업데이트
+    if (req.session && req.session.user) {
+      req.session.user.profileImage = profileImagePath;
+    }
+
     res.json({ message: '프로필 이미지가 변경되었습니다.', profileImage: profileImagePath });
   } catch (err) {
     await connection.rollback();
@@ -122,6 +127,13 @@ router.put('/update-info', authMiddleware, async (req, res) => {
 
     await pool.query(query, params);
 
+    // 세션 즉시 업데이트 (닉네임, 주소)
+    if (req.session && req.session.user) {
+      req.session.user.nickname = nickname;
+      req.session.user.address = address;
+      // 비밀번호는 세션에 안 넣는게 일반적임
+    }
+
     res.json({ message: '정보가 성공적으로 수정되었습니다.' });
   } catch (err) {
     console.error(err);
@@ -166,6 +178,13 @@ router.delete('/reset', authMiddleware, async (req, res) => {
       `DELETE FROM image WHERE user_id = ? AND image_type = 'profile'`,
       [userId]
     );
+
+    // 세션 즉시 업데이트
+    if (req.session && req.session.user) {
+      req.session.user.nickname = 'USER';
+      req.session.user.address = null;
+      req.session.user.profileImage = null;
+    }
 
     return res.json({ message: '유저 정보가 초기화되었습니다.' });
   } catch (error) {
