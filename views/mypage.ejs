@@ -533,7 +533,7 @@
           <% if(library_reviews && library_reviews.length > 0) { %>
             <% library_reviews.forEach(review => { %>
               <li style="margin-bottom: 15px;">
-                <a href="/libraryReview/<%= review.review_id %>"><%= review.library_name %> 후기</a>
+                <a href="/library/libraryReview?name=<%= encodeURIComponent(review.library_name) %>"><%= review.library_name %> 후기</a>
                 <button 
                   type="button" 
                   data-delete-btn 
