@@ -1,5 +1,4 @@
 // 페이지 열릴 때 최신 유저 정보 받아서 화면에 세팅
-// 페이지 열릴 때 최신 유저 정보 받아서 화면에 세팅
 async function loadUserProfile() {
   try {
     const res = await fetch('/user/profile');
