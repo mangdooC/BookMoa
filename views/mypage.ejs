@@ -20,7 +20,7 @@
     .sidebar {
         float: left;
         width: 250px;
-        height: 520px;
+        height: 550px;
         margin: 50px 50px 0 120px;
         padding: 20px;
         background: #fff;
@@ -410,7 +410,7 @@
       />
     </form>
     <p id="nicknameDisplay" style="margin-top: 10px; font-weight: bold; font-size: 23px;">
-    <%= user.nickname %>님
+      <%= user.nickname %>님
     </p>
   </div>
 
@@ -419,6 +419,7 @@
     <button type="button" onclick="showSection('preferredArea')">선호지역</button>
     <button type="button" onclick="showSection('favorites')">즐겨찾는 도서관</button>
     <button type="button" onclick="showSection('posts')">작성한 글/댓글</button>
+    <button type="button" id="deleteAccountBtn" style="color: red;">회원 탈퇴</button>
   </div>
 </div>
 
@@ -601,37 +602,69 @@ document.addEventListener('DOMContentLoaded', () => {
   const params = new URLSearchParams(window.location.search);
   const section = params.get('section') || 'info';
   showSection(section);
+
+  // 메뉴 버튼 클릭 이벤트 JS에서 처리 (onclick 말고)
+  document.querySelectorAll('.sidebar .menu button').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const onclickAttr = btn.getAttribute('onclick');
+      if (!onclickAttr) return; // null 체크 필수
+
+      const match = onclickAttr.match(/showSection\('([^']+)'\)/);
+      if (match) {
+        showSection(match[1]);
+      }
+    });
+  });
+
+  // 탈퇴 처리 버튼
+  const deleteBtn = document.getElementById('deleteAccountBtn');
+  if (deleteBtn) {
+    deleteBtn.addEventListener('click', () => {
+      if (confirm('정말 탈퇴하시겠습니까?')) {
+        fetch('/auth/delete', {
+          method: 'DELETE',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          credentials: 'include' // 쿠키 같이 보내줌
+        })
+        .then(res => {
+          if (res.ok) {
+            alert('탈퇴 처리되었습니다.');
+            window.location.href = '/'; // 탈퇴 후 메인페이지로 강제 이동
+          } else {
+            return res.json().then(data => {
+              throw new Error(data.error || '탈퇴 실패');
+            });
+          }
+        })
+        .catch(err => {
+          alert('탈퇴 중 오류가 발생했습니다: ' + err.message);
+        });
+      }
+    });
+  }
 });
 
 function showSection(sectionId) {
   // 모든 section 숨기기
   document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
-  // 선택한 section만 보이게
+
+  // 선택한 section 보이기
   const targetSection = document.getElementById(sectionId);
   if (targetSection) targetSection.classList.add('active');
 
-  // 메뉴 버튼 active 토글
+  // 메뉴 버튼 active 토글 (null 체크 필수)
   document.querySelectorAll('.sidebar .menu button').forEach(btn => {
-    btn.classList.toggle('active', btn.getAttribute('onclick').includes(sectionId));
+    const onclickAttr = btn.getAttribute('onclick');
+    btn.classList.toggle('active', onclickAttr && onclickAttr.includes(sectionId));
   });
 
-  // URL 쿼리스트링 바꾸기 (페이지 새로고침 없이)
+  // URL 쿼리스트링 변경 (새로고침 없이)
   const url = new URL(window.location);
   url.searchParams.set('section', sectionId);
   window.history.replaceState({}, '', url);
 }
-
-// 메뉴 버튼 클릭 이벤트를 JS에서 처리 (HTML onclick 대신)
-document.querySelectorAll('.sidebar .menu button').forEach(btn => {
-  btn.addEventListener('click', () => {
-    const onclickAttr = btn.getAttribute('onclick');
-    // 'showSection("info")' 형태니까 정규식으로 section id 추출
-    const match = onclickAttr.match(/showSection\('([^']+)'\)/);
-    if (match) {
-      showSection(match[1]);
-    }
-  });
-});
 </script>
 </body>
 </html>

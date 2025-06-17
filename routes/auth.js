@@ -5,6 +5,7 @@ const router = express.Router();
 const pool = require('../db');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
+const authMiddleware = require('../middlewares/authMiddleware');
 
 const JWT_SECRET = process.env.JWT_SECRET;
 
@@ -108,6 +109,29 @@ router.post('/login', async (req, res) => {
       return res.status(500).json({ error: '서버 에러' });
     }
     return res.render('login', { error: '서버 에러', user_id });
+  }
+});
+
+// 회원 탈퇴 처리 (DELETE /auth/delete)
+router.delete('/delete', authMiddleware, async (req, res) => {
+  try {
+    const user_id = req.user.user_id;
+
+    await pool.query('UPDATE user SET is_deleted = 1 WHERE user_id = ?', [user_id]);
+
+    req.session.destroy(err => {
+      if (err) {
+        console.error('세션 삭제 실패:', err);
+        return res.status(500).json({ error: '세션 삭제 실패' });
+      }
+
+      res.clearCookie('connect.sid'); 
+      res.clearCookie('token'); // JWT 쿠키도 같이 삭제
+      return res.json({ success: true, message: '탈퇴 처리 완료' });
+    });
+  } catch (err) {
+    console.error(err);
+    return res.status(401).json({ error: '유효하지 않은 토큰' });
   }
 });
 
