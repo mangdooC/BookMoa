@@ -1,3 +1,4 @@
+// 이달의 인기 도서를 외부 API에서 가져오고 필터 및 페이지네이션을 적용하여 뷰에 전달하는 컨트롤러
 const axios = require('axios');
 require('dotenv').config();
 

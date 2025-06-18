@@ -1,3 +1,4 @@
+// 커뮤니티 게시글의 CRUD 기능과 메인 페이지용 최신 게시글 조회를 처리하는 컨트롤러
 const fs = require('fs');
 const db = require('../db');
 const path = require('path');

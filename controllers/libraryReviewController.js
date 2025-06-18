@@ -1,3 +1,4 @@
+// 도서관 정보 조회, 검색, 후기 작성 및 조회 기능을 담당하는 컨트롤러
 const fs = require('fs');
 const db = require('../db');
 const path = require('path');

@@ -1,3 +1,4 @@
+// 커뮤니티 게시글에 대한 댓글 조회 및 작성 기능을 처리하는 컨트롤러
 const db = require('../db');
 
 // GET /comments/:postId

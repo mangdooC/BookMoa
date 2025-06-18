@@ -1,3 +1,4 @@
+// 도서 상세 페이지에서 책 정보, 도서관 위치, 후기 목록을 조회하고 렌더링하는 컨트롤러
 const axios = require('axios');
 const pool = require('../db');
 

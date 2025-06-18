@@ -1,3 +1,4 @@
+// 외부 도서 API를 호출하여 검색 결과를 받아오고 뷰에 전달하는 컨트롤러
 const axios = require('axios');
 
 exports.searchBooks = async (req, res) => {
